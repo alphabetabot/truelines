@@ -47,50 +47,46 @@ export default function Layout({ children }) {
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       {/* Nav */}
       <div style={{ background: '#1e293b' }}>
-        {/* Top row: logo + nav + install */}
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 50 }}>
-          <div className="flex items-center gap-2 shrink-0">
+        {/* Row 1: Logo + Install */}
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 46 }}>
+          <div className="flex items-center gap-2">
             <TrendingUp size={18} style={{ color: '#f59e0b' }} />
             <span className="font-bold text-base tracking-tight" style={{ color: '#ffffff' }}>
               True<span style={{ color: '#f59e0b' }}>Lines</span>
             </span>
           </div>
-
-          <div className="flex items-center gap-1">
-            {NAV.map(({ to, label, icon: Icon, exact }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={exact}
-                className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-semibold transition-all"
-                style={({ isActive }) => ({
-                  background: isActive ? '#f59e0b' : 'rgba(255,255,255,0.08)',
-                  color: isActive ? '#1e293b' : '#ffffff',
-                })}
-              >
-                <Icon size={12} />
-                {label}
-              </NavLink>
-            ))}
+          <div className="flex items-center gap-2">
+            {showInstallBanner && (
+              <button onClick={handleInstall}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold"
+                style={{ background: '#f59e0b', color: '#1e293b' }}>
+                <Download size={12} /> Install App
+              </button>
+            )}
+            <div className="flex items-center gap-1.5">
+              <span className="live-dot w-2.5 h-2.5 rounded-full inline-block" style={{ background: '#4ade80' }} />
+              <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE</span>
+            </div>
           </div>
-
-          {showInstallBanner && (
-            <button
-              onClick={handleInstall}
-              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold shrink-0"
-              style={{ background: '#f59e0b', color: '#1e293b' }}
-            >
-              <Download size={12} />
-              Install
-            </button>
-          )}
         </div>
 
-        {/* Second row: LIVE indicator */}
-        <div className="flex items-center gap-2 px-4 py-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '3px solid #f59e0b' }}>
-          <span className="live-dot w-2 h-2 rounded-full inline-block shrink-0" style={{ background: '#4ade80' }} />
-          <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE ODDS</span>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>· Auto-refreshing every 60s</span>
+        {/* Row 2: Nav tabs */}
+        <div className="flex items-center gap-1 px-3 pb-2 overflow-x-auto" style={{ borderBottom: '3px solid #f59e0b' }}>
+          {NAV.map(({ to, label, icon: Icon, exact }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={exact}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
+              style={({ isActive }) => ({
+                background: isActive ? '#f59e0b' : 'rgba(255,255,255,0.08)',
+                color: isActive ? '#1e293b' : '#ffffff',
+              })}
+            >
+              <Icon size={12} />
+              {label}
+            </NavLink>
+          ))}
         </div>
       </div>
 
