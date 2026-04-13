@@ -1,43 +1,75 @@
-// MLB Stats API - free, no key required
 const MLB_BASE = 'https://statsapi.mlb.com/api/v1'
 
 export async function getTodayProbablePitchers() {
   const today = new Date().toISOString().split('T')[0]
-  const res = await fetch(`${MLB_BASE}/schedule?sportId=1&date=${today}&hydrate=probablePitcher(stats)`)
-  if (!res.ok) return {}
+  
+  try {
+    const res = await fetch(
+      `${MLB_BASE}/schedule?sportId=1&date=${today}&hydrate=probablePitcher`
+    )
+    if (!res.ok) return {}
+    const data = await res.json()
 
-  const data = await res.json()
-  const pitchers = {}
+    // Collect pitcher IDs
+    const pitcherIds = []
+    const pitcherMap = {} // teamName -> { name, id }
 
-  data.dates?.forEach(d => {
-    d.games?.forEach(game => {
-      const away = game.teams?.away
-      const home = game.teams?.home
-      const awayName = away?.team?.name
-      const homeName = home?.team?.name
+    data.dates?.forEach(d => {
+      d.games?.forEach(game => {
+        const sides = [
+          { side: game.teams?.away, teamName: game.teams?.away?.team?.name },
+          { side: game.teams?.home, teamName: game.teams?.home?.team?.name },
+        ]
+        sides.forEach(({ side, teamName }) => {
+          if (side?.probablePitcher && teamName) {
+            const p = side.probablePitcher
+            pitcherMap[teamName] = { name: p.fullName, id: p.id }
+            if (p.id) pitcherIds.push(p.id)
+          }
+        })
+      })
+    })
 
-      if (away?.probablePitcher) {
-        const p = away.probablePitcher
-        const stats = p.stats?.find(s => s.type?.displayName === 'statsSingleSeason')?.stat
-        pitchers[awayName] = {
-          name: p.fullName,
-          wins: stats?.wins ?? '?',
-          losses: stats?.losses ?? '?',
-          era: stats?.era ?? '?.??',
-        }
-      }
-      if (home?.probablePitcher) {
-        const p = home.probablePitcher
-        const stats = p.stats?.find(s => s.type?.displayName === 'statsSingleSeason')?.stat
-        pitchers[homeName] = {
-          name: p.fullName,
-          wins: stats?.wins ?? '?',
-          losses: stats?.losses ?? '?',
-          era: stats?.era ?? '?.??',
-        }
+    if (pitcherIds.length === 0) return {}
+
+    // Fetch stats for all pitchers
+    const statsRes = await fetch(
+      `${MLB_BASE}/people?personIds=${pitcherIds.join(',')}&hydrate=stats(group=pitching,type=season)`
+    )
+    if (!statsRes.ok) return buildBasicMap(pitcherMap)
+    const statsData = await statsRes.json()
+
+    const statsByID = {}
+    statsData.people?.forEach(person => {
+      const seasonStats = person.stats?.find(
+        s => s.group?.displayName === 'pitching' && s.type?.displayName === 'season'
+      )
+      const s = seasonStats?.splits?.[0]?.stat
+      statsByID[person.id] = {
+        wins: s?.wins ?? '?',
+        losses: s?.losses ?? '?',
+        era: s?.era ?? '?.??',
       }
     })
-  })
 
-  return pitchers
+    // Build final map: teamName -> { name, wins, losses, era }
+    const result = {}
+    Object.entries(pitcherMap).forEach(([teamName, { name, id }]) => {
+      const stats = statsByID[id] || { wins: '?', losses: '?', era: '?.??' }
+      result[teamName] = { name, ...stats }
+    })
+
+    return result
+  } catch (e) {
+    console.warn('MLB pitcher fetch failed:', e)
+    return {}
+  }
+}
+
+function buildBasicMap(pitcherMap) {
+  const result = {}
+  Object.entries(pitcherMap).forEach(([teamName, { name }]) => {
+    result[teamName] = { name, wins: '?', losses: '?', era: '?.??' }
+  })
+  return result
 }
