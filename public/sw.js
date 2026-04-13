@@ -1,4 +1,4 @@
-const CACHE_NAME = 'truelines-v1'
+const CACHE_NAME = 'truelines-v3'
 const STATIC_ASSETS = ['/', '/index.html']
 
 self.addEventListener('install', e => {
