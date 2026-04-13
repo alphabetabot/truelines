@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import ScoreTicker from './ScoreTicker'
 
 const NAV = [
   { to: '/', label: 'Live Odds', icon: Activity, exact: true },
@@ -89,6 +90,9 @@ export default function Layout({ children }) {
           ))}
         </div>
       </div>
+
+      {/* Score ticker */}
+      <ScoreTicker />
 
       {/* iOS install instructions banner */}
       {showIOSInstructions && (
