@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #f0f2f5;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-header: #1a56db;
-  --bg-nav: #0f2d6b;
-  --border: #e2e8f0;
-  --border-odds: #cbd5e1;
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
-  --text-nav: #ffffff;
-  --accent: #1a56db;
-  --accent-light: #eff6ff;
-  --green: #16a34a;
-  --green-light: #dcfce7;
-  --red: #dc2626;
-  --red-light: #fee2e2;
-  --gold: #d97706;
-  --live-blue: #1a56db;
-  --odds-border: #e2e8f0;
-  --odds-bg: #ffffff;
-  --odds-bg-hover: #f8fafc;
+  --bg-primary: #0f1a12;
+  --bg-secondary: #141f17;
+  --bg-card: #1a2b1e;
+  --bg-card-hover: #1e3222;
+  --bg-header: #162b1a;
+  --bg-nav: #0d1710;
+  --border: #2a3d2e;
+  --border-light: #223027;
+  --text-primary: #e8f0e9;
+  --text-secondary: #8aab8e;
+  --text-muted: #4d6b52;
+  --accent: #3dba5e;
+  --accent-dim: rgba(61, 186, 94, 0.12);
+  --accent-glow: rgba(61, 186, 94, 0.25);
+  --green: #3dba5e;
+  --green-light: rgba(61, 186, 94, 0.15);
+  --red: #e05c5c;
+  --red-light: rgba(224, 92, 92, 0.12);
+  --gold: #c9a227;
+  --odds-border: #2a3d2e;
+  --odds-bg: #1a2b1e;
+  --odds-bg-best: rgba(61, 186, 94, 0.12);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,11 +38,12 @@ body {
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
 
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+  50% { opacity: 0.3; }
 }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -51,7 +52,7 @@ body {
 
 .live-dot { animation: pulse-live 1.5s ease-in-out infinite; }
 .shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

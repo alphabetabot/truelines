@@ -8,51 +8,49 @@ const NAV = [
   { to: '/picks', label: 'AI Picks', icon: Zap },
 ]
 
-const SPORTS_NAV = [
-  { key: 'americanfootball_nfl', label: 'NFL' },
-  { key: 'americanfootball_ncaaf', label: 'NCAAF' },
-  { key: 'basketball_nba', label: 'NBA' },
-  { key: 'basketball_ncaab', label: 'NCAAB' },
-  { key: 'baseball_mlb', label: 'MLB' },
-  { key: 'icehockey_nhl', label: 'NHL' },
-  { key: 'soccer_epl', label: 'Soccer' },
-  { key: 'mma_mixed_martial_arts', label: 'MMA' },
-]
-
 export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-      {/* Top nav bar */}
-      <div style={{ background: 'var(--bg-nav)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 52 }}>
+      {/* Nav */}
+      <div style={{ background: 'var(--bg-nav)', borderBottom: '1px solid var(--border)' }}>
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 54 }}>
+          {/* Logo */}
           <div className="flex items-center gap-2">
-            <TrendingUp size={20} color="#4ade80" />
-            <span className="font-bold text-lg tracking-tight text-white">
-              True<span style={{ color: '#4ade80' }}>Lines</span>
+            <TrendingUp size={20} style={{ color: 'var(--accent)' }} />
+            <span className="font-bold text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
+              True<span style={{ color: 'var(--accent)' }}>Lines</span>
             </span>
           </div>
+
+          {/* Nav links */}
           <div className="flex items-center gap-1">
             {NAV.map(({ to, label, icon: Icon, exact }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={exact}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
                 style={({ isActive }) => ({
-                  background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
-                  color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
+                  background: isActive ? 'var(--accent-dim)' : 'transparent',
+                  color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
+                  border: isActive ? '1px solid var(--accent-glow)' : '1px solid transparent',
                 })}
               >
-                <Icon size={13} />
+                <Icon size={14} />
                 {label}
               </NavLink>
             ))}
           </div>
+
+          {/* Live dot */}
+          <div className="flex items-center gap-1.5">
+            <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: 'var(--accent)' }} />
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Live</span>
+          </div>
         </div>
       </div>
 
-      {/* Main */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-4">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-5">
         {children}
       </main>
 
