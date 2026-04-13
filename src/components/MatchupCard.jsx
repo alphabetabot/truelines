@@ -1,119 +1,161 @@
-import { formatOdds } from '../lib/oddsApi'
+import { useState } from 'react'
+import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS } from '../lib/oddsApi'
 import { format } from 'date-fns'
+import { ChevronDown } from 'lucide-react'
 
-function BigOddsBox({ label, value, subValue, isBest }) {
+const BET_TYPES = [
+  { key: 'h2h', label: 'Moneyline' },
+  { key: 'spreads', label: 'Spread' },
+  { key: 'totals', label: 'Total' },
+]
+
+function BookOddsBox({ book, awayVal, awayOdds, homeVal, homeOdds, isBestAway, isBestHome }) {
   return (
-    <div
-      className="flex flex-col items-center justify-center rounded-xl"
-      style={{
-        border: `2px solid ${isBest ? '#16a34a' : '#e2e8f0'}`,
-        background: isBest ? '#f0fdf4' : '#f8fafc',
-        flex: 1,
-        minWidth: 72,
-        height: 70,
-        padding: '6px 8px',
-      }}
-    >
-      <span className="text-xs font-semibold mb-1" style={{ color: '#94a3b8' }}>{label}</span>
-      <span className="font-bold text-base" style={{ color: isBest ? '#16a34a' : '#0f172a', lineHeight: 1.1 }}>
-        {value ?? '—'}
-      </span>
-      {subValue != null && (
-        <span className="text-xs mt-0.5" style={{ color: isBest ? '#16a34a' : '#64748b' }}>
-          {formatOdds(subValue)}
+    <div className="flex flex-col shrink-0" style={{ width: 88 }}>
+      <div className="text-center mb-1">
+        <span className="text-xs font-semibold" style={{ color: '#64748b', fontSize: 10 }}>
+          {SPORTSBOOK_LABELS[book] || book}
         </span>
-      )}
-    </div>
-  )
-}
-
-function BettingBar({ awayTeam, homeTeam, awayPct, homePct, label }) {
-  return (
-    <div className="mb-1">
-      <div className="flex items-center justify-between mb-1">
-        <span className="text-xs font-medium" style={{ color: '#64748b' }}>{label}</span>
       </div>
-      <div className="flex items-center gap-2">
-        <span className="text-xs font-bold w-8 text-right" style={{ color: '#f59e0b' }}>{awayPct}%</span>
-        <div className="flex-1 flex rounded-full overflow-hidden" style={{ height: 8, background: '#e2e8f0' }}>
-          <div style={{ width: `${awayPct}%`, background: '#f59e0b' }} />
-          <div style={{ width: `${homePct}%`, background: '#3b82f6' }} />
-        </div>
-        <span className="text-xs font-bold w-8" style={{ color: '#3b82f6' }}>{homePct}%</span>
+      {/* Away */}
+      <div
+        className="flex flex-col items-center justify-center rounded-xl mb-1.5"
+        style={{
+          border: `2px solid ${isBestAway ? '#16a34a' : '#e2e8f0'}`,
+          background: isBestAway ? '#f0fdf4' : '#f8fafc',
+          height: 54,
+          padding: '4px 6px',
+        }}
+      >
+        {awayVal != null ? (
+          <>
+            <span className="font-bold text-sm" style={{ color: isBestAway ? '#16a34a' : '#0f172a', lineHeight: 1.1 }}>
+              {awayVal}
+            </span>
+            {awayOdds != null && awayOdds !== awayVal && (
+              <span className="text-xs" style={{ color: isBestAway ? '#16a34a' : '#64748b' }}>
+                {formatOdds(awayOdds)}
+              </span>
+            )}
+          </>
+        ) : (
+          <span style={{ color: '#cbd5e1' }}>—</span>
+        )}
       </div>
-      <div className="flex justify-between mt-0.5">
-        <span className="text-xs" style={{ color: '#94a3b8', maxWidth: 100 }} className="truncate">{awayTeam}</span>
-        <span className="text-xs" style={{ color: '#94a3b8', maxWidth: 100, textAlign: 'right' }} className="truncate">{homeTeam}</span>
+      {/* Home */}
+      <div
+        className="flex flex-col items-center justify-center rounded-xl"
+        style={{
+          border: `2px solid ${isBestHome ? '#16a34a' : '#e2e8f0'}`,
+          background: isBestHome ? '#f0fdf4' : '#f8fafc',
+          height: 54,
+          padding: '4px 6px',
+        }}
+      >
+        {homeVal != null ? (
+          <>
+            <span className="font-bold text-sm" style={{ color: isBestHome ? '#16a34a' : '#0f172a', lineHeight: 1.1 }}>
+              {homeVal}
+            </span>
+            {homeOdds != null && homeOdds !== homeVal && (
+              <span className="text-xs" style={{ color: isBestHome ? '#16a34a' : '#64748b' }}>
+                {formatOdds(homeOdds)}
+              </span>
+            )}
+          </>
+        ) : (
+          <span style={{ color: '#cbd5e1' }}>—</span>
+        )}
       </div>
     </div>
   )
 }
 
 export default function MatchupCard({ game, onSelect }) {
+  const [betType, setBetType] = useState('h2h')
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+
   const gameTime = new Date(game.commenceTime)
   const isLive = gameTime < new Date()
   const timeLabel = isLive ? 'LIVE' : format(gameTime, 'EEE M/d · h:mm a')
+  const bookCount = Object.keys(game.bookmakers || {}).length
 
-  // Find best odds across all books
-  const books = Object.entries(game.bookmakers || {})
+  // Build per-book display values
+  const bookRows = SPORTSBOOKS.map(book => {
+    const markets = game.bookmakers?.[book]
+    if (!markets || !markets[betType]) return { book, awayVal: null, awayOdds: null, homeVal: null, homeOdds: null }
 
-  let bestAwayMl = null, bestHomeMl = null
-  let bestAwaySpread = null, bestAwaySpreadOdds = null
-  let bestHomeSpread = null, bestHomeSpreadOdds = null
-  let bestOver = null, bestOverOdds = null
-  let bestUnder = null, bestUnderOdds = null
+    const market = markets[betType]
 
-  books.forEach(([book, markets]) => {
-    const h2h = markets.h2h || []
-    const spreads = markets.spreads || []
-    const totals = markets.totals || []
-
-    const awayMl = h2h.find(o => o.name === game.away)?.price
-    const homeMl = h2h.find(o => o.name === game.home)?.price
-    const awaySpread = spreads.find(o => o.name === game.away)
-    const homeSpread = spreads.find(o => o.name === game.home)
-    const over = totals.find(o => o.name === 'Over')
-    const under = totals.find(o => o.name === 'Under')
-
-    if (awayMl != null && (bestAwayMl == null || awayMl > bestAwayMl)) bestAwayMl = awayMl
-    if (homeMl != null && (bestHomeMl == null || homeMl > bestHomeMl)) bestHomeMl = homeMl
-    if (awaySpread && (bestAwaySpreadOdds == null || awaySpread.price > bestAwaySpreadOdds)) {
-      bestAwaySpread = awaySpread.point; bestAwaySpreadOdds = awaySpread.price
+    if (betType === 'h2h') {
+      const away = market.find(o => o.name === game.away)
+      const home = market.find(o => o.name === game.home)
+      return {
+        book,
+        awayVal: away ? formatOdds(away.price) : null,
+        awayOdds: null,
+        homeVal: home ? formatOdds(home.price) : null,
+        homeOdds: null,
+      }
     }
-    if (homeSpread && (bestHomeSpreadOdds == null || homeSpread.price > bestHomeSpreadOdds)) {
-      bestHomeSpread = homeSpread.point; bestHomeSpreadOdds = homeSpread.price
-    }
-    if (over && (bestOverOdds == null || over.price > bestOverOdds)) {
-      bestOver = over.point; bestOverOdds = over.price
-    }
-    if (under && (bestUnderOdds == null || under.price > bestUnderOdds)) {
-      bestUnder = under.point; bestUnderOdds = under.price
-    }
-  })
 
-  const bookCount = books.length
+    if (betType === 'spreads') {
+      const away = market.find(o => o.name === game.away)
+      const home = market.find(o => o.name === game.home)
+      return {
+        book,
+        awayVal: away ? `${away.point > 0 ? '+' : ''}${away.point}` : null,
+        awayOdds: away?.price ?? null,
+        homeVal: home ? `${home.point > 0 ? '+' : ''}${home.point}` : null,
+        homeOdds: home?.price ?? null,
+      }
+    }
 
-  // Simulated public betting % (real data requires paid API)
-  // Using implied probability as a proxy
-  const awayImpl = bestAwayMl != null
-    ? bestAwayMl > 0 ? 100 / (bestAwayMl + 100) : Math.abs(bestAwayMl) / (Math.abs(bestAwayMl) + 100)
-    : 0.5
+    if (betType === 'totals') {
+      const over = market.find(o => o.name === 'Over')
+      const under = market.find(o => o.name === 'Under')
+      return {
+        book,
+        awayVal: over ? `o${over.point}` : null,
+        awayOdds: over?.price ?? null,
+        homeVal: under ? `u${under.point}` : null,
+        homeOdds: under?.price ?? null,
+      }
+    }
+
+    return { book, awayVal: null, awayOdds: null, homeVal: null, homeOdds: null }
+  }).filter(r => r.awayVal != null || r.homeVal != null)
+
+  // Find best odds for each team
+  const bestAway = betType === 'h2h'
+    ? Math.max(...bookRows.map(r => {
+        const n = parseFloat(r.awayVal)
+        return isNaN(n) ? -Infinity : n
+      }))
+    : Math.max(...bookRows.map(r => r.awayOdds ?? -Infinity))
+
+  const bestHome = betType === 'h2h'
+    ? Math.max(...bookRows.map(r => {
+        const n = parseFloat(r.homeVal)
+        return isNaN(n) ? -Infinity : n
+      }))
+    : Math.max(...bookRows.map(r => r.homeOdds ?? -Infinity))
+
+  // Implied betting %
+  const awayMl = Object.values(game.bookmakers || {}).map(m => m.h2h?.find(o => o.name === game.away)?.price).find(p => p != null)
+  const awayImpl = awayMl != null ? (awayMl > 0 ? 100 / (awayMl + 100) : Math.abs(awayMl) / (Math.abs(awayMl) + 100)) : 0.5
   const awayBetPct = Math.round((1 - awayImpl) * 100)
   const homeBetPct = 100 - awayBetPct
 
+  const selectedLabel = BET_TYPES.find(b => b.key === betType)?.label
+
   return (
     <div
-      className="rounded-2xl overflow-hidden cursor-pointer mb-3 transition-all hover:shadow-md"
-      style={{
-        background: '#ffffff',
-        border: '1px solid #e2e8f0',
-        boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
-      }}
-      onClick={() => onSelect && onSelect(game)}
+      className="rounded-2xl overflow-hidden mb-3"
+      style={{ background: '#ffffff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2"
-        style={{ background: '#1e293b' }}>
+      <div className="flex items-center justify-between px-4 py-2" style={{ background: '#1e293b' }}>
         <div className="flex items-center gap-2">
           {isLive ? (
             <span className="flex items-center gap-1.5">
@@ -121,74 +163,106 @@ export default function MatchupCard({ game, onSelect }) {
               <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE</span>
             </span>
           ) : (
-            <span className="text-xs font-semibold" style={{ color: '#ffffff' }}>{timeLabel}</span>
+            <span className="text-xs font-semibold text-white">{timeLabel}</span>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="text-xs" style={{ color: '#94a3b8' }}>{bookCount} books</span>
-          <span className="text-xs font-medium" style={{ color: '#f59e0b' }}>Compare →</span>
-        </div>
+        <button
+          className="text-xs font-medium"
+          style={{ color: '#f59e0b' }}
+          onClick={e => { e.stopPropagation(); onSelect && onSelect(game) }}
+        >
+          Full Compare →
+        </button>
       </div>
 
-      <div className="px-4 pt-4 pb-3">
-        {/* Teams */}
+      <div className="px-4 pt-3 pb-4">
+        {/* Team names */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="font-bold text-base mb-1" style={{ color: '#0f172a' }}>{game.away}</div>
-            <div className="font-bold text-base" style={{ color: '#0f172a' }}>{game.home}</div>
+            <div className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>{game.away}</div>
+            <div className="font-bold text-sm" style={{ color: '#0f172a' }}>{game.home}</div>
           </div>
-          <span className="text-xs px-2 py-1 rounded-full" style={{ background: '#f1f5f9', color: '#64748b' }}>
-            @ {game.home.split(' ').slice(-1)[0]}
-          </span>
+
+          {/* Bet type dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold"
+              style={{
+                border: '2px solid #2563eb',
+                background: '#eff6ff',
+                color: '#2563eb',
+                minWidth: 130,
+              }}
+            >
+              {selectedLabel}
+              <ChevronDown size={14} style={{ marginLeft: 'auto' }} />
+            </button>
+            {dropdownOpen && (
+              <div
+                className="absolute right-0 mt-1 rounded-lg overflow-hidden z-10"
+                style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', minWidth: 130 }}
+              >
+                {BET_TYPES.map(bt => (
+                  <button
+                    key={bt.key}
+                    onClick={() => { setBetType(bt.key); setDropdownOpen(false) }}
+                    className="w-full text-left px-4 py-2.5 text-sm font-medium transition-colors hover:bg-blue-50"
+                    style={{
+                      color: betType === bt.key ? '#2563eb' : '#0f172a',
+                      background: betType === bt.key ? '#eff6ff' : 'transparent',
+                      fontWeight: betType === bt.key ? 700 : 500,
+                    }}
+                  >
+                    {bt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
 
-        {/* Odds boxes — Away row */}
-        <div className="flex gap-2 mb-2">
-          <BigOddsBox
-            label="ML"
-            value={bestAwayMl != null ? formatOdds(bestAwayMl) : null}
-            isBest={bestAwayMl != null && bestAwayMl > 0}
-          />
-          <BigOddsBox
-            label="SPREAD"
-            value={bestAwaySpread != null ? `${bestAwaySpread > 0 ? '+' : ''}${bestAwaySpread}` : null}
-            subValue={bestAwaySpreadOdds}
-          />
-          <BigOddsBox
-            label="TOTAL"
-            value={bestOver != null ? `o${bestOver}` : null}
-            subValue={bestOverOdds}
-          />
+        {/* Scrollable sportsbook columns */}
+        <div className="overflow-x-auto pb-1">
+          <div className="flex gap-2" style={{ width: 'max-content' }}>
+            {bookRows.length > 0 ? bookRows.map(row => {
+              const awayNum = betType === 'h2h' ? parseFloat(row.awayVal) : row.awayOdds
+              const homeNum = betType === 'h2h' ? parseFloat(row.homeVal) : row.homeOdds
+              return (
+                <BookOddsBox
+                  key={row.book}
+                  book={row.book}
+                  awayVal={row.awayVal}
+                  awayOdds={row.awayOdds}
+                  homeVal={row.homeVal}
+                  homeOdds={row.homeOdds}
+                  isBestAway={awayNum === bestAway && awayNum != null && isFinite(awayNum)}
+                  isBestHome={homeNum === bestHome && homeNum != null && isFinite(homeNum)}
+                />
+              )
+            }) : (
+              <p className="text-sm py-4" style={{ color: '#94a3b8' }}>No {selectedLabel} odds available</p>
+            )}
+          </div>
         </div>
 
-        {/* Odds boxes — Home row */}
-        <div className="flex gap-2 mb-4">
-          <BigOddsBox
-            label="ML"
-            value={bestHomeMl != null ? formatOdds(bestHomeMl) : null}
-            isBest={bestHomeMl != null && bestHomeMl > 0}
-          />
-          <BigOddsBox
-            label="SPREAD"
-            value={bestHomeSpread != null ? `${bestHomeSpread > 0 ? '+' : ''}${bestHomeSpread}` : null}
-            subValue={bestHomeSpreadOdds}
-          />
-          <BigOddsBox
-            label="TOTAL"
-            value={bestUnder != null ? `u${bestUnder}` : null}
-            subValue={bestUnderOdds}
-          />
-        </div>
-
-        {/* Public betting bars */}
-        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 12 }}>
-          <BettingBar
-            awayTeam={game.away}
-            homeTeam={game.home}
-            awayPct={awayBetPct}
-            homePct={homeBetPct}
-            label="% OF BETS (implied)"
-          />
+        {/* Betting % bar */}
+        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: 10, marginTop: 10 }}>
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-xs font-semibold" style={{ color: '#94a3b8', fontSize: 10 }}>% OF BETS (implied)</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold w-8 text-right" style={{ color: '#f59e0b' }}>{awayBetPct}%</span>
+            <div className="flex-1 flex rounded-full overflow-hidden" style={{ height: 7, background: '#e2e8f0' }}>
+              <div style={{ width: `${awayBetPct}%`, background: '#f59e0b', transition: 'width 0.3s' }} />
+              <div style={{ width: `${homeBetPct}%`, background: '#3b82f6', transition: 'width 0.3s' }} />
+            </div>
+            <span className="text-xs font-bold w-8" style={{ color: '#3b82f6' }}>{homeBetPct}%</span>
+          </div>
+          <div className="flex justify-between mt-1">
+            <span className="text-xs truncate" style={{ color: '#94a3b8', maxWidth: 120 }}>{game.away}</span>
+            <span className="text-xs truncate text-right" style={{ color: '#94a3b8', maxWidth: 120 }}>{game.home}</span>
+          </div>
         </div>
       </div>
     </div>
