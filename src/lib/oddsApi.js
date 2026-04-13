@@ -57,7 +57,7 @@ export async function getOdds(sport, markets = 'h2h,spreads,totals') {
 }
 
 export async function getScores(sport) {
-  return apiFetch(`/sports/${sport}/scores`, { daysFrom: 1 })
+  return apiFetch(`/sports/${sport}/scores`, { daysFrom: 7 })
 }
 
 // Parse odds data into a structured comparison format

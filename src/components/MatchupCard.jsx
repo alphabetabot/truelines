@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS } from '../lib/oddsApi'
 import { format } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
+import { getTodayProbablePitchers } from '../lib/mlbApi'
 
 const BET_TYPES = [
   { key: 'h2h', label: 'Moneyline' },
@@ -9,7 +10,17 @@ const BET_TYPES = [
   { key: 'totals', label: 'Total' },
 ]
 
-export default function MatchupCard({ game, onSelect }) {
+// MLB pitcher data - pulled from a public stats source when available
+// We'll show TBD if not available since The Odds API doesn't include pitcher data
+function PitcherLine({ team }) {
+  return (
+    <span className="text-xs" style={{ color: '#94a3b8' }}>
+      P: TBD
+    </span>
+  )
+}
+
+export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = {} }) {
   const [betType, setBetType] = useState('h2h')
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
@@ -120,12 +131,26 @@ export default function MatchupCard({ game, onSelect }) {
           {/* spacer for book name header */}
           <div style={{ height: 28, borderBottom: '1px solid #f1f5f9' }} />
           {/* Away */}
-          <div className="flex items-center px-3" style={{ height: 54, borderBottom: '1px solid #f1f5f9' }}>
+          <div className="flex flex-col justify-center px-3" style={{ height: 54, borderBottom: '1px solid #f1f5f9' }}>
             <span className="font-bold text-sm leading-tight" style={{ color: '#0f172a' }}>{game.away}</span>
+            {isMLB && (
+              <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
+                {pitchers[game.away]
+                  ? `${pitchers[game.away].name} (${pitchers[game.away].wins}-${pitchers[game.away].losses}, ${pitchers[game.away].era} ERA)`
+                  : 'P: TBD'}
+              </span>
+            )}
           </div>
           {/* Home */}
-          <div className="flex items-center px-3" style={{ height: 54 }}>
+          <div className="flex flex-col justify-center px-3" style={{ height: 54 }}>
             <span className="font-bold text-sm leading-tight" style={{ color: '#0f172a' }}>{game.home}</span>
+            {isMLB && (
+              <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
+                {pitchers[game.home]
+                  ? `${pitchers[game.home].name} (${pitchers[game.home].wins}-${pitchers[game.home].losses}, ${pitchers[game.home].era} ERA)`
+                  : 'P: TBD'}
+              </span>
+            )}
           </div>
         </div>
 
