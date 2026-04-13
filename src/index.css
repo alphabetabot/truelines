@@ -1,28 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f8fafc;
+  --bg-primary: #f4f6f9;
+  --bg-secondary: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #f1f5f9;
-  --bg-header: #1e3a5f;
-  --bg-nav: #0f2447;
+  --bg-header: #1e293b;
+  --bg-nav: #0f172a;
   --border: #e2e8f0;
   --border-light: #f1f5f9;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --text-secondary: #64748b;
   --text-muted: #94a3b8;
   --accent: #2563eb;
   --accent-dim: rgba(37, 99, 235, 0.08);
-  --accent-glow: rgba(37, 99, 235, 0.2);
   --green: #16a34a;
   --green-light: rgba(22, 163, 74, 0.1);
   --red: #dc2626;
   --red-light: rgba(220, 38, 38, 0.08);
   --gold: #d97706;
   --odds-border: #e2e8f0;
-  --odds-bg: #ffffff;
-  --odds-bg-best: rgba(22, 163, 74, 0.08);
+  --odds-bg: #f8fafc;
+  --odds-bg-best: #f0fdf4;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -38,8 +36,7 @@ body {
 
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
@@ -52,7 +49,7 @@ body {
 
 .live-dot { animation: pulse-live 1.5s ease-in-out infinite; }
 .shimmer {
-  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }

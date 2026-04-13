@@ -11,32 +11,31 @@ const NAV = [
 export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-      {/* Nav */}
-      <div style={{ background: 'var(--bg-nav)', borderBottom: '1px solid var(--border)' }}>
+      {/* Nav - dark charcoal with white text, easy to read */}
+      <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 54 }}>
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <TrendingUp size={20} style={{ color: 'var(--accent)' }} />
-            <span className="font-bold text-lg tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              True<span style={{ color: 'var(--accent)' }}>Lines</span>
+            <TrendingUp size={20} style={{ color: '#f59e0b' }} />
+            <span className="font-bold text-lg tracking-tight" style={{ color: '#ffffff' }}>
+              True<span style={{ color: '#f59e0b' }}>Lines</span>
             </span>
           </div>
 
-          {/* Nav links */}
+          {/* Nav links - white text on dark bg, very readable */}
           <div className="flex items-center gap-1">
             {NAV.map(({ to, label, icon: Icon, exact }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={exact}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-all"
+                className="flex items-center gap-1.5 px-3 py-2 rounded text-xs font-semibold transition-all"
                 style={({ isActive }) => ({
-                  background: isActive ? 'var(--accent-dim)' : 'transparent',
-                  color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-                  border: isActive ? '1px solid var(--accent-glow)' : '1px solid transparent',
+                  background: isActive ? '#f59e0b' : 'rgba(255,255,255,0.08)',
+                  color: isActive ? '#1e293b' : '#ffffff',
                 })}
               >
-                <Icon size={14} />
+                <Icon size={13} />
                 {label}
               </NavLink>
             ))}
@@ -44,8 +43,8 @@ export default function Layout({ children }) {
 
           {/* Live dot */}
           <div className="flex items-center gap-1.5">
-            <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: 'var(--accent)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Live</span>
+            <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
+            <span className="text-xs font-medium" style={{ color: '#ffffff' }}>Live</span>
           </div>
         </div>
       </div>
