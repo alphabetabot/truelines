@@ -77,8 +77,8 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
   const homeBetPct = 100 - awayBetPct
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-3"
-      style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)' }}>
+    <div className="mb-3"
+      style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 1px 4px rgba(0,0,0,0.06)', borderRadius: 8 }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2" style={{ background: '#1e293b' }}>
@@ -124,10 +124,10 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       </div>
 
       {/* Main odds area: sticky team names + scrollable book columns */}
-      <div className="flex" style={{ overflowX: 'auto' }}>
+      <div className="flex" style={{ overflowX: 'auto', overflowY: 'visible' }}>
 
         {/* Sticky left: team names */}
-        <div className="shrink-0 sticky left-0 z-10" style={{ background: '#fff', borderRight: '2px solid #e2e8f0', minWidth: 130 }}>
+        <div className="shrink-0 sticky left-0 z-10" style={{ background: '#fff', borderRight: '2px solid #e2e8f0', minWidth: 140, overflow: 'visible' }}>
           {/* spacer for book name header */}
           <div style={{ height: 28, borderBottom: '1px solid #f1f5f9' }} />
           {/* Away */}
@@ -135,9 +135,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
             <span className="font-bold text-sm leading-tight" style={{ color: '#0f172a' }}>{game.away}</span>
             {isMLB && (
               <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
-                {pitchers[game.away]
-                  ? `${pitchers[game.away].name} (${pitchers[game.away].wins}-${pitchers[game.away].losses}, ${pitchers[game.away].era} ERA)`
-                  : 'P: TBD'}
+                {(() => { const p = pitchers[game.away] || Object.entries(pitchers).find(([k]) => game.away.includes(k) || k.includes(game.away.split(' ').slice(-1)[0]))?.[1]; return p ? `${p.name} (${p.wins}-${p.losses}, ${p.era} ERA)` : 'P: TBD' })()}
               </span>
             )}
           </div>
@@ -146,9 +144,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
             <span className="font-bold text-sm leading-tight" style={{ color: '#0f172a' }}>{game.home}</span>
             {isMLB && (
               <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
-                {pitchers[game.home]
-                  ? `${pitchers[game.home].name} (${pitchers[game.home].wins}-${pitchers[game.home].losses}, ${pitchers[game.home].era} ERA)`
-                  : 'P: TBD'}
+                {(() => { const p = pitchers[game.home] || Object.entries(pitchers).find(([k]) => game.home.includes(k) || k.includes(game.home.split(' ').slice(-1)[0]))?.[1]; return p ? `${p.name} (${p.wins}-${p.losses}, ${p.era} ERA)` : 'P: TBD' })()}
               </span>
             )}
           </div>

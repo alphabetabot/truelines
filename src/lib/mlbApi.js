@@ -53,10 +53,15 @@ export async function getTodayProbablePitchers() {
     })
 
     // Build final map: teamName -> { name, wins, losses, era }
+    // Also add city-only and last-word keys for fuzzy matching
     const result = {}
     Object.entries(pitcherMap).forEach(([teamName, { name, id }]) => {
       const stats = statsByID[id] || { wins: '?', losses: '?', era: '?.??' }
-      result[teamName] = { name, ...stats }
+      const entry = { name, ...stats }
+      result[teamName] = entry
+      // e.g. 'New York Yankees' -> also store as 'Yankees'
+      const lastWord = teamName.split(' ').slice(-1)[0]
+      result[lastWord] = entry
     })
 
     return result
