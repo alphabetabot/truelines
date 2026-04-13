@@ -73,20 +73,21 @@ export default function Layout({ children }) {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             {showInstallBanner && (
               <button
                 onClick={handleInstall}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold"
                 style={{ background: '#f59e0b', color: '#1e293b' }}
               >
                 <Download size={12} />
-                Install App
+                <span className="hidden sm:inline">Install</span>
               </button>
             )}
-            <div className="flex items-center gap-1.5">
-              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
-              <span className="text-xs font-medium text-white">Live</span>
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full"
+              style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.4)' }}>
+              <span className="live-dot w-2 h-2 rounded-full inline-block shrink-0" style={{ background: '#4ade80' }} />
+              <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE</span>
             </div>
           </div>
         </div>
