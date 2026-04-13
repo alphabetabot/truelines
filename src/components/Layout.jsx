@@ -9,47 +9,38 @@ const NAV = [
 ]
 
 const SPORTS_NAV = [
-  { to: '/nfl', label: 'NFL' },
-  { to: '/ncaaf', label: 'NCAAF' },
-  { to: '/nba', label: 'NBA' },
-  { to: '/ncaab', label: 'NCAAB' },
-  { to: '/mlb', label: 'MLB' },
-  { to: '/nhl', label: 'NHL' },
-  { to: '/epl', label: 'Soccer' },
-  { to: '/mma', label: 'MMA' },
+  { key: 'americanfootball_nfl', label: 'NFL' },
+  { key: 'americanfootball_ncaaf', label: 'NCAAF' },
+  { key: 'basketball_nba', label: 'NBA' },
+  { key: 'basketball_ncaab', label: 'NCAAB' },
+  { key: 'baseball_mlb', label: 'MLB' },
+  { key: 'icehockey_nhl', label: 'NHL' },
+  { key: 'soccer_epl', label: 'Soccer' },
+  { key: 'mma_mixed_martial_arts', label: 'MMA' },
 ]
 
 export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-
-      {/* Top bar */}
-      <div style={{ background: 'var(--bg-header)', borderBottom: '1px solid var(--border)' }}>
-        <div className="max-w-screen-2xl mx-auto px-4 flex items-center justify-between" style={{ height: 48 }}>
-
-          {/* Logo */}
-          <div className="flex items-center gap-2 shrink-0">
-            <TrendingUp size={18} style={{ color: 'var(--accent)' }} />
-            <span className="font-bold text-base tracking-tight" style={{ color: 'var(--text-primary)' }}>
-              True<span style={{ color: 'var(--accent)' }}>Lines</span>
-            </span>
-            <span className="text-xs px-1.5 py-0.5 rounded font-medium ml-1"
-              style={{ background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid rgba(56,139,253,0.3)', fontSize: 10 }}>
-              BETA
+      {/* Top nav bar */}
+      <div style={{ background: 'var(--bg-nav)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 52 }}>
+          <div className="flex items-center gap-2">
+            <TrendingUp size={20} color="#4ade80" />
+            <span className="font-bold text-lg tracking-tight text-white">
+              True<span style={{ color: '#4ade80' }}>Lines</span>
             </span>
           </div>
-
-          {/* Main nav */}
-          <div className="flex items-center h-full">
+          <div className="flex items-center gap-1">
             {NAV.map(({ to, label, icon: Icon, exact }) => (
               <NavLink
                 key={to}
                 to={to}
                 end={exact}
-                className="flex items-center gap-1.5 px-4 h-full text-xs font-medium border-b-2 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-all"
                 style={({ isActive }) => ({
-                  color: isActive ? 'var(--accent)' : 'var(--text-secondary)',
-                  borderBottomColor: isActive ? 'var(--accent)' : 'transparent',
+                  background: isActive ? 'rgba(255,255,255,0.15)' : 'transparent',
+                  color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
                 })}
               >
                 <Icon size={13} />
@@ -57,21 +48,15 @@ export default function Layout({ children }) {
               </NavLink>
             ))}
           </div>
-
-          {/* Live indicator */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <span className="live-dot w-2 h-2 rounded-full" style={{ background: 'var(--green)', display: 'inline-block' }} />
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Live</span>
-          </div>
         </div>
       </div>
 
       {/* Main */}
-      <main className="flex-1 max-w-screen-2xl mx-auto w-full px-4 py-5">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-4">
         {children}
       </main>
 
-      <footer className="text-center py-3 text-xs" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border-light)' }}>
+      <footer className="text-center py-3 text-xs" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
         TrueLines · Odds via The Odds API · AI by Claude · For informational use only
       </footer>
     </div>

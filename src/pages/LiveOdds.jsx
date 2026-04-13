@@ -3,20 +3,13 @@ import { useQuery } from '@tanstack/react-query'
 import { useNavigate } from 'react-router-dom'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import SportSelector from '../components/SportSelector'
-import MatchupTable from '../components/MatchupTable'
+import MatchupCard from '../components/MatchupCard'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
-
-const DATE_TABS = [
-  { label: 'Yesterday', offset: -1 },
-  { label: 'Today', offset: 0 },
-  { label: 'Tomorrow', offset: 1 },
-]
 
 export default function LiveOdds() {
   const [sport, setSport] = useState('basketball_nba')
   const [search, setSearch] = useState('')
-  const [dateOffset, setDateOffset] = useState(0)
   const navigate = useNavigate()
 
   const { data, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useQuery({
@@ -27,54 +20,29 @@ export default function LiveOdds() {
   })
 
   const allGames = data ? parseOddsForComparison(data) : []
-
-  // Filter by date offset
-  const today = new Date()
-  const targetDate = new Date(today)
-  targetDate.setDate(today.getDate() + dateOffset)
-
-  const filtered = allGames.filter(g => {
-    const gameDate = new Date(g.commenceTime)
-    const sameDay =
-      gameDate.getFullYear() === targetDate.getFullYear() &&
-      gameDate.getMonth() === targetDate.getMonth() &&
-      gameDate.getDate() === targetDate.getDate()
-
-    if (!sameDay && dateOffset === 0) {
-      // "Today" fallback: also show games with no date match if no games today
-    }
-
-    const matchesSearch =
-      search === '' ||
-      g.home.toLowerCase().includes(search.toLowerCase()) ||
-      g.away.toLowerCase().includes(search.toLowerCase())
-
-    return matchesSearch
-  })
-
-  // Use all games if filter yields nothing (today may have no games)
-  const displayGames = filtered.length > 0 ? filtered : allGames.filter(g =>
+  const displayGames = allGames.filter(g =>
     search === '' ||
     g.home.toLowerCase().includes(search.toLowerCase()) ||
     g.away.toLowerCase().includes(search.toLowerCase())
   )
 
+  const sportLabel = SPORTS.find(s => s.key === sport)?.label || 'Games'
+
   return (
     <div>
-      {/* Header row */}
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <h1 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
-            {SPORTS.find(s => s.key === sport)?.label} Odds
+        <div>
+          <h1 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>
+            {sportLabel} Odds
           </h1>
           {dataUpdatedAt > 0 && (
-            <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
               Updated {format(new Date(dataUpdatedAt), 'h:mm a')}
-            </span>
+            </p>
           )}
         </div>
         <div className="flex items-center gap-2">
-          {/* Search */}
           <div className="relative">
             <Search size={13} className="absolute left-2.5 top-1/2 -translate-y-1/2" style={{ color: 'var(--text-muted)' }} />
             <input
@@ -82,25 +50,24 @@ export default function LiveOdds() {
               placeholder="Search teams..."
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-8 pr-3 py-1.5 rounded text-xs outline-none"
+              className="pl-8 pr-3 py-2 rounded-lg text-xs outline-none"
               style={{
-                background: 'var(--bg-card)',
+                background: '#fff',
                 border: '1px solid var(--border)',
                 color: 'var(--text-primary)',
-                width: 160,
+                width: 150,
               }}
             />
           </div>
           <button
             onClick={() => refetch()}
             disabled={isFetching}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs transition-all"
             style={{
-              background: 'var(--bg-card)',
+              background: '#fff',
               border: '1px solid var(--border)',
               color: 'var(--text-secondary)',
               opacity: isFetching ? 0.5 : 1,
-              cursor: isFetching ? 'not-allowed' : 'pointer',
             }}
           >
             <RefreshCw size={12} className={isFetching ? 'animate-spin' : ''} />
@@ -109,34 +76,57 @@ export default function LiveOdds() {
         </div>
       </div>
 
-      {/* Sport selector */}
       <SportSelector selected={sport} onChange={s => { setSport(s); setSearch('') }} />
 
       {/* Error */}
       {isError && (
-        <div className="flex items-start gap-3 p-4 rounded-lg mb-4"
-          style={{ background: 'var(--red-dim)', border: '1px solid rgba(248,81,73,0.3)' }}>
-          <AlertTriangle size={16} style={{ color: 'var(--red)' }} className="mt-0.5 shrink-0" />
+        <div className="flex items-start gap-3 p-4 rounded-xl mb-4"
+          style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
+          <AlertTriangle size={16} style={{ color: '#dc2626' }} className="mt-0.5 shrink-0" />
           <div>
-            <p className="font-semibold text-xs" style={{ color: 'var(--red)' }}>Failed to load odds</p>
+            <p className="font-semibold text-sm" style={{ color: '#dc2626' }}>Failed to load odds</p>
             <p className="text-xs mt-0.5" style={{ color: 'var(--text-secondary)' }}>
-              {error?.message || 'Check your Odds API key in .env'}
+              {error?.message || 'Check your Odds API key'}
             </p>
           </div>
         </div>
       )}
 
-      {/* Table */}
-      <MatchupTable
-        games={displayGames}
-        loading={isLoading}
-        onSelect={g => navigate('/compare', { state: { game: g } })}
-      />
+      {/* Loading */}
+      {isLoading && (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="shimmer rounded-xl" style={{ height: 130, border: '1px solid var(--border)' }} />
+          ))}
+        </div>
+      )}
 
-      {!isLoading && displayGames.length > 0 && (
-        <p className="text-xs mt-3" style={{ color: 'var(--text-muted)' }}>
-          {displayGames.length} game{displayGames.length !== 1 ? 's' : ''} · Click any row to compare lines · Green = best available odds
-        </p>
+      {/* Cards */}
+      {!isLoading && !isError && (
+        <>
+          {displayGames.length === 0 ? (
+            <div className="text-center py-16">
+              <p style={{ color: 'var(--text-secondary)' }}>
+                {allGames.length === 0 ? `No upcoming ${sportLabel} games with odds` : 'No games match your search'}
+              </p>
+            </div>
+          ) : (
+            <div>
+              {displayGames.map(game => (
+                <MatchupCard
+                  key={game.id}
+                  game={game}
+                  onSelect={g => navigate('/compare', { state: { game: g } })}
+                />
+              ))}
+            </div>
+          )}
+          {displayGames.length > 0 && (
+            <p className="text-xs text-center mt-2" style={{ color: 'var(--text-muted)' }}>
+              {displayGames.length} game{displayGames.length !== 1 ? 's' : ''} · Best odds shown · Tap any card to compare all books
+            </p>
+          )}
+        </>
       )}
     </div>
   )

@@ -1,25 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #0d1117;
-  --bg-secondary: #161b22;
-  --bg-card: #1c2128;
-  --bg-row-alt: #161b22;
-  --bg-header: #111318;
-  --border: #30363d;
-  --border-light: #21262d;
-  --text-primary: #e6edf3;
-  --text-secondary: #7d8590;
-  --text-muted: #484f58;
-  --accent: #388bfd;
-  --accent-dim: rgba(56, 139, 253, 0.15);
-  --green: #3fb950;
-  --green-dim: rgba(63, 185, 80, 0.15);
-  --red: #f85149;
-  --red-dim: rgba(248, 81, 73, 0.15);
-  --gold: #d29922;
-  --gold-dim: rgba(210, 153, 34, 0.15);
-  --purple: #8957e5;
+  --bg-primary: #f0f2f5;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-header: #1a56db;
+  --bg-nav: #0f2d6b;
+  --border: #e2e8f0;
+  --border-odds: #cbd5e1;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --text-nav: #ffffff;
+  --accent: #1a56db;
+  --accent-light: #eff6ff;
+  --green: #16a34a;
+  --green-light: #dcfce7;
+  --red: #dc2626;
+  --red-light: #fee2e2;
+  --gold: #d97706;
+  --live-blue: #1a56db;
+  --odds-border: #e2e8f0;
+  --odds-bg: #ffffff;
+  --odds-bg-hover: #f8fafc;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,41 +30,28 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-  font-size: 13px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
   line-height: 1.4;
   min-height: 100vh;
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: var(--bg-primary); }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
 
-/* Animations */
 @keyframes pulse-live {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.4; transform: scale(0.85); }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-@keyframes flash-up {
-  0% { background-color: rgba(63, 185, 80, 0.25); }
-  100% { background-color: transparent; }
-}
-@keyframes flash-down {
-  0% { background-color: rgba(248, 81, 73, 0.25); }
-  100% { background-color: transparent; }
-}
 
-.live-dot { animation: pulse-live 1.8s ease-in-out infinite; }
+.live-dot { animation: pulse-live 1.5s ease-in-out infinite; }
 .shimmer {
-  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-row-alt) 50%, var(--bg-card) 75%);
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
-.flash-up { animation: flash-up 0.9s ease-out; }
-.flash-down { animation: flash-down 0.9s ease-out; }
