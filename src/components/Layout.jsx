@@ -46,11 +46,12 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       {/* Nav */}
-      <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 54 }}>
-          <div className="flex items-center gap-2">
-            <TrendingUp size={20} style={{ color: '#f59e0b' }} />
-            <span className="font-bold text-lg tracking-tight" style={{ color: '#ffffff' }}>
+      <div style={{ background: '#1e293b' }}>
+        {/* Top row: logo + nav + install */}
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 50 }}>
+          <div className="flex items-center gap-2 shrink-0">
+            <TrendingUp size={18} style={{ color: '#f59e0b' }} />
+            <span className="font-bold text-base tracking-tight" style={{ color: '#ffffff' }}>
               True<span style={{ color: '#f59e0b' }}>Lines</span>
             </span>
           </div>
@@ -61,35 +62,35 @@ export default function Layout({ children }) {
                 key={to}
                 to={to}
                 end={exact}
-                className="flex items-center gap-1.5 px-3 py-2 rounded text-xs font-semibold transition-all"
+                className="flex items-center gap-1 px-2 py-1.5 rounded text-xs font-semibold transition-all"
                 style={({ isActive }) => ({
                   background: isActive ? '#f59e0b' : 'rgba(255,255,255,0.08)',
                   color: isActive ? '#1e293b' : '#ffffff',
                 })}
               >
-                <Icon size={13} />
+                <Icon size={12} />
                 {label}
               </NavLink>
             ))}
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            {showInstallBanner && (
-              <button
-                onClick={handleInstall}
-                className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold"
-                style={{ background: '#f59e0b', color: '#1e293b' }}
-              >
-                <Download size={12} />
-                <span className="hidden sm:inline">Install</span>
-              </button>
-            )}
-            <div className="flex items-center gap-1.5 px-2 py-1 rounded-full"
-              style={{ background: 'rgba(74,222,128,0.15)', border: '1px solid rgba(74,222,128,0.4)' }}>
-              <span className="live-dot w-2 h-2 rounded-full inline-block shrink-0" style={{ background: '#4ade80' }} />
-              <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE</span>
-            </div>
-          </div>
+          {showInstallBanner && (
+            <button
+              onClick={handleInstall}
+              className="flex items-center gap-1 px-2 py-1.5 rounded-lg text-xs font-semibold shrink-0"
+              style={{ background: '#f59e0b', color: '#1e293b' }}
+            >
+              <Download size={12} />
+              Install
+            </button>
+          )}
+        </div>
+
+        {/* Second row: LIVE indicator */}
+        <div className="flex items-center gap-2 px-4 py-1.5" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', borderBottom: '3px solid #f59e0b' }}>
+          <span className="live-dot w-2 h-2 rounded-full inline-block shrink-0" style={{ background: '#4ade80' }} />
+          <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE ODDS</span>
+          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>· Auto-refreshing every 60s</span>
         </div>
       </div>
 
