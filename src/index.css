@@ -1,28 +1,28 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #0f1a12;
-  --bg-secondary: #141f17;
-  --bg-card: #1a2b1e;
-  --bg-card-hover: #1e3222;
-  --bg-header: #162b1a;
-  --bg-nav: #0d1710;
-  --border: #2a3d2e;
-  --border-light: #223027;
-  --text-primary: #e8f0e9;
-  --text-secondary: #8aab8e;
-  --text-muted: #4d6b52;
-  --accent: #3dba5e;
-  --accent-dim: rgba(61, 186, 94, 0.12);
-  --accent-glow: rgba(61, 186, 94, 0.25);
-  --green: #3dba5e;
-  --green-light: rgba(61, 186, 94, 0.15);
-  --red: #e05c5c;
-  --red-light: rgba(224, 92, 92, 0.12);
-  --gold: #c9a227;
-  --odds-border: #2a3d2e;
-  --odds-bg: #1a2b1e;
-  --odds-bg-best: rgba(61, 186, 94, 0.12);
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-header: #1e3a5f;
+  --bg-nav: #0f2447;
+  --border: #e2e8f0;
+  --border-light: #f1f5f9;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #94a3b8;
+  --accent: #2563eb;
+  --accent-dim: rgba(37, 99, 235, 0.08);
+  --accent-glow: rgba(37, 99, 235, 0.2);
+  --green: #16a34a;
+  --green-light: rgba(22, 163, 74, 0.1);
+  --red: #dc2626;
+  --red-light: rgba(220, 38, 38, 0.08);
+  --gold: #d97706;
+  --odds-border: #e2e8f0;
+  --odds-bg: #ffffff;
+  --odds-bg-best: rgba(22, 163, 74, 0.08);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
