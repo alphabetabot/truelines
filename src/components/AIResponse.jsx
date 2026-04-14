@@ -56,7 +56,7 @@ export default function AIResponse({ loading, error, data, label = 'AI Analysis'
         {loading && (
           <div className="flex items-center gap-3 py-8 justify-center">
             <Loader2 size={16} className="animate-spin" style={{ color: 'var(--accent)' }} />
-            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Analyzing with Claude...</span>
+            <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Analyzing with {provider}...</span>
           </div>
         )}
         {error && (
