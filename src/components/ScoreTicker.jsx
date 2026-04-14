@@ -1,12 +1,17 @@
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useEffect } from 'react'
-import { getScores } from '../lib/oddsApi'
+import { SPORTSBOOK_LABELS } from '../lib/oddsApi'
 
-const TICKER_SPORTS = [
-  'basketball_nba',
-  'baseball_mlb',
-  'icehockey_nhl',
-]
+const MLB_BASE = 'https://api.the-odds-api.com/v4'
+const API_KEY = import.meta.env.VITE_ODDS_API_KEY
+
+async function fetchScores(sport) {
+  const res = await fetch(
+    `${MLB_BASE}/sports/${sport}/scores?apiKey=${API_KEY}&daysFrom=1`
+  )
+  if (!res.ok) return []
+  return res.json()
+}
 
 function TickerItem({ game }) {
   const gameTime = new Date(game.commence_time)
@@ -25,86 +30,92 @@ function TickerItem({ game }) {
 
   return (
     <div className="flex items-center gap-2 shrink-0 px-3"
-      style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: 28 }}>
-      <span className="font-bold shrink-0"
-        style={{ color: isLive ? '#4ade80' : isFinal ? '#94a3b8' : '#fbbf24', fontSize: 9 }}>
+      style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: '100%' }}>
+      <span style={{ color: isLive ? '#4ade80' : isFinal ? '#94a3b8' : '#fbbf24', fontSize: 9, fontWeight: 700 }}>
         {isLive ? '● LIVE' : isFinal ? 'FINAL' : gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
       </span>
-      <span className="text-xs font-semibold" style={{ color: awayWin ? '#fff' : 'rgba(255,255,255,0.65)' }}>
+      <span className="text-xs font-semibold" style={{ color: awayWin ? '#fff' : 'rgba(255,255,255,0.6)' }}>
         {awayShort}
       </span>
       {awayScore != null && (
-        <span className="font-mono text-xs font-bold" style={{ color: awayWin ? '#4ade80' : 'rgba(255,255,255,0.9)' }}>
+        <span className="font-mono text-xs font-bold" style={{ color: awayWin ? '#4ade80' : '#fff' }}>
           {awayScore}
         </span>
       )}
-      <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: 10 }}>–</span>
+      <span style={{ color: 'rgba(255,255,255,0.3)' }}>–</span>
       {homeScore != null && (
-        <span className="font-mono text-xs font-bold" style={{ color: homeWin ? '#4ade80' : 'rgba(255,255,255,0.9)' }}>
+        <span className="font-mono text-xs font-bold" style={{ color: homeWin ? '#4ade80' : '#fff' }}>
           {homeScore}
         </span>
       )}
-      <span className="text-xs font-semibold" style={{ color: homeWin ? '#fff' : 'rgba(255,255,255,0.65)' }}>
+      <span className="text-xs font-semibold" style={{ color: homeWin ? '#fff' : 'rgba(255,255,255,0.6)' }}>
         {homeShort}
       </span>
     </div>
   )
 }
 
-function useSportScores(sportKey) {
-  return useQuery({
-    queryKey: ['scores', sportKey],
-    queryFn: () => getScores(sportKey),
+export default function ScoreTicker() {
+  const { data: mlb = [] } = useQuery({
+    queryKey: ['ticker-mlb'],
+    queryFn: () => fetchScores('baseball_mlb'),
     staleTime: 60_000,
     refetchInterval: 60_000,
   })
-}
-
-export default function ScoreTicker() {
-  const nba = useSportScores('basketball_nba')
-  const mlb = useSportScores('baseball_mlb')
-  const nhl = useSportScores('icehockey_nhl')
+  const { data: nba = [] } = useQuery({
+    queryKey: ['ticker-nba'],
+    queryFn: () => fetchScores('basketball_nba'),
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  })
+  const { data: nhl = [] } = useQuery({
+    queryKey: ['ticker-nhl'],
+    queryFn: () => fetchScores('icehockey_nhl'),
+    staleTime: 60_000,
+    refetchInterval: 60_000,
+  })
 
   const now = new Date()
-  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000) // last 24 hours
+  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000)
 
-  const allGames = [
-    ...(nba.data || []),
-    ...(mlb.data || []),
-    ...(nhl.data || []),
-  ].filter(g => new Date(g.commence_time) > cutoff)
+  const allGames = [...mlb, ...nba, ...nhl].filter(g =>
+    new Date(g.commence_time) > cutoff
+  ).sort((a, b) => new Date(a.commence_time) - new Date(b.commence_time))
 
   const trackRef = useRef(null)
+  const rafRef = useRef(null)
 
-  // Auto-scroll animation
   useEffect(() => {
     const track = trackRef.current
     if (!track || allGames.length === 0) return
     let pos = 0
-    const speed = 0.5
     const animate = () => {
-      pos += speed
+      pos += 0.4
       if (pos >= track.scrollWidth / 2) pos = 0
       track.style.transform = `translateX(-${pos}px)`
-      raf = requestAnimationFrame(animate)
+      rafRef.current = requestAnimationFrame(animate)
     }
-    let raf = requestAnimationFrame(animate)
-    return () => cancelAnimationFrame(raf)
+    rafRef.current = requestAnimationFrame(animate)
+    return () => cancelAnimationFrame(rafRef.current)
   }, [allGames.length])
 
-  if (allGames.length === 0) return null
-
-  // Duplicate for seamless loop
-  const doubled = [...allGames, ...allGames]
+  // Always render the bar — show placeholder if no data yet
+  const doubled = allGames.length > 0 ? [...allGames, ...allGames] : []
 
   return (
-    <div style={{ background: '#0f172a', borderBottom: '2px solid #1e293b', overflow: 'hidden', height: 28 }}
-      className="relative flex items-center">
-      <div ref={trackRef} className="flex items-center" style={{ willChange: 'transform' }}>
-        {doubled.map((game, i) => (
-          <TickerItem key={`${game.id}-${i}`} game={game} />
-        ))}
-      </div>
+    <div style={{ background: '#0f172a', borderBottom: '2px solid #1e293b', height: 28, overflow: 'hidden' }}
+      className="flex items-center">
+      {doubled.length === 0 ? (
+        <div className="flex items-center gap-2 px-4">
+          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>Loading scores...</span>
+        </div>
+      ) : (
+        <div ref={trackRef} className="flex items-center h-full" style={{ willChange: 'transform' }}>
+          {doubled.map((game, i) => (
+            <TickerItem key={`${game.id}-${i}`} game={game} />
+          ))}
+        </div>
+      )}
     </div>
   )
 }
