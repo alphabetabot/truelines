@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getOdds, parseOddsForComparison } from '../lib/oddsApi'
 import { analyzeGame } from '../lib/claudeApi'
+import { analyzeGameGPT } from '../lib/openaiApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Brain, ChevronDown, Zap } from 'lucide-react'
@@ -9,9 +10,12 @@ import { Brain, ChevronDown, Zap } from 'lucide-react'
 export default function AIAnalysis() {
   const [sport, setSport] = useState('basketball_nba')
   const [selectedGame, setSelectedGame] = useState(null)
-  const [analysis, setAnalysis] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [claudeData, setClaudeData] = useState(null)
+  const [claudeLoading, setClaudeLoading] = useState(false)
+  const [claudeError, setClaudeError] = useState(null)
+  const [gptData, setGptData] = useState(null)
+  const [gptLoading, setGptLoading] = useState(false)
+  const [gptError, setGptError] = useState(null)
 
   const { data, isLoading } = useQuery({
     queryKey: ['odds', sport],
@@ -21,118 +25,131 @@ export default function AIAnalysis() {
 
   const games = data ? parseOddsForComparison(data) : []
 
-  async function runAnalysis() {
-    if (!selectedGame) return
-    setLoading(true)
-    setError(null)
-    setAnalysis(null)
-    try {
-      const result = await analyzeGame(selectedGame)
-      setAnalysis(result)
-    } catch (e) {
-      setError(e.message)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   function handleGameSelect(gameId) {
     const g = games.find(x => x.id === gameId)
     setSelectedGame(g || null)
-    setAnalysis(null)
-    setError(null)
+    setClaudeData(null); setClaudeError(null)
+    setGptData(null); setGptError(null)
   }
+
+  async function runClaude() {
+    if (!selectedGame) return
+    setClaudeLoading(true); setClaudeError(null); setClaudeData(null)
+    try {
+      setClaudeData(await analyzeGame(selectedGame))
+    } catch (e) {
+      setClaudeError(e.message)
+    } finally {
+      setClaudeLoading(false)
+    }
+  }
+
+  async function runGPT() {
+    if (!selectedGame) return
+    setGptLoading(true); setGptError(null); setGptData(null)
+    try {
+      setGptData(await analyzeGameGPT(selectedGame))
+    } catch (e) {
+      setGptError(e.message)
+    } finally {
+      setGptLoading(false)
+    }
+  }
+
+  const gameLabel = selectedGame ? `${selectedGame.away} @ ${selectedGame.home}` : null
 
   return (
     <div>
       <div className="mb-6">
         <div className="flex items-center gap-3">
-          <Brain size={24} style={{ color: 'var(--accent)' }} />
+          <Brain size={22} style={{ color: '#2563eb' }} />
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              AI Analysis
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Deep game analysis powered by Claude · Line movement · Sharp money · Value
+            <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>AI Analysis</h1>
+            <p className="text-sm" style={{ color: '#64748b' }}>
+              Game analysis powered by Claude & GPT-4o
             </p>
           </div>
         </div>
       </div>
 
-      <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null); setAnalysis(null) }} />
+      <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null); setClaudeData(null); setGptData(null) }} />
 
-      {/* Game picker */}
-      <div className="mb-4">
-        <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
-          SELECT GAME TO ANALYZE
-        </label>
+      {/* Game selector */}
+      <div className="mb-5">
+        <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b' }}>SELECT GAME</label>
         <div className="relative">
           <select
             value={selectedGame?.id || ''}
             onChange={e => handleGameSelect(e.target.value)}
             className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
-            style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              color: selectedGame ? 'var(--text-primary)' : 'var(--text-secondary)',
-            }}
+            style={{ background: '#fff', border: '1px solid #e2e8f0', color: selectedGame ? '#0f172a' : '#94a3b8' }}
           >
-            <option value="">
-              {isLoading ? 'Loading...' : games.length === 0 ? 'No games available' : '— Choose a game —'}
-            </option>
+            <option value="">{isLoading ? 'Loading...' : games.length === 0 ? 'No games available' : '— Choose a game —'}</option>
             {games.map(g => (
-              <option key={g.id} value={g.id}
-                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+              <option key={g.id} value={g.id}>
                 {g.away} @ {g.home} · {new Date(g.commenceTime).toLocaleDateString()}
               </option>
             ))}
           </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
-            style={{ color: 'var(--text-secondary)' }} />
+          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#94a3b8' }} />
         </div>
       </div>
 
-      {/* Analyze button */}
-      <button
-        onClick={runAnalysis}
-        disabled={!selectedGame || loading}
-        className="w-full py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 mb-6 transition-all"
-        style={{
-          background: selectedGame && !loading
-            ? 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)'
-            : 'var(--bg-card)',
-          color: selectedGame && !loading ? '#fff' : 'var(--text-secondary)',
-          border: `1px solid ${selectedGame && !loading ? 'transparent' : 'var(--border)'}`,
-          cursor: selectedGame && !loading ? 'pointer' : 'not-allowed',
-          boxShadow: selectedGame && !loading ? '0 4px 20px rgba(59,130,246,0.3)' : 'none',
-        }}
-      >
-        <Zap size={15} />
-        {loading ? 'Analyzing...' : 'Analyze with Claude'}
-      </button>
+      {/* Two analyze buttons */}
+      <div className="flex gap-3 mb-6">
+        {/* Claude */}
+        <button
+          onClick={runClaude}
+          disabled={!selectedGame || claudeLoading}
+          className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+          style={{
+            background: selectedGame && !claudeLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#f1f5f9',
+            color: selectedGame && !claudeLoading ? '#fff' : '#94a3b8',
+            cursor: selectedGame && !claudeLoading ? 'pointer' : 'not-allowed',
+            boxShadow: selectedGame && !claudeLoading ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
+          }}
+        >
+          <Zap size={15} />
+          {claudeLoading ? 'Analyzing...' : 'Analyze with Claude'}
+        </button>
 
-      {/* Selected game summary */}
-      {selectedGame && !analysis && !loading && !error && (
-        <div className="mb-4 p-4 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-          <p className="font-semibold" style={{ color: 'var(--text-primary)' }}>
-            {selectedGame.away} @ {selectedGame.home}
-          </p>
-          <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-            {new Date(selectedGame.commenceTime).toLocaleString()} ·{' '}
-            {Object.keys(selectedGame.bookmakers || {}).length} books available
-          </p>
-          <p className="text-sm mt-2" style={{ color: 'var(--text-secondary)' }}>
-            Click "Analyze with Claude" to get line movement analysis, sharp money signals, and value spots.
-          </p>
+        {/* GPT-4o */}
+        <button
+          onClick={runGPT}
+          disabled={!selectedGame || gptLoading}
+          className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+          style={{
+            background: selectedGame && !gptLoading ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#f1f5f9',
+            color: selectedGame && !gptLoading ? '#fff' : '#94a3b8',
+            cursor: selectedGame && !gptLoading ? 'pointer' : 'not-allowed',
+            boxShadow: selectedGame && !gptLoading ? '0 4px 14px rgba(22,163,74,0.3)' : 'none',
+          }}
+        >
+          <Brain size={15} />
+          {gptLoading ? 'Analyzing...' : 'Analyze with GPT-4o'}
+        </button>
+      </div>
+
+      {/* Claude response */}
+      {(claudeData || claudeLoading || claudeError) && (
+        <div className="mb-4">
+          <AIResponse loading={claudeLoading} error={claudeError} data={claudeData}
+            label={gameLabel ? `Claude · ${gameLabel}` : 'Claude Analysis'} />
         </div>
       )}
 
-      <AIResponse
-        loading={loading}
-        error={error}
-        data={analysis}
-        label={selectedGame ? `${selectedGame.away} @ ${selectedGame.home}` : 'AI Analysis'}
-      />
+      {/* GPT response */}
+      {(gptData || gptLoading || gptError) && (
+        <AIResponse loading={gptLoading} error={gptError} data={gptData}
+          label={gameLabel ? `GPT-4o · ${gameLabel}` : 'GPT-4o Analysis'} />
+      )}
+
+      {!claudeData && !gptData && !claudeLoading && !gptLoading && !claudeError && !gptError && (
+        <div className="text-center py-12">
+          <Brain size={36} className="mx-auto mb-3 opacity-20" style={{ color: '#64748b' }} />
+          <p className="text-sm" style={{ color: '#94a3b8' }}>Select a game then choose your AI</p>
+        </div>
+      )}
     </div>
   )
 }
