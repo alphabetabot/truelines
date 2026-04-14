@@ -5,6 +5,7 @@ import LiveOdds from './pages/LiveOdds'
 import LineCompare from './pages/LineCompare'
 import AIAnalysis from './pages/AIAnalysis'
 import AIPicks from './pages/AIPicks'
+import Disclaimer from './pages/Disclaimer'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,6 +26,7 @@ export default function App() {
             <Route path="/compare" element={<LineCompare />} />
             <Route path="/analysis" element={<AIAnalysis />} />
             <Route path="/picks" element={<AIPicks />} />
+            <Route path="/disclaimer" element={<Disclaimer />} />
           </Routes>
         </Layout>
       </BrowserRouter>

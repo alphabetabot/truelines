@@ -5,6 +5,7 @@ import { getAIPick, getDailyPicks } from '../lib/claudeApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Zap, Trophy, ChevronDown, Star } from 'lucide-react'
+import AIDisclaimer from '../components/AIDisclaimer'
 
 function PickCard({ game, onGetPick }) {
   const [pick, setPick] = useState(null)
@@ -109,6 +110,7 @@ export default function AIPicks() {
         </div>
       </div>
 
+      <AIDisclaimer />
       <SportSelector selected={sport} onChange={s => { setSport(s); setDailyPicks(null) }} />
 
       {/* View toggle */}

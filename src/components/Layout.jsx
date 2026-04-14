@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, Link } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
@@ -110,9 +110,17 @@ export default function Layout({ children }) {
         {children}
       </main>
 
-      <footer className="text-center py-3"
-        style={{ color: '#94a3b8', borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
-        TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · For informational use only
+      <footer className="py-4 px-4" style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
+        <div className="max-w-5xl mx-auto flex flex-col gap-2">
+          <div className="text-center" style={{ color: '#94a3b8', fontSize: 11 }}>
+            TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
+          </div>
+          <div className="text-center" style={{ fontSize: 11, color: '#94a3b8' }}>
+            Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: '#16a34a', fontWeight: 700 }}>1-800-GAMBLER</a>
+            {' '}·{' '}
+            <Link to="/disclaimer" style={{ color: '#2563eb', fontWeight: 600 }}>Site Disclaimer</Link>
+          </div>
+        </div>
       </footer>
     </div>
   )

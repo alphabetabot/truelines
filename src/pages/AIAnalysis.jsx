@@ -6,6 +6,7 @@ import { analyzeGameGPT } from '../lib/openaiApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Brain, ChevronDown, Zap } from 'lucide-react'
+import AIDisclaimer from '../components/AIDisclaimer'
 
 export default function AIAnalysis() {
   const [sport, setSport] = useState('basketball_nba')
@@ -72,6 +73,7 @@ export default function AIAnalysis() {
         </div>
       </div>
 
+      <AIDisclaimer />
       <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null); setClaudeData(null); setGptData(null) }} />
 
       {/* Game selector */}
