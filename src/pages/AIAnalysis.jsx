@@ -126,7 +126,7 @@ export default function AIAnalysis() {
           }}
         >
           <Brain size={15} />
-          {gptLoading ? 'Analyzing...' : 'Analyze with GPT-4o'}
+          {gptLoading ? 'Analyzing...' : 'Analyze with ChatGPT'}
         </button>
       </div>
 
@@ -141,7 +141,7 @@ export default function AIAnalysis() {
       {/* GPT response */}
       {(gptData || gptLoading || gptError) && (
         <AIResponse loading={gptLoading} error={gptError} data={gptData}
-          label={gameLabel ? `GPT-4o · ${gameLabel}` : 'GPT-4o Analysis'} />
+          label={gameLabel ? `ChatGPT · ${gameLabel}` : 'ChatGPT Analysis'} />
       )}
 
       {!claudeData && !gptData && !claudeLoading && !gptLoading && !claudeError && !gptError && (
