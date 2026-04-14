@@ -44,7 +44,7 @@ export default function Layout({ children }) {
           <div className="flex items-center gap-2">
             <TrendingUp size={20} style={{ color: '#f59e0b' }} />
             <span style={{ color: '#ffffff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px' }}>
-              True<span style={{ color: '#f59e0b' }}>Lines</span>
+              TrueOdds<span style={{ color: '#f59e0b' }}>IQ</span>
             </span>
           </div>
 
@@ -111,7 +111,7 @@ export default function Layout({ children }) {
 
       <footer className="text-center py-3"
         style={{ color: '#94a3b8', borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
-        TrueLines · Odds via The Odds API · AI by Claude & ChatGPT · For informational use only
+        TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · For informational use only
       </footer>
     </div>
   )

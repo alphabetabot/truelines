@@ -23,7 +23,7 @@ async function callClaude(messages, systemPrompt, maxTokens = 1024) {
 }
 
 export async function analyzeGame(game) {
-  const system = `You are TrueLines AI, an expert sports betting analyst with deep knowledge of line movement, 
+  const system = `You are TrueOddsIQ, an expert sports betting analyst with deep knowledge of line movement, 
 market inefficiencies, and statistical modeling. You provide sharp, data-driven analysis. 
 Be concise, direct, and professional. Format your response with clear sections.
 Do NOT give generic disclaimers about gambling being risky - the user knows this.`
@@ -45,7 +45,7 @@ Do NOT give generic disclaimers about gambling being risky - the user knows this
 }
 
 export async function getAIPick(game) {
-  const system = `You are TrueLines AI, a professional sports handicapper. 
+  const system = `You are TrueOddsIQ, a professional sports handicapper. 
 You analyze betting lines and make specific, confident picks with clear reasoning.
 Format your picks clearly with: Pick, Odds, Book, Confidence (1-5 stars), and Brief Reasoning.
 Be direct and decisive. No hedging. No gambling disclaimers.`
@@ -67,7 +67,7 @@ Be direct and decisive. No hedging. No gambling disclaimers.`
 }
 
 export async function getDailyPicks(games) {
-  const system = `You are TrueLines AI, an elite sports betting analyst. 
+  const system = `You are TrueOddsIQ, an elite sports betting analyst. 
 You review the entire slate of games and identify the TOP 3-5 best bets of the day.
 Focus on line value, steam moves, and market inefficiencies.
 Be specific with picks, books, and reasoning. No fluff.`
@@ -95,7 +95,7 @@ End with a brief **Fade of the Day** (most public bet to avoid).`,
 }
 
 export async function analyzeLineMovement(game, historicalNote) {
-  const system = `You are TrueLines AI, specializing in line movement analysis and sharp money detection.`
+  const system = `You are TrueOddsIQ, specializing in line movement analysis and sharp money detection.`
 
   const messages = [
     {

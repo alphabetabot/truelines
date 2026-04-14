@@ -1,6 +1,6 @@
 {
-  "name": "TrueLines - Sports Betting Odds",
-  "short_name": "TrueLines",
+  "name": "TrueOddsIQ - Sports Betting Odds",
+  "short_name": "TrueOddsIQ",
   "description": "Live sports betting odds comparison powered by AI",
   "start_url": "/",
   "display": "standalone",
