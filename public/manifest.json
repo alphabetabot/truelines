@@ -2,6 +2,7 @@
   "name": "TrueOddsIQ - Sports Betting Odds",
   "short_name": "TrueOddsIQ",
   "description": "Live sports betting odds comparison powered by AI",
+  "description": "Live sports betting odds comparison powered by AI",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f4f6f9",
