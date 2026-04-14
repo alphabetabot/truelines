@@ -23,7 +23,8 @@ export default function Layout({ children }) {
       setShowInstall(true)
     })
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
-    if (ios && !window.navigator.standalone) {
+    const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
+    if (ios && !standalone) {
       setIsIOS(true)
       setShowInstall(true)
     }
@@ -53,7 +54,7 @@ export default function Layout({ children }) {
               <button onClick={handleInstall}
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold"
                 style={{ background: '#f59e0b', color: '#0f172a' }}>
-                <Download size={12} /> Install App
+                <Download size={12} /> {isIOS ? 'Add to Home Screen' : 'Install App'}
               </button>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
@@ -94,13 +95,13 @@ export default function Layout({ children }) {
 
       {/* ── iOS install hint ── */}
       {showIOSHint && (
-        <div className="flex items-center justify-between px-4 py-2.5"
+        <div className="flex items-center justify-between px-4 py-3"
           style={{ background: '#f59e0b' }}>
           <span className="text-sm font-semibold" style={{ color: '#0f172a' }}>
-            📲 Tap <strong>Share</strong> → <strong>"Add to Home Screen"</strong>
+            📲 Tap the <strong>Share ⬆️</strong> button at the bottom of Safari → then tap <strong>"Add to Home Screen"</strong>
           </span>
           <button onClick={() => setShowIOSHint(false)}
-            className="font-bold ml-4" style={{ color: '#0f172a' }}>✕</button>
+            className="font-bold ml-4 text-lg" style={{ color: '#0f172a' }}>✕</button>
         </div>
       )}
 
