@@ -65,11 +65,14 @@ export default function ScoreTicker() {
   const mlb = useSportScores('baseball_mlb')
   const nhl = useSportScores('icehockey_nhl')
 
+  const now = new Date()
+  const cutoff = new Date(now.getTime() - 24 * 60 * 60 * 1000) // last 24 hours
+
   const allGames = [
     ...(nba.data || []),
     ...(mlb.data || []),
     ...(nhl.data || []),
-  ]
+  ].filter(g => new Date(g.commence_time) > cutoff)
 
   const trackRef = useRef(null)
 
