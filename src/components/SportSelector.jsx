@@ -2,19 +2,21 @@ import { SPORTS } from '../lib/oddsApi'
 
 export default function SportSelector({ selected, onChange }) {
   return (
-    <div className="flex items-center gap-1 mb-5 overflow-x-auto pb-1">
+    <div className="flex items-center gap-1.5 mb-5 overflow-x-auto pb-1">
       {SPORTS.map(sport => (
         <button
           key={sport.key}
           onClick={() => onChange(sport.key)}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs whitespace-nowrap shrink-0 transition-all"
           style={{
-            background: selected === sport.key ? 'var(--accent-dim)' : 'var(--bg-card)',
-            color: selected === sport.key ? 'var(--accent)' : 'var(--text-secondary)',
-            border: `1px solid ${selected === sport.key ? 'var(--accent-glow)' : 'var(--border)'}`,
+            background: selected === sport.key ? '#0f172a' : '#ffffff',
+            color: selected === sport.key ? '#ffffff' : '#475569',
+            border: `1.5px solid ${selected === sport.key ? '#0f172a' : '#e2e8f0'}`,
+            fontWeight: selected === sport.key ? 700 : 500,
+            boxShadow: selected === sport.key ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
           }}
         >
-          <span>{sport.icon}</span>
+          <span style={{ fontSize: 14 }}>{sport.icon}</span>
           {sport.label}
         </button>
       ))}

@@ -12,106 +12,105 @@ const NAV = [
 
 export default function Layout({ children }) {
   const [installPrompt, setInstallPrompt] = useState(null)
-  const [showInstallBanner, setShowInstallBanner] = useState(false)
+  const [showInstall, setShowInstall] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
-  const [showIOSInstructions, setShowIOSInstructions] = useState(false)
+  const [showIOSHint, setShowIOSHint] = useState(false)
 
   useEffect(() => {
-    // Android/Chrome install prompt
     window.addEventListener('beforeinstallprompt', e => {
       e.preventDefault()
       setInstallPrompt(e)
-      setShowInstallBanner(true)
+      setShowInstall(true)
     })
-
-    // Detect iOS
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
-    const standalone = window.navigator.standalone
-    if (ios && !standalone) {
+    if (ios && !window.navigator.standalone) {
       setIsIOS(true)
-      setShowInstallBanner(true)
+      setShowInstall(true)
     }
   }, [])
 
   const handleInstall = async () => {
-    if (isIOS) {
-      setShowIOSInstructions(true)
-      return
-    }
-    if (installPrompt) {
-      await installPrompt.prompt()
-      setShowInstallBanner(false)
-    }
+    if (isIOS) { setShowIOSHint(true); return }
+    if (installPrompt) { await installPrompt.prompt(); setShowInstall(false) }
   }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
-      {/* Nav */}
-      <div style={{ background: '#1e293b' }}>
-        {/* Row 1: Logo + Install */}
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 46 }}>
+
+      {/* ── Top bar: Logo + Install + Live ── */}
+      <div style={{ background: '#0f172a' }}>
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 52 }}>
+          {/* Logo */}
           <div className="flex items-center gap-2">
-            <TrendingUp size={18} style={{ color: '#f59e0b' }} />
-            <span className="font-bold text-base tracking-tight" style={{ color: '#ffffff' }}>
+            <TrendingUp size={20} style={{ color: '#f59e0b' }} />
+            <span style={{ color: '#ffffff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px' }}>
               True<span style={{ color: '#f59e0b' }}>Lines</span>
             </span>
           </div>
-          <div className="flex items-center gap-2">
-            {showInstallBanner && (
+
+          <div className="flex items-center gap-3">
+            {showInstall && (
               <button onClick={handleInstall}
-                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold"
-                style={{ background: '#f59e0b', color: '#1e293b' }}>
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold"
+                style={{ background: '#f59e0b', color: '#0f172a' }}>
                 <Download size={12} /> Install App
               </button>
             )}
-            <div className="flex items-center gap-1.5">
-              <span className="live-dot w-2.5 h-2.5 rounded-full inline-block" style={{ background: '#4ade80' }} />
-              <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+              style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
+              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
+              <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Row 2: Nav tabs */}
-        <div className="flex items-center gap-1 px-3 pb-2 overflow-x-auto" style={{ borderBottom: '3px solid #f59e0b' }}>
+      {/* ── Nav tabs ── */}
+      <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
+        <div className="max-w-5xl mx-auto px-3 flex items-center gap-1" style={{ height: 44 }}>
           {NAV.map(({ to, label, icon: Icon, exact }) => (
             <NavLink
               key={to}
               to={to}
               end={exact}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
+              className="flex items-center gap-1.5 px-3 h-full text-xs font-bold transition-all whitespace-nowrap"
               style={({ isActive }) => ({
-                background: isActive ? '#f59e0b' : 'rgba(255,255,255,0.08)',
-                color: isActive ? '#1e293b' : '#ffffff',
+                background: isActive ? '#f59e0b' : 'transparent',
+                color: isActive ? '#0f172a' : 'rgba(255,255,255,0.7)',
+                borderRadius: isActive ? '6px 6px 0 0' : 0,
+                letterSpacing: '0.2px',
               })}
             >
-              <Icon size={12} />
+              <Icon size={13} />
               {label}
             </NavLink>
           ))}
         </div>
       </div>
 
-      {/* Score ticker */}
+      {/* ── Score ticker ── */}
       <ScoreTicker />
 
-      {/* iOS install instructions banner */}
-      {showIOSInstructions && (
-        <div className="flex items-center justify-between px-4 py-3"
-          style={{ background: '#f59e0b', borderBottom: '1px solid #d97706' }}>
-          <span className="text-sm font-medium" style={{ color: '#1e293b' }}>
-            📲 Tap the <strong>Share</strong> button below, then <strong>"Add to Home Screen"</strong>
+      {/* ── iOS install hint ── */}
+      {showIOSHint && (
+        <div className="flex items-center justify-between px-4 py-2.5"
+          style={{ background: '#f59e0b' }}>
+          <span className="text-sm font-semibold" style={{ color: '#0f172a' }}>
+            📲 Tap <strong>Share</strong> → <strong>"Add to Home Screen"</strong>
           </span>
-          <button onClick={() => setShowIOSInstructions(false)}
-            className="text-sm font-bold ml-4" style={{ color: '#1e293b' }}>✕</button>
+          <button onClick={() => setShowIOSHint(false)}
+            className="font-bold ml-4" style={{ color: '#0f172a' }}>✕</button>
         </div>
       )}
 
+      {/* ── Main content ── */}
       <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-5">
         {children}
       </main>
 
-      <footer className="text-center py-3 text-xs" style={{ color: 'var(--text-muted)', borderTop: '1px solid var(--border)' }}>
-        TrueLines · Odds via The Odds API · AI by Claude · For informational use only
+      <footer className="text-center py-3"
+        style={{ color: '#94a3b8', borderTop: '1px solid #e2e8f0', fontSize: 11 }}>
+        TrueLines · Odds via The Odds API · AI by Claude & ChatGPT · For informational use only
       </footer>
     </div>
   )

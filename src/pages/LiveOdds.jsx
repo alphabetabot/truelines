@@ -86,11 +86,13 @@ export default function LiveOdds() {
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
-            className="px-5 py-2 rounded-lg text-sm font-semibold transition-all"
+            className="px-5 py-2 rounded-xl text-sm transition-all"
             style={{
-              background: activeTab === tab ? '#1e293b' : '#fff',
-              color: activeTab === tab ? '#fff' : '#64748b',
-              border: `1px solid ${activeTab === tab ? '#1e293b' : '#e2e8f0'}`,
+              background: activeTab === tab ? '#0f172a' : '#ffffff',
+              color: activeTab === tab ? '#ffffff' : '#475569',
+              border: `1.5px solid ${activeTab === tab ? '#0f172a' : '#e2e8f0'}`,
+              fontWeight: activeTab === tab ? 700 : 500,
+              boxShadow: activeTab === tab ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
             }}
           >
             {tab}
