@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS } from '../lib/oddsApi'
+import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
 import { format } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
@@ -164,7 +164,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
               <div key={row.book} className="flex flex-col shrink-0" style={{ width: 96, borderRight: '1px solid #f1f5f9' }}>
                 {/* Book name */}
                 <div className="flex items-center justify-center" style={{ height: 28, borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
-                  <span className="text-xs font-semibold" style={{ color: '#64748b', fontSize: 10 }}>
+                  <span className="font-black text-xs" style={{ color: SPORTSBOOK_COLORS[row.book] || '#64748b', fontSize: 10, letterSpacing: '-0.2px' }}>
                     {SPORTSBOOK_LABELS[row.book] || row.book}
                   </span>
                 </div>
