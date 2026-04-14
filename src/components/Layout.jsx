@@ -42,11 +42,8 @@ export default function Layout({ children }) {
       <div style={{ background: '#0f172a' }}>
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 52 }}>
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <TrendingUp size={20} style={{ color: '#f59e0b' }} />
-            <span style={{ color: '#ffffff', fontWeight: 900, fontSize: 20, letterSpacing: '-0.5px' }}>
-              TrueOdds<span style={{ color: '#f59e0b' }}>IQ</span>
-            </span>
+          <div className="flex items-center">
+            <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 40, width: 'auto', objectFit: 'contain' }} />
           </div>
 
           <div className="flex items-center gap-3">
