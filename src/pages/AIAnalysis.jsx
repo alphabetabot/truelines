@@ -66,7 +66,7 @@ export default function AIAnalysis() {
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>AI Analysis</h1>
             <p className="text-sm" style={{ color: '#64748b' }}>
-              Game analysis powered by Claude & GPT-4o
+              Game analysis powered by Claude & ChatGPT
             </p>
           </div>
         </div>
@@ -134,14 +134,14 @@ export default function AIAnalysis() {
       {(claudeData || claudeLoading || claudeError) && (
         <div className="mb-4">
           <AIResponse loading={claudeLoading} error={claudeError} data={claudeData}
-            label={gameLabel ? `Claude · ${gameLabel}` : 'Claude Analysis'} />
+            label={gameLabel ? `Claude · ${gameLabel}` : 'Claude Analysis'} provider="Claude" />
         </div>
       )}
 
       {/* GPT response */}
       {(gptData || gptLoading || gptError) && (
         <AIResponse loading={gptLoading} error={gptError} data={gptData}
-          label={gameLabel ? `ChatGPT · ${gameLabel}` : 'ChatGPT Analysis'} />
+          label={gameLabel ? `ChatGPT · ${gameLabel}` : 'ChatGPT Analysis'} provider="ChatGPT" />
       )}
 
       {!claudeData && !gptData && !claudeLoading && !gptLoading && !claudeError && !gptError && (
