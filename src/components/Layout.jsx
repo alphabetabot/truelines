@@ -40,10 +40,10 @@ export default function Layout({ children }) {
 
       {/* ── Top bar: Logo + Install + Live ── */}
       <div style={{ background: '#0f172a' }}>
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 64 }}>
+        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 72 }}>
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 56, width: 'auto', objectFit: 'contain' }} />
+            <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 64, width: 'auto', maxWidth: 200, objectFit: 'contain' }} />
           </div>
 
           <div className="flex items-center gap-3">
