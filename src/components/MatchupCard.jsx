@@ -125,7 +125,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       </div>
 
       {/* Main odds area: sticky team names + scrollable book columns */}
-      <div className="flex" style={{ overflowX: 'auto', overflowY: 'visible' }}>
+      <div className="flex" style={{ overflowX: 'auto', overflowY: 'visible', paddingBottom: 2 }}>
 
         {/* Sticky left: team names */}
         <div className="shrink-0 sticky left-0 z-10" style={{ background: '#fff', borderRight: '2px solid #e2e8f0', minWidth: 140, overflow: 'visible' }}>

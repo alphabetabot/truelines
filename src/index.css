@@ -32,6 +32,8 @@ body {
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  /* Prevent content from touching screen edges on mobile */
+  overflow-x: hidden;
 }
 
 h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px; }

@@ -103,7 +103,7 @@ export default function Layout({ children }) {
       )}
 
       {/* ── Main content ── */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-5">
+      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-5" style={{ paddingLeft: 16, paddingRight: 16 }}>
         {children}
       </main>
 
