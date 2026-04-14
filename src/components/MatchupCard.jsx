@@ -131,8 +131,8 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
           {/* spacer for book name header */}
           <div style={{ height: 28, borderBottom: '1px solid #f1f5f9' }} />
           {/* Away */}
-          <div className="flex flex-col justify-center px-3" style={{ height: 54, borderBottom: '1px solid #f1f5f9' }}>
-            <span className="font-bold text-sm leading-tight" style={{ color: '#0f172a' }}>{game.away}</span>
+          <div className="flex flex-col justify-center px-3" style={{ height: 60, borderBottom: '1px solid #f1f5f9' }}>
+            <span className="font-bold leading-tight" style={{ color: '#0f172a', fontSize: 15 }}>{game.away}</span>
             {isMLB && (
               <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
                 {(() => { const p = pitchers[game.away] || Object.entries(pitchers).find(([k]) => game.away.includes(k) || k.includes(game.away.split(' ').slice(-1)[0]))?.[1]; return p ? `${p.name} (${p.wins}-${p.losses}, ${p.era} ERA)` : 'P: TBD' })()}
@@ -140,8 +140,8 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
             )}
           </div>
           {/* Home */}
-          <div className="flex flex-col justify-center px-3" style={{ height: 54 }}>
-            <span className="font-bold text-sm leading-tight" style={{ color: '#0f172a' }}>{game.home}</span>
+          <div className="flex flex-col justify-center px-3" style={{ height: 60 }}>
+            <span className="font-bold leading-tight" style={{ color: '#0f172a', fontSize: 15 }}>{game.home}</span>
             {isMLB && (
               <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
                 {(() => { const p = pitchers[game.home] || Object.entries(pitchers).find(([k]) => game.home.includes(k) || k.includes(game.home.split(' ').slice(-1)[0]))?.[1]; return p ? `${p.name} (${p.wins}-${p.losses}, ${p.era} ERA)` : 'P: TBD' })()}
@@ -161,9 +161,9 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
             const isBestHome = row.homeNum === bestHomeNum && row.homeNum != null && isFinite(row.homeNum)
 
             return (
-              <div key={row.book} className="flex flex-col shrink-0" style={{ width: 96, borderRight: '1px solid #f1f5f9' }}>
+              <div key={row.book} className="flex flex-col shrink-0" style={{ width: 104, borderRight: '1px solid #f1f5f9' }}>
                 {/* Book name */}
-                <div className="flex items-center justify-center" style={{ height: 28, borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
+                <div className="flex items-center justify-center" style={{ height: 30, borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
                   <span className="font-black text-xs" style={{ color: SPORTSBOOK_COLORS[row.book] || '#64748b', fontSize: 10, letterSpacing: '-0.2px' }}>
                     {SPORTSBOOK_LABELS[row.book] || row.book}
                   </span>
@@ -171,12 +171,12 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
 
                 {/* Away odds */}
                 <div className="flex flex-col items-center justify-center"
-                  style={{ height: 54, borderBottom: '1px solid #f1f5f9', background: isBestAway ? '#f0fdf4' : '#fff' }}>
-                  <span className="font-bold text-sm" style={{ color: isBestAway ? '#16a34a' : '#0f172a' }}>
+                  style={{ height: 60, borderBottom: '1px solid #f1f5f9', background: isBestAway ? '#f0fdf4' : '#fff' }}>
+                  <span className="font-black" style={{ color: isBestAway ? '#16a34a' : '#0f172a', fontSize: 16 }}>
                     {row.awayVal ?? '—'}
                   </span>
                   {row.awayOdds != null && (
-                    <span className="text-xs" style={{ color: isBestAway ? '#16a34a' : '#94a3b8' }}>
+                    <span style={{ color: isBestAway ? '#16a34a' : '#94a3b8', fontSize: 12, fontWeight: 600 }}>
                       {formatOdds(row.awayOdds)}
                     </span>
                   )}
@@ -184,12 +184,12 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
 
                 {/* Home odds */}
                 <div className="flex flex-col items-center justify-center"
-                  style={{ height: 54, background: isBestHome ? '#f0fdf4' : '#fff' }}>
-                  <span className="font-bold text-sm" style={{ color: isBestHome ? '#16a34a' : '#0f172a' }}>
+                  style={{ height: 60, background: isBestHome ? '#f0fdf4' : '#fff' }}>
+                  <span className="font-black" style={{ color: isBestHome ? '#16a34a' : '#0f172a', fontSize: 16 }}>
                     {row.homeVal ?? '—'}
                   </span>
                   {row.homeOdds != null && (
-                    <span className="text-xs" style={{ color: isBestHome ? '#16a34a' : '#94a3b8' }}>
+                    <span style={{ color: isBestHome ? '#16a34a' : '#94a3b8', fontSize: 12, fontWeight: 600 }}>
                       {formatOdds(row.homeOdds)}
                     </span>
                   )}

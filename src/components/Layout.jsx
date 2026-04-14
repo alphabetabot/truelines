@@ -73,11 +73,12 @@ export default function Layout({ children }) {
               key={to}
               to={to}
               end={exact}
-              className="flex items-center gap-1.5 px-3 h-full text-xs font-bold transition-all whitespace-nowrap"
+              className="flex items-center gap-1.5 px-3 h-full font-bold transition-all whitespace-nowrap"
               style={({ isActive }) => ({
                 background: isActive ? '#f59e0b' : 'transparent',
                 color: isActive ? '#0f172a' : 'rgba(255,255,255,0.7)',
                 borderRadius: isActive ? '6px 6px 0 0' : 0,
+                fontSize: 13,
                 letterSpacing: '0.2px',
               })}
             >
