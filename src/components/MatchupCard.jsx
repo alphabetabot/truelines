@@ -117,10 +117,13 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
               </div>
             )}
           </div>
-          <button className="text-xs font-medium" style={{ color: '#94a3b8' }}
-            onClick={e => { e.stopPropagation(); onSelect && onSelect(game) }}>
-            Details →
-          </button>
+          <div className="flex items-center gap-2">
+            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>👆 Swipe odds →</span>
+            <button className="text-xs font-medium" style={{ color: '#94a3b8' }}
+              onClick={e => { e.stopPropagation(); onSelect && onSelect(game) }}>
+              Details →
+            </button>
+          </div>
         </div>
       </div>
 
