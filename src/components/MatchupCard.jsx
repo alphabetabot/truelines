@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
+import { getAffiliateLink } from '../lib/affiliateLinks'
 import { format } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
@@ -129,7 +130,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
         {/* Sticky left: team names */}
         <div className="shrink-0 sticky left-0 z-10" style={{ background: '#fff', borderRight: '2px solid #e2e8f0', minWidth: 140, overflow: 'visible' }}>
           {/* spacer for book name header */}
-          <div style={{ height: 28, borderBottom: '1px solid #f1f5f9' }} />
+          <div style={{ height: 44, borderBottom: '1px solid #f1f5f9' }} />
           {/* Away */}
           <div className="flex flex-col justify-center px-3" style={{ height: 60, borderBottom: '1px solid #f1f5f9' }}>
             <span className="font-bold leading-tight" style={{ color: '#0f172a', fontSize: 15 }}>{game.away}</span>
@@ -162,11 +163,29 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
 
             return (
               <div key={row.book} className="flex flex-col shrink-0" style={{ width: 104, borderRight: '1px solid #f1f5f9' }}>
-                {/* Book name */}
-                <div className="flex items-center justify-center" style={{ height: 30, borderBottom: '1px solid #f1f5f9', background: '#f8fafc' }}>
-                  <span className="font-black text-xs" style={{ color: SPORTSBOOK_COLORS[row.book] || '#64748b', fontSize: 10, letterSpacing: '-0.2px' }}>
+                {/* Book name + Bet Now button */}
+                <div className="flex flex-col items-center justify-center" style={{ height: 44, borderBottom: '1px solid #f1f5f9', background: '#f8fafc', gap: 3 }}>
+                  <span className="font-black" style={{ color: SPORTSBOOK_COLORS[row.book] || '#64748b', fontSize: 10, letterSpacing: '-0.2px' }}>
                     {SPORTSBOOK_LABELS[row.book] || row.book}
                   </span>
+                  <a
+                    href={getAffiliateLink(row.book)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="flex items-center justify-center rounded"
+                    style={{
+                      background: SPORTSBOOK_COLORS[row.book] || '#1e293b',
+                      color: '#ffffff',
+                      fontSize: 9,
+                      fontWeight: 800,
+                      padding: '2px 6px',
+                      letterSpacing: '0.3px',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    BET NOW
+                  </a>
                 </div>
 
                 {/* Away odds */}
