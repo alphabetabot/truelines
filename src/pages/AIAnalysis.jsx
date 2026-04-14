@@ -110,7 +110,7 @@ export default function AIAnalysis() {
           }}
         >
           <Zap size={15} />
-          {claudeLoading ? 'Analyzing...' : 'Analyze with Claude'}
+          {claudeLoading ? 'Claude Analyzing...' : 'Analyze with Claude'}
         </button>
 
         {/* GPT-4o */}
@@ -126,7 +126,7 @@ export default function AIAnalysis() {
           }}
         >
           <Brain size={15} />
-          {gptLoading ? 'Analyzing...' : 'Analyze with ChatGPT'}
+          {gptLoading ? 'ChatGPT Analyzing...' : 'Analyze with ChatGPT'}
         </button>
       </div>
 
