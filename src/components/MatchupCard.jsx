@@ -125,7 +125,13 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       </div>
 
       {/* Main odds area: sticky team names + scrollable book columns */}
-      <div className="flex" style={{ overflowX: 'auto', overflowY: 'visible', paddingBottom: 2 }}>
+      <div className="relative">
+      {/* Fade + arrow overlay on right edge */}
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 flex items-center justify-end pr-2"
+        style={{ width: 48, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.95))' }}>
+        <span style={{ color: '#94a3b8', fontSize: 20, fontWeight: 700 }}>›</span>
+      </div>
+      <div className="flex" style={{ overflowX: 'auto', overflowY: 'visible', paddingBottom: 2, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
 
         {/* Sticky left: team names */}
         <div className="shrink-0 sticky left-0 z-10" style={{ background: '#fff', borderRight: '2px solid #e2e8f0', minWidth: 140, overflow: 'visible' }}>
@@ -217,6 +223,14 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
             )
           })}
         </div>
+      </div>
+
+      </div> {/* close relative wrapper */}
+
+      {/* Swipe hint */}
+      <div className="flex items-center justify-center gap-1 py-1"
+        style={{ borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
+        <span style={{ color: '#94a3b8', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
       </div>
 
       {/* Betting % bar */}
