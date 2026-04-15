@@ -6,6 +6,8 @@ import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Zap, Trophy, ChevronDown, Star } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
+import { useAuth } from '../lib/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 function PickCard({ game, onGetPick }) {
   const [pick, setPick] = useState(null)
@@ -65,6 +67,8 @@ function PickCard({ game, onGetPick }) {
 }
 
 export default function AIPicks() {
+  const { user } = useAuth()
+  const navigate = useNavigate()
   const [sport, setSport] = useState('basketball_nba')
   const [dailyPicks, setDailyPicks] = useState(null)
   const [dailyLoading, setDailyLoading] = useState(false)
@@ -92,6 +96,25 @@ export default function AIPicks() {
     } finally {
       setDailyLoading(false)
     }
+  }
+
+  // Gate behind login
+  if (!user) {
+    return (
+      <div className="text-center py-20 px-4">
+        <Trophy size={48} className="mx-auto mb-4" style={{ color: '#d97706', opacity: 0.5 }} />
+        <h2 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>AI Picks — Members Only</h2>
+        <p className="text-sm mb-6" style={{ color: '#64748b' }}>
+          Create a free account to access daily AI picks, best bets, and newsletter.
+        </p>
+        <button onClick={() => navigate('/login')}
+          className="px-8 py-3 rounded-xl font-bold text-white text-sm"
+          style={{ background: '#0f172a' }}>
+          Sign Up Free
+        </button>
+        <p className="text-xs mt-4" style={{ color: '#94a3b8' }}>Already have an account? <button onClick={() => navigate('/login')} style={{ color: '#2563eb', fontWeight: 600 }}>Sign in</button></p>
+      </div>
+    )
   }
 
   return (

@@ -1,7 +1,8 @@
-import { NavLink, Link } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
+import { useAuth } from '../lib/AuthContext'
 
 const NAV = [
   { to: '/', label: 'Live Odds', icon: Activity, exact: true },
@@ -11,6 +12,8 @@ const NAV = [
 ]
 
 export default function Layout({ children }) {
+  const { user, signOut } = useAuth()
+  const navigate = useNavigate()
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstall, setShowInstall] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
@@ -52,6 +55,19 @@ export default function Layout({ children }) {
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold"
                 style={{ background: '#f59e0b', color: '#0f172a' }}>
                 <Download size={12} /> {isIOS ? 'Add to Home Screen' : 'Install App'}
+              </button>
+            )}
+            {user ? (
+              <button onClick={signOut}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                Sign Out
+              </button>
+            ) : (
+              <button onClick={() => navigate('/login')}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                style={{ background: '#f59e0b', color: '#0f172a' }}>
+                Sign In
               </button>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
