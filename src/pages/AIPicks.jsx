@@ -103,14 +103,14 @@ export default function AIPicks() {
     return (
       <div className="text-center py-20 px-4">
         <Trophy size={48} className="mx-auto mb-4" style={{ color: '#d97706', opacity: 0.5 }} />
-        <h2 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>AI Picks — Members Only</h2>
+        <h2 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>Free Account Required</h2>
         <p className="text-sm mb-6" style={{ color: '#64748b' }}>
-          Create a free account to access daily AI picks, best bets, and newsletter.
+          Sign up free to access daily AI picks, best bets, and the newsletter.
         </p>
         <button onClick={() => navigate('/login')}
           className="px-8 py-3 rounded-xl font-bold text-white text-sm"
           style={{ background: '#0f172a' }}>
-          Sign Up Free
+          Create Free Account
         </button>
         <p className="text-xs mt-4" style={{ color: '#94a3b8' }}>Already have an account? <button onClick={() => navigate('/login')} style={{ color: '#2563eb', fontWeight: 600 }}>Sign in</button></p>
       </div>
