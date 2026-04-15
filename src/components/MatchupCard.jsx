@@ -98,10 +98,10 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
-              className="flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-semibold"
-              style={{ background: '#f59e0b', color: '#1e293b' }}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg font-bold"
+              style={{ background: '#f59e0b', color: '#1e293b', fontSize: 14, minWidth: 130, justifyContent: 'space-between' }}
             >
-              {selectedLabel} <ChevronDown size={12} />
+              {selectedLabel} <ChevronDown size={16} />
             </button>
             {dropdownOpen && (
               <div className="absolute right-0 mt-1 rounded-lg overflow-hidden z-20"
@@ -109,8 +109,8 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                 {BET_TYPES.map(bt => (
                   <button key={bt.key}
                     onClick={() => { setBetType(bt.key); setDropdownOpen(false) }}
-                    className="w-full text-left px-4 py-2.5 text-sm font-medium"
-                    style={{ color: betType === bt.key ? '#2563eb' : '#0f172a', background: betType === bt.key ? '#eff6ff' : 'transparent' }}>
+                    className="w-full text-left px-4 py-3 font-semibold"
+                    style={{ color: betType === bt.key ? '#2563eb' : '#0f172a', background: betType === bt.key ? '#eff6ff' : 'transparent', fontSize: 15 }}>
                     {bt.label}
                   </button>
                 ))}
