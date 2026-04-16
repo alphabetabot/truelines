@@ -7,7 +7,7 @@ export const AFFILIATE_LINKS = {
   betmgm: 'https://www.betmgm.com',               // Replace with your BetMGM affiliate link
   williamhill_us: 'https://www.caesars.com/sportsbook', // Replace with your Caesars affiliate link
   pinnacle: 'https://www.pinnacle.com',           // Replace with your Pinnacle affiliate link
-  betrivers: 'https://www.betrivers.com',         // Replace with your BetRivers affiliate link
+  bet365: 'https://www.bet365.com',               // Replace with your Bet365 affiliate link
 }
 
 export function getAffiliateLink(bookKey) {

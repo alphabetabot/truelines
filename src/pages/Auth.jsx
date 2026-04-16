@@ -1,8 +1,10 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { TrendingUp, Eye, EyeOff, Loader2 } from 'lucide-react'
 
-export default function Auth({ onAuth }) {
+export default function Auth({ onAuth = () => {} }) {
+  const navigate = useNavigate()
   const [mode, setMode] = useState('login') // 'login' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -30,6 +32,7 @@ export default function Auth({ onAuth }) {
           email,
           password,
           options: {
+            emailRedirectTo: 'https://trueoddsiq.com/login',
             data: { newsletter_opt_in: newsletter },
           },
         })
@@ -39,7 +42,7 @@ export default function Auth({ onAuth }) {
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        onAuth(data.user)
+        if (data?.user) { onAuth(data.user); navigate('/picks') }
       }
     } catch (e) {
       setError(e.message)

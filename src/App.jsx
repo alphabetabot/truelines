@@ -8,6 +8,7 @@ import AIAnalysis from './pages/AIAnalysis'
 import AIPicks from './pages/AIPicks'
 import Disclaimer from './pages/Disclaimer'
 import Auth from './pages/Auth'
+import AuthCallback from './pages/AuthCallback'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -31,6 +32,7 @@ export default function App() {
               <Route path="/picks" element={<AIPicks />} />
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/login" element={<Auth />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>
           </Layout>
         </BrowserRouter>

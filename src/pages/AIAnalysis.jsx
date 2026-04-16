@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { getOdds, parseOddsForComparison } from '../lib/oddsApi'
 import { analyzeGame } from '../lib/claudeApi'
 import { analyzeGameGPT } from '../lib/openaiApi'
+import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Brain, ChevronDown, Zap } from 'lucide-react'
@@ -24,6 +25,13 @@ export default function AIAnalysis() {
     staleTime: 30_000,
   })
 
+  const { data: pitchers = {} } = useQuery({
+    queryKey: ['mlb-pitchers'],
+    queryFn: getTodayProbablePitchers,
+    enabled: sport === 'baseball_mlb',
+    staleTime: 300_000,
+  })
+
   const games = data ? parseOddsForComparison(data) : []
 
   function handleGameSelect(gameId) {
@@ -37,7 +45,7 @@ export default function AIAnalysis() {
     if (!selectedGame) return
     setClaudeLoading(true); setClaudeError(null); setClaudeData(null)
     try {
-      setClaudeData(await analyzeGame(selectedGame))
+      setClaudeData(await analyzeGame(selectedGame, pitchers))
     } catch (e) {
       setClaudeError(e.message)
     } finally {
@@ -49,7 +57,7 @@ export default function AIAnalysis() {
     if (!selectedGame) return
     setGptLoading(true); setGptError(null); setGptData(null)
     try {
-      setGptData(await analyzeGameGPT(selectedGame))
+      setGptData(await analyzeGameGPT(selectedGame, pitchers))
     } catch (e) {
       setGptError(e.message)
     } finally {

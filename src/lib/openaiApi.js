@@ -21,11 +21,39 @@ async function callGPT(messages, systemPrompt, maxTokens = 1024) {
   return data.choices[0].message.content
 }
 
-function formatGameForAI(game) {
+function formatGameForAI(game, pitchers = {}) {
+  const isMLB = game.sport === 'baseball_mlb'
+
+  function getPitcher(teamName) {
+    if (!pitchers || !teamName) return null
+    const direct = pitchers[teamName]
+    if (direct) return direct
+    const lastWord = teamName.split(' ').slice(-1)[0]
+    const match = Object.entries(pitchers).find(([k]) =>
+      teamName.includes(k) || k.includes(lastWord)
+    )
+    return match ? match[1] : null
+  }
+
+  const awayP = isMLB ? getPitcher(game.away) : null
+  const homeP = isMLB ? getPitcher(game.home) : null
+
+  const pitcherLines = isMLB ? [
+    '',
+    'STARTING PITCHERS:',
+    `  ${game.away}: ${awayP ? `${awayP.name} (${awayP.wins}-${awayP.losses}, ${awayP.era} ERA)` : 'TBD'}`,
+    `  ${game.home}: ${homeP ? `${homeP.name} (${homeP.wins}-${homeP.losses}, ${homeP.era} ERA)` : 'TBD'}`,
+  ] : []
+
+  return _formatGameForAI(game, pitcherLines)
+}
+
+function _formatGameForAI(game, extraLines = []) {
   const lines = [
     `${game.away} @ ${game.home}`,
     `Time: ${new Date(game.commenceTime).toLocaleString()}`,
     `Sport: ${game.sport}`,
+    ...extraLines,
     '',
     'MONEYLINE:',
   ]
@@ -62,7 +90,7 @@ function formatGameForAI(game) {
   return lines.join('\n')
 }
 
-export async function analyzeGameGPT(game) {
+export async function analyzeGameGPT(game, pitchers = {}) {
   const system = `You are a sharp sports betting analyst with expertise in line movement, 
 market inefficiencies, and statistical modeling. Provide concise, data-driven analysis.
 Format with clear sections. No generic gambling disclaimers.`

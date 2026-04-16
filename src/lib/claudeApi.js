@@ -22,22 +22,40 @@ async function callClaude(messages, systemPrompt, maxTokens = 1024) {
   return data.content[0].text
 }
 
-export async function analyzeGame(game) {
-  const system = `You are TrueOddsIQ, an expert sports betting analyst with deep knowledge of line movement, 
-market inefficiencies, and statistical modeling. You provide sharp, data-driven analysis. 
-Be concise, direct, and professional. Format your response with clear sections.
-Do NOT give generic disclaimers about gambling being risky - the user knows this.`
+export async function analyzeGame(game, pitchers = {}) {
+  const isMLB = game.sport === 'baseball_mlb'
+  const sportContexts = {
+    baseball_mlb: `For MLB you MUST analyze: starting pitcher matchup (ERA, WHIP, K/9, opp AVG), ballpark factors (pitcher vs hitter friendly), weather (wind speed/direction is critical for totals, temp affects carry), bullpen strength, team batting vs LHP/RHP splits, recent form last 10 games, and how all these affect the total.`,
+    basketball_nba: `For NBA analyze: home/away splits, pace of play, offensive/defensive ratings, injury reports, back-to-back situations, rest advantage, key player matchups, recent form, and referee tendencies for pace/fouls.`,
+    basketball_ncaab: `For NCAAB analyze: home court advantage (massive in college), tempo, key player matchups, travel fatigue, coaching tendencies, conference familiarity, and line movement indicating sharp action.`,
+    americanfootball_nfl: `For NFL analyze: offensive/defensive rankings, injury report (especially QB, OL, CB), weather (wind over 15mph kills passing games, cold affects kicking), home field advantage, divisional familiarity, coaching matchup, rest/travel, and recent ATS record.`,
+    americanfootball_ncaaf: `For NCAAF analyze: talent gap, home field advantage, key player injuries, weather, coaching matchup, offensive scheme vs defensive scheme, and line movement.`,
+    icehockey_nhl: `For NHL analyze: goalie matchup (save%, GAA), power play/penalty kill percentages, home/away splits, back-to-back situations, line combinations, recent form, and team shooting percentages.`,
+    soccer_epl: `For EPL analyze: home/away form, key injuries/suspensions, head-to-head record, squad depth, European competition fatigue, manager tactics, and weather.`,
+    soccer_usa_mls: `For MLS analyze: home field advantage (travel distances are huge), turf vs grass preference, key player availability, form guide, and conference standings implications.`,
+    mma_mixed_martial_arts: `For MMA analyze: fighting styles (striker vs grappler), reach/size advantages, recent form, camp quality, weight cut issues, judges tendencies for the venue, and how the matchup plays stylistically.`,
+  }
 
-  const oddsSnapshot = formatGameForAI(game)
+  const sportContext = sportContexts[game.sport] || 'Analyze all relevant matchup factors, recent form, injuries, and situational angles.'
+
+  const system = `You are TrueOddsIQ, an elite sports betting analyst with deep knowledge of line movement, market inefficiencies, injury impacts, and statistical modeling. You think like a sharp bettor.
+
+For this game: ${sportContext}
+
+Always include: line movement interpretation, public vs sharp money signals, best value bet, and best book for each bet type.
+Be concise, direct, data-driven. No fluff. No generic gambling disclaimers.`
+
+  const oddsSnapshot = formatGameForAI(game, pitchers)
 
   const messages = [
     {
       role: 'user',
-      content: `Analyze this game and its betting lines:\n\n${oddsSnapshot}\n\nProvide:
-1. **Line Movement Analysis** - What do the current lines suggest about sharp money?
-2. **Key Angles** - Public vs sharp tendencies, situational factors
-3. **Best Value** - Where is the value in the current lines?
-4. **Line Shopping Edge** - Best book for each bet type based on the odds shown`,
+      content: `Analyze this game and its betting lines:\n\n${oddsSnapshot}\n\nProvide a sharp, complete analysis covering:
+1. **Matchup Breakdown** - Key factors that determine the outcome (pitchers/QBs/goalies/etc, injuries, form, situational edges)
+2. **Line Movement & Sharp Money** - What do the current lines tell us? Any steam moves or reverse line movement?
+3. **Environmental Factors** - Weather, venue, home/away splits, travel, rest advantages
+4. **Best Bet** - The single best value play with reasoning
+5. **Line Shopping Edge** - Which book has the best number for each bet type`,
     },
   ]
 
@@ -45,10 +63,10 @@ Do NOT give generic disclaimers about gambling being risky - the user knows this
 }
 
 export async function getAIPick(game) {
-  const system = `You are TrueOddsIQ, a professional sports handicapper. 
-You analyze betting lines and make specific, confident picks with clear reasoning.
-Format your picks clearly with: Pick, Odds, Book, Confidence (1-5 stars), and Brief Reasoning.
-Be direct and decisive. No hedging. No gambling disclaimers.`
+  const system = `You are TrueOddsIQ, a professional sports handicapper who thinks like a sharp bettor.
+Analyze the matchup, lines, injuries, weather, venue, and situational factors to make a specific confident pick.
+Format: Pick, Odds, Book, Confidence (1-5 stars), Reasoning (include key factors like pitcher matchup, weather, injuries, line value).
+Be direct. No hedging. No disclaimers.`
 
   const oddsSnapshot = formatGameForAI(game)
 
@@ -107,14 +125,61 @@ export async function analyzeLineMovement(game, historicalNote) {
   return callClaude(messages, system, 600)
 }
 
-function formatGameForAI(game) {
+function getPitcher(pitchers, teamName) {
+  if (!pitchers || !teamName) return null
+  const direct = pitchers[teamName]
+  if (direct) return direct
+  const lastWord = teamName.split(' ').slice(-1)[0]
+  const match = Object.entries(pitchers).find(([k]) =>
+    teamName.includes(k) || k.includes(lastWord)
+  )
+  return match ? match[1] : null
+}
+
+function formatGameForAI(game, pitchers = {}) {
+  const isMLB = game.sport === 'baseball_mlb'
+  const awayPitcher = isMLB ? getPitcher(pitchers, game.away) : null
+  const homePitcher = isMLB ? getPitcher(pitchers, game.home) : null
+
   const lines = [
     `${game.away} @ ${game.home}`,
     `Time: ${new Date(game.commenceTime).toLocaleString()}`,
     `Sport: ${game.sport}`,
-    '',
-    'MONEYLINE:',
   ]
+
+  if (isMLB) {
+    // Ballpark info
+    const venueName = awayPitcher?.venueName || homePitcher?.venueName || 'Unknown Ballpark'
+    const weather = awayPitcher?.weather || homePitcher?.weather
+    const weatherStr = weather
+      ? `${weather.condition || ''} ${weather.temp ? weather.temp + '°F' : ''} ${weather.wind ? '| Wind: ' + weather.wind : ''}`.trim()
+      : 'Dome/Unknown'
+
+    lines.push('')
+    lines.push(`BALLPARK: ${venueName}`)
+    lines.push(`WEATHER: ${weatherStr}`)
+    lines.push('')
+    lines.push('STARTING PITCHERS:')
+
+    if (awayPitcher) {
+      lines.push(`  ${game.away}: ${awayPitcher.name}`)
+      lines.push(`    Season: ${awayPitcher.wins}-${awayPitcher.losses}, ${awayPitcher.era} ERA, ${awayPitcher.whip} WHIP, ${awayPitcher.strikeoutsPer9} K/9`)
+      lines.push(`    Opp AVG: ${awayPitcher.oppAvg}, HR/9: ${awayPitcher.homeRunsPer9}`)
+    } else {
+      lines.push(`  ${game.away}: TBD`)
+    }
+
+    if (homePitcher) {
+      lines.push(`  ${game.home}: ${homePitcher.name}`)
+      lines.push(`    Season: ${homePitcher.wins}-${homePitcher.losses}, ${homePitcher.era} ERA, ${homePitcher.whip} WHIP, ${homePitcher.strikeoutsPer9} K/9`)
+      lines.push(`    Opp AVG: ${homePitcher.oppAvg}, HR/9: ${homePitcher.homeRunsPer9}`)
+    } else {
+      lines.push(`  ${game.home}: TBD`)
+    }
+  }
+
+  lines.push('')
+  lines.push('MONEYLINE:')
 
   const books = Object.entries(game.bookmakers || {})
   books.forEach(([book, markets]) => {

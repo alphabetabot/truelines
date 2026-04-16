@@ -20,7 +20,7 @@ export const SPORTSBOOKS = [
   'betmgm',
   'williamhill_us',
   'pinnacle',
-  'betrivers',
+  'bet365',
 ]
 
 export const SPORTSBOOK_LABELS = {
@@ -29,7 +29,7 @@ export const SPORTSBOOK_LABELS = {
   betmgm: 'BetMGM',
   williamhill_us: 'Caesars',
   pinnacle: 'Pinnacle',
-  betrivers: 'BetRivers',
+  bet365: 'Bet365',
 }
 
 export const SPORTSBOOK_COLORS = {
@@ -38,7 +38,7 @@ export const SPORTSBOOK_COLORS = {
   betmgm: '#c9a84c',
   williamhill_us: '#004b87',
   pinnacle: '#ef3340',
-  betrivers: '#002d72',
+  bet365: '#f5a623',
 }
 
 async function apiFetch(path, params = {}) {
@@ -63,7 +63,7 @@ export async function getOdds(sport, markets = 'h2h,spreads,totals') {
     regions: 'us',
     markets,
     oddsFormat: 'american',
-    bookmakers: 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,betrivers',
+    bookmakers: 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365',
   })
 }
 
