@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import { getAIPick, getDailyPicks } from '../lib/claudeApi'
+import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Zap, Trophy, ChevronDown, Star } from 'lucide-react'
@@ -9,7 +10,7 @@ import AIDisclaimer from '../components/AIDisclaimer'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
-function PickCard({ game, onGetPick }) {
+function PickCard({ game, pitchers = {} }) {
   const [pick, setPick] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -18,7 +19,7 @@ function PickCard({ game, onGetPick }) {
     setLoading(true)
     setError(null)
     try {
-      const result = await getAIPick(game)
+      const result = await getAIPick(game, pitchers)
       setPick(result)
     } catch (e) {
       setError(e.message)
@@ -82,6 +83,15 @@ export default function AIPicks() {
   })
 
   const games = data ? parseOddsForComparison(data) : []
+  const isMLB = sport === 'baseball_mlb'
+
+  const { data: pitchers = {} } = useQuery({
+    queryKey: ['mlb-pitchers'],
+    queryFn: getTodayProbablePitchers,
+    enabled: isMLB,
+    staleTime: 300_000,
+    refetchOnMount: true,
+  })
 
   async function fetchDailyPicks() {
     if (games.length === 0) return
@@ -217,7 +227,7 @@ export default function AIPicks() {
           {!isLoading && games.length > 0 && (
             <div className="grid gap-3">
               {games.map(game => (
-                <PickCard key={game.id} game={game} />
+                <PickCard key={game.id} game={game} pitchers={pitchers} />
               ))}
             </div>
           )}

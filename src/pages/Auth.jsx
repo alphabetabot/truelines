@@ -37,6 +37,16 @@ export default function Auth({ onAuth = () => {} }) {
           },
         })
         if (error) throw error
+
+        // Directly insert into newsletter_subscribers if opted in
+        if (newsletter && data?.user) {
+          await supabase.from('newsletter_subscribers').insert({
+            email,
+            user_id: data.user.id,
+            active: true,
+          }).then(() => {}) // ignore errors (duplicate etc)
+        }
+
         setSuccess('Account created! Check your email to confirm your account, then log in.')
         setMode('login')
       } else {
@@ -127,6 +137,7 @@ export default function Auth({ onAuth = () => {} }) {
                   className="mt-0.5 w-4 h-4 accent-blue-600" />
                 <span className="text-xs leading-relaxed" style={{ color: '#475569' }}>
                   ✉️ Yes! Send me the daily AI Picks newsletter with top picks, analysis, and line value alerts.
+                <span className="block mt-1" style={{ fontSize: 11, color: '#94a3b8' }}>📧 Using Outlook or Hotmail? Add picks@trueoddsiq.com to your contacts to ensure delivery.</span>
                 </span>
               </label>
 

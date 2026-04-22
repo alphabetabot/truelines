@@ -1,5 +1,19 @@
 {
   "rewrites": [
     { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-newsletter",
+      "schedule": "0 14 * * *"
+    },
+    {
+      "path": "/api/cron-midday-post",
+      "schedule": "0 19 * * *"
+    },
+    {
+      "path": "/api/cron-evening-post",
+      "schedule": "0 23 * * *"
+    }
   ]
 }

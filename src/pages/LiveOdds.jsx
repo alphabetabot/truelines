@@ -6,6 +6,8 @@ import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
 import MatchupCard from '../components/MatchupCard'
 import Scores from './Scores'
+import AIPickTeaser from '../components/AIPickTeaser'
+import PerformanceTracker from '../components/PerformanceTracker'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -78,6 +80,8 @@ export default function LiveOdds() {
         )}
       </div>
 
+      <AIPickTeaser />
+      <PerformanceTracker />
       <SportSelector selected={sport} onChange={s => { setSport(s); setSearch(''); setActiveTab('Odds') }} />
 
       {/* Odds / Scores tabs */}

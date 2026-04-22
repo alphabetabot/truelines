@@ -28,8 +28,8 @@ export default function AIAnalysis() {
   const { data: pitchers = {} } = useQuery({
     queryKey: ['mlb-pitchers'],
     queryFn: getTodayProbablePitchers,
-    enabled: sport === 'baseball_mlb',
     staleTime: 300_000,
+    refetchOnMount: true,
   })
 
   const games = data ? parseOddsForComparison(data) : []
@@ -73,9 +73,9 @@ export default function AIAnalysis() {
         <div className="flex items-center gap-3">
           <Brain size={22} style={{ color: '#2563eb' }} />
           <div>
-            <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>AI Analysis</h1>
+            <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Vega AI Analysis</h1>
             <p className="text-sm" style={{ color: '#64748b' }}>
-              Game analysis powered by Claude & ChatGPT
+              Powered by Vega — TrueOddsIQ's AI analyst
             </p>
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function AIAnalysis() {
           }}
         >
           <Zap size={15} />
-          {claudeLoading ? 'Claude Analyzing...' : 'Analyze with Claude'}
+          {claudeLoading ? 'Vega Analyzing...' : 'Analyze with Vega (Claude)'}
         </button>
 
         {/* GPT-4o */}
@@ -144,7 +144,7 @@ export default function AIAnalysis() {
       {(claudeData || claudeLoading || claudeError) && (
         <div className="mb-4">
           <AIResponse loading={claudeLoading} error={claudeError} data={claudeData}
-            label={gameLabel ? `Claude · ${gameLabel}` : 'Claude Analysis'} provider="Claude" />
+            label={gameLabel ? `Vega · ${gameLabel}` : 'Vega Analysis'} provider="Vega" />
         </div>
       )}
 

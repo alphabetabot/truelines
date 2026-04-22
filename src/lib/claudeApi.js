@@ -6,7 +6,7 @@ async function callClaude(messages, systemPrompt, maxTokens = 1024) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: 'claude-opus-4-5-20251101',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: maxTokens,
       system: systemPrompt,
       messages,
@@ -38,7 +38,7 @@ export async function analyzeGame(game, pitchers = {}) {
 
   const sportContext = sportContexts[game.sport] || 'Analyze all relevant matchup factors, recent form, injuries, and situational angles.'
 
-  const system = `You are TrueOddsIQ, an elite sports betting analyst with deep knowledge of line movement, market inefficiencies, injury impacts, and statistical modeling. You think like a sharp bettor.
+  const system = `You are Vega, TrueOddsIQ's AI analyst and an elite sports betting analyst with deep knowledge of line movement, market inefficiencies, injury impacts, and statistical modeling. You think like a sharp bettor.
 
 For this game: ${sportContext}
 
@@ -62,13 +62,13 @@ Be concise, direct, data-driven. No fluff. No generic gambling disclaimers.`
   return callClaude(messages, system, 1200)
 }
 
-export async function getAIPick(game) {
-  const system = `You are TrueOddsIQ, a professional sports handicapper who thinks like a sharp bettor.
+export async function getAIPick(game, pitchers = {}) {
+  const system = `You are Vega, TrueOddsIQ's AI analyst — a professional sports handicapper who thinks like a sharp bettor.
 Analyze the matchup, lines, injuries, weather, venue, and situational factors to make a specific confident pick.
 Format: Pick, Odds, Book, Confidence (1-5 stars), Reasoning (include key factors like pitcher matchup, weather, injuries, line value).
 Be direct. No hedging. No disclaimers.`
 
-  const oddsSnapshot = formatGameForAI(game)
+  const oddsSnapshot = formatGameForAI(game, pitchers)
 
   const messages = [
     {
@@ -85,7 +85,7 @@ Be direct. No hedging. No disclaimers.`
 }
 
 export async function getDailyPicks(games) {
-  const system = `You are TrueOddsIQ, an elite sports betting analyst. 
+  const system = `You are Vega, TrueOddsIQ's AI analyst and an elite sports betting analyst. 
 You review the entire slate of games and identify the TOP 3-5 best bets of the day.
 Focus on line value, steam moves, and market inefficiencies.
 Be specific with picks, books, and reasoning. No fluff.`
@@ -113,7 +113,7 @@ End with a brief **Fade of the Day** (most public bet to avoid).`,
 }
 
 export async function analyzeLineMovement(game, historicalNote) {
-  const system = `You are TrueOddsIQ, specializing in line movement analysis and sharp money detection.`
+  const system = `You are Vega, TrueOddsIQ's AI analyst specializing in line movement analysis and sharp money detection.`
 
   const messages = [
     {

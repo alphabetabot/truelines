@@ -47,9 +47,14 @@ export default function AIResponse({ loading, error, data, label = 'AI Analysis'
         style={{ background: 'var(--bg-header)', borderBottom: '1px solid var(--border)' }}>
         <Brain size={14} style={{ color: 'var(--accent)' }} />
         <span className="text-xs font-semibold" style={{ color: 'var(--accent)' }}>{label}</span>
-        <span className="ml-auto text-xs px-2 py-0.5 rounded"
-          style={{ background: provider === 'ChatGPT' ? 'rgba(22,163,74,0.1)' : 'var(--accent-dim)', color: provider === 'ChatGPT' ? '#16a34a' : 'var(--accent)', border: provider === 'ChatGPT' ? '1px solid rgba(22,163,74,0.3)' : '1px solid rgba(56,139,253,0.3)', fontSize: 10 }}>
-          {provider}
+        <span className="ml-auto text-xs px-2 py-0.5 rounded font-bold"
+          style={{
+            background: provider === 'ChatGPT' ? 'rgba(22,163,74,0.1)' : provider === 'Vega' ? 'rgba(245,158,11,0.1)' : 'var(--accent-dim)',
+            color: provider === 'ChatGPT' ? '#16a34a' : provider === 'Vega' ? '#f59e0b' : 'var(--accent)',
+            border: provider === 'ChatGPT' ? '1px solid rgba(22,163,74,0.3)' : provider === 'Vega' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(56,139,253,0.3)',
+            fontSize: 10
+          }}>
+          {provider === 'Vega' ? '⚡ Vega' : provider}
         </span>
       </div>
       <div className="p-4" style={{ background: 'var(--bg-card)' }}>

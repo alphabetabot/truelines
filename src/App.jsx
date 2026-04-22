@@ -7,6 +7,8 @@ import LineCompare from './pages/LineCompare'
 import AIAnalysis from './pages/AIAnalysis'
 import AIPicks from './pages/AIPicks'
 import Disclaimer from './pages/Disclaimer'
+import About from './pages/About'
+import Blog from './pages/Blog'
 import Auth from './pages/Auth'
 import AuthCallback from './pages/AuthCallback'
 
@@ -31,6 +33,9 @@ export default function App() {
               <Route path="/analysis" element={<AIAnalysis />} />
               <Route path="/picks" element={<AIPicks />} />
               <Route path="/disclaimer" element={<Disclaimer />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<Blog />} />
               <Route path="/login" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
             </Routes>
