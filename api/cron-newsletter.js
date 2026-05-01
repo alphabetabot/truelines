@@ -25,6 +25,7 @@ async function getTodaysGames() {
           weather: g.weather,
           awayPitcher: g.teams?.away?.probablePitcher?.fullName,
           homePitcher: g.teams?.home?.probablePitcher?.fullName,
+          gameTime: g.gameDateTime,
         })
       })
     })
@@ -33,21 +34,41 @@ async function getTodaysGames() {
   try {
     const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nbaData = await nbaRes.json()
-    nbaData?.forEach(g => games.push({ sport: 'NBA', away: g.away_team, home: g.home_team, bookmakers: g.bookmakers }))
+    nbaData?.forEach(g => games.push({ sport: 'NBA', away: g.away_team, home: g.home_team, bookmakers: g.bookmakers, commence_time: g.commence_time }))
   } catch (e) { console.warn('NBA fetch failed') }
 
   try {
     const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nhlData = await nhlRes.json()
-    nhlData?.forEach(g => games.push({ sport: 'NHL', away: g.away_team, home: g.home_team, bookmakers: g.bookmakers }))
+    nhlData?.forEach(g => games.push({ sport: 'NHL', away: g.away_team, home: g.home_team, bookmakers: g.bookmakers, commence_time: g.commence_time }))
   } catch (e) { console.warn('NHL fetch failed') }
 
   return games
 }
 
 async function generatePicks(games) {
-  const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-  const slate = games.slice(0, 20).map(g => {
+  const now = new Date()
+  const date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+  
+  // Filter to only games that start today (after now, before midnight)
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
+  const tomorrowStart = new Date(todayStart.getTime() + 86400000)
+  
+  const todaysGames = games.filter(g => {
+    if (g.sport === 'MLB' && g.gameTime) {
+      const gTime = new Date(g.gameTime)
+      return gTime >= todayStart && gTime < tomorrowStart
+    }
+    // For NBA/NHL from The Odds API, check commence_time
+    if (g.commence_time) {
+      const gTime = new Date(g.commence_time)
+      return gTime >= todayStart && gTime < tomorrowStart
+    }
+    // If no time available, include it (safer than excluding)
+    return true
+  })
+  
+  const slate = todaysGames.slice(0, 20).map(g => {
     let line = `${g.sport}: ${g.away} @ ${g.home}`
     if (g.venue) line += ` | ${g.venue}`
     if (g.weather?.temp) line += ` | ${g.weather.temp}°F ${g.weather.condition || ''} ${g.weather.wind || ''}`
@@ -83,21 +104,44 @@ async function generatePicks(games) {
       max_tokens: 1500,
       messages: [{
         role: 'user',
-        content: `You are TrueOddsIQ, an elite sports betting analyst. Today is ${date}.
+        content: `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
 
 Today's slate (MLB, NBA, NHL):
 ${slate}
 
-Pick ONLY the TOP 3-5 BEST BETS where there is genuine value. Do NOT force picks. Quality over quantity.
+Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
-For each pick:
-**[SPORT] Pick: [Team/Total]**
-- Bet: [type] at [odds] via [book]
+Format EXACTLY like this:
+
+🏆 TOP PICK OF THE DAY
+**[SPORT] Pick: [Team/Total/Spread]**
+- Bet: [type] at [odds] via [best book]
 - Confidence: [⭐ rating out of 5]
-- Edge: [2-3 sentences — specific stats, matchup angle, or line value]
+- Edge: [2-3 sentences of specific analysis]
 
-End with:
-**❌ Fade of the Day:** [most hyped bet to avoid + why]`
+---
+
+📌 PICK #2
+**[SPORT] Pick: [Team/Total/Spread]**
+- Bet: [type] at [odds] via [best book]
+- Confidence: [⭐ rating out of 5]
+- Edge: [2-3 sentences of specific analysis]
+
+---
+
+📌 PICK #3
+**[SPORT] Pick: [Team/Total/Spread]**
+- Bet: [type] at [odds] via [best book]
+- Confidence: [⭐ rating out of 5]
+- Edge: [2-3 sentences of specific analysis]
+
+---
+
+❌ FADE OF THE DAY
+**[SPORT]: [Team/Total to avoid]**
+- Why: [reason the public is wrong on this one]
+
+Only pick games with genuine edge. Be specific with stats and reasoning.`
       }],
     }),
   })
@@ -177,14 +221,17 @@ export default async function handler(req, res) {
       sent += Math.min(50, emails.length - i)
     }
 
+    // Extract top pick for social posts
+    const topPickSection = picksText.split('---')[0] || picksText
+    const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
+    const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
+    const betLine = topPickSection.match(/- Bet: (.+)/)?.[1]?.trim() || ''
+
     // Auto-post to Telegram
     try {
-      const firstPick = picksText.split('---')[1]?.trim() || ''
-      const pickLine = firstPick.match(/\*\*\[.+?\] Pick:.+?\*\*/)?.[0]?.replace(/\*\*/g, '') || ''
-      const edgeLine = firstPick.match(/- Edge: (.+)/)?.[1] || ''
-
       if (pickLine) {
-        const tgMessage = `⚡ Vega's Pick of the Day — ${date}\n\n${pickLine}\n\n${edgeLine}\n\n📊 Full analysis + compare odds across 6 sportsbooks:\n🔗 trueoddsiq.com/picks\n\n📧 Get the full newsletter free → Sign up at trueoddsiq.com\n\n#SportsBetting #VegaPicks #AIPicks`
+        const tgMessage = `🏆 Vega's Top Pick — ${date}\n\n📌 ${pickLine}\n💰 ${betLine}\n\n💡 ${edgeLine}\n\n📊 Full analysis + 2 more picks:\n🔗 trueoddsiq.com/picks\n
+📧 Free daily newsletter → trueoddsiq.com\n\n#SportsBetting #VegaPicks #FreePicks`
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -197,13 +244,9 @@ export default async function handler(req, res) {
 
     // Auto-post to X
     try {
-      const firstPick = picksText.split('---')[1]?.trim() || ''
-      const pickLine = firstPick.match(/\*\*\[.+?\] Pick:.+?\*\*/)?.[0]?.replace(/\*\*/g, '') || ''
-      const edgeLine = firstPick.match(/- Edge: (.+)/)?.[1] || ''
-
       if (pickLine) {
-        const tweet = `⚡ Vega's Pick of the Day — ${date}\n\n${pickLine}\n\n${edgeLine}\n\n📊 Full analysis: trueoddsiq.com/picks\n📲 Free Telegram picks: t.me/TrueOddsIQ\n\n#SportsBetting #VegaPicks #FreePicks`
-        await postTweet(tweet.slice(0, 280))
+        const tweet = `🏆 Vega's Top Pick — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\n📊 2 more picks + full analysis:\ntrueoddsiq.com/picks\n\n#SportsBetting #VegaPicks #FreePicks`.slice(0, 280)
+        await postTweet(tweet)
       }
     } catch (tweetErr) {
       console.warn('X post failed:', tweetErr.message)

@@ -11,6 +11,7 @@ import About from './pages/About'
 import Blog from './pages/Blog'
 import Auth from './pages/Auth'
 import AuthCallback from './pages/AuthCallback'
+import Fantasy from './pages/Fantasy'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ export default function App() {
               <Route path="/blog/:slug" element={<Blog />} />
               <Route path="/login" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/fantasy" element={<Fantasy />} />
             </Routes>
           </Layout>
         </BrowserRouter>

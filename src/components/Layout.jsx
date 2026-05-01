@@ -1,5 +1,5 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom'
-import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen } from 'lucide-react'
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import { useAuth } from '../lib/AuthContext'
@@ -97,7 +97,7 @@ export default function Layout({ children }) {
               </NavLink>
             ))}
           </div>
-          {/* Row 2: AI Analysis + AI Picks + Blog */}
+          {/* Row 2: AI Analysis + AI Picks + Blog + Fantasy Sports */}
           <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
             {NAV.slice(2).map(({ to, label, icon: Icon, exact }) => (
               <NavLink key={to} to={to} end={exact}
@@ -110,6 +110,7 @@ export default function Layout({ children }) {
                 <Icon size={13} />{label}
               </NavLink>
             ))}
+
           </div>
         </div>
       </div>

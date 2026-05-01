@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Calendar, ChevronRight, Tag } from 'lucide-react'
+import { Calendar, ChevronRight, Tag, Loader } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
-// Blog posts are stored here — add new ones at the top
-export const BLOG_POSTS = [
+// Static evergreen posts always shown
+const STATIC_POSTS = [
   {
     slug: 'how-to-shop-betting-lines',
     title: 'How to Shop Betting Lines and Save Money Every Week',
@@ -20,7 +21,7 @@ Line shopping means comparing odds at multiple sportsbooks before placing a bet 
 Here's a real example:
 
 - **DraftKings:** Cowboys -3 (-115)
-- **FanDuel:** Cowboys -3 (-108)  
+- **FanDuel:** Cowboys -3 (-108)
 - **Pinnacle:** Cowboys -3 (-105)
 
 If you bet $100 on the Cowboys spread, you need to risk $115 at DraftKings, $108 at FanDuel, or just $105 at Pinnacle to win $100.
@@ -169,6 +170,12 @@ function BlogCard({ post, onClick }) {
           <Calendar size={10} className="inline mr-1" />
           {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </span>
+        {post.auto_generated && (
+          <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
+            style={{ background: '#fef3c7', color: '#d97706' }}>
+            ⚡ Daily Preview
+          </span>
+        )}
       </div>
       <h2 className="font-bold mb-2 leading-tight" style={{ color: '#0f172a', fontSize: '1rem' }}>
         {post.title}
@@ -184,9 +191,9 @@ function BlogCard({ post, onClick }) {
 }
 
 function BlogPost({ post, onBack }) {
-  // Simple markdown renderer
   const renderContent = (content) => {
     return content.split('\n').map((line, i) => {
+      if (line.startsWith('# ')) return <h1 key={i} className="text-xl font-bold mt-4 mb-3" style={{ color: '#0f172a' }}>{line.slice(2)}</h1>
       if (line.startsWith('## ')) return <h2 key={i} className="text-lg font-bold mt-6 mb-3" style={{ color: '#0f172a' }}>{line.slice(3)}</h2>
       if (line.startsWith('### ')) return <h3 key={i} className="text-base font-bold mt-4 mb-2" style={{ color: '#0f172a' }}>{line.slice(4)}</h3>
       if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold my-2" style={{ color: '#0f172a' }}>{line.slice(2, -2)}</p>
@@ -224,16 +231,40 @@ function BlogPost({ post, onBack }) {
 
 export default function Blog() {
   const [selectedPost, setSelectedPost] = useState(null)
+  const [dbPosts, setDbPosts] = useState([])
+  const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        const { data } = await supabase
+          .from('blog_posts')
+          .select('*')
+          .order('date', { ascending: false })
+          .limit(30)
+        setDbPosts(data || [])
+      } catch {
+        setDbPosts([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPosts()
+  }, [])
 
   // Check URL for slug
   useEffect(() => {
     const slug = window.location.pathname.split('/blog/')[1]
     if (slug) {
-      const post = BLOG_POSTS.find(p => p.slug === slug)
+      const all = [...dbPosts, ...STATIC_POSTS]
+      const post = all.find(p => p.slug === slug)
       if (post) setSelectedPost(post)
     }
-  }, [])
+  }, [dbPosts])
+
+  // Merge: DB posts first (newest), then static evergreen posts
+  const allPosts = [...dbPosts, ...STATIC_POSTS]
 
   if (selectedPost) {
     return (
@@ -251,15 +282,21 @@ export default function Blog() {
           Expert analysis, betting guides, and AI-powered insights from Vega
         </p>
       </div>
-      <div className="grid gap-4">
-        {BLOG_POSTS.map(post => (
-          <BlogCard
-            key={post.slug}
-            post={post}
-            onClick={() => setSelectedPost(post)}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader size={20} className="animate-spin" style={{ color: '#94a3b8' }} />
+        </div>
+      ) : (
+        <div className="grid gap-4">
+          {allPosts.map(post => (
+            <BlogCard
+              key={post.slug}
+              post={post}
+              onClick={() => setSelectedPost(post)}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

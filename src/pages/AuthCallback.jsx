@@ -7,8 +7,14 @@ export default function AuthCallback() {
 
   useEffect(() => {
     // Handle the OAuth/email confirmation callback
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (session?.user) {
+        // Ensure user is in newsletter_subscribers (in case signup insert failed)
+        await supabase.from('newsletter_subscribers').upsert({
+          email: session.user.email,
+          user_id: session.user.id,
+          active: true,
+        }, { onConflict: 'email', ignoreDuplicates: true })
         navigate('/picks')
       } else {
         navigate('/login')
