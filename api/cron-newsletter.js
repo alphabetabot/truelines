@@ -121,7 +121,7 @@ async function generatePicks(games) {
   })
   
   // Fetch stats for each game (MLB pitchers + teams, NBA/NHL teams)
-  const gamesWithStats = await Promise.all(todaysGames.slice(0, 10).map(async g => {
+  const gamesWithStats = await Promise.all(todaysGames.slice(0, 15).map(async g => {
     const stats = {}
     if (g.sport === 'MLB') {
       // Fetch pitcher stats
@@ -137,6 +137,10 @@ async function generatePicks(games) {
       if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId)
       if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId)
     }
+    // For NBA/NHL, extract record from Vegas odds if available
+    if (g.sport === 'NBA' || g.sport === 'NHL') {
+      stats.note = 'Use Vegas odds and team names below for analysis'
+    }
     return { ...g, stats }
   }))
   
@@ -147,13 +151,20 @@ async function generatePicks(games) {
     if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
     if (g.bookmakers?.length) {
       const dk = g.bookmakers.find(b => b.key === 'draftkings')
+      const fd = g.bookmakers.find(b => b.key === 'fanduel')
+      const bm = g.bookmakers.find(b => b.key === 'betmgm')
       if (dk) {
         const h2h = dk.markets?.find(m => m.key === 'h2h')
+        const spread = dk.markets?.find(m => m.key === 'spreads')
         const tot = dk.markets?.find(m => m.key === 'totals')
         if (h2h) {
           const a = h2h.outcomes?.find(o => o.name === g.away)
           const h = h2h.outcomes?.find(o => o.name === g.home)
           if (a && h) line += ` | ML: ${a.price > 0 ? '+' : ''}${a.price}/${h.price > 0 ? '+' : ''}${h.price}`
+        }
+        if (spread && g.sport !== 'MLB') {
+          const a = spread.outcomes?.find(o => o.name === g.away)
+          if (a) line += ` | Spread: ${a.point > 0 ? '+' : ''}${a.point}`
         }
         if (tot) {
           const ov = tot.outcomes?.find(o => o.name === 'Over')
@@ -202,12 +213,14 @@ Today's slate (MLB, NBA, NHL):
 ${slate}
 
 ⚠️ CRITICAL INTEGRITY RULES:
-1. ONLY cite the real stats provided above. NEVER make up statistics, estimates, or guesses.
-2. EVERY pick's Edge explanation MUST cite at least 2 specific real stats with exact numbers.
-   Example: "ERA is 2.89, K/9 is 10.2, therefore the edge is..."
-3. If you don't have stats for a matchup, say "insufficient data" instead of fabricating numbers.
-4. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
-5. If analyzing a player or team where stats aren't provided, acknowledge that limitation.
+1. ONLY cite stats or data you know for certain. NEVER make up statistics, estimates, player names, or team records.
+2. For MLB: Cite pitcher ERA, K/9, WHIP, and team win/loss records from the stats provided.
+3. For NBA/NHL: Cite Vegas odds and matchup dynamics. If you don't know a team's record, say "record not provided" instead of guessing.
+4. EVERY pick's Edge explanation MUST reference specific real information.
+   Example MLB: "ERA is 2.89, K/9 is 10.2, therefore the edge is..."
+   Example NBA/NHL: "Spread favors away team at +150, therefore..."
+5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
+6. If you lack sufficient data for a pick, skip it and move to the next game.
 
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
