@@ -201,7 +201,11 @@ ${statsContext}
 Today's slate (MLB, NBA, NHL):
 ${slate}
 
-⚠️ CRITICAL: Only cite stats from the provided data above. Do NOT make up or estimate statistics. If you reference a stat, it MUST be from the real 2026 data provided.
+⚠️ CRITICAL RULES:
+1. Only cite stats from the provided data above. DO NOT make up or estimate statistics.
+2. EVERY pick's Edge section MUST cite at least 2 specific real stats (e.g., "ERA is 2.89, K/9 is 10.2, therefore...")
+3. If you don't have stats for something, say "stats not available" instead of guessing.
+4. Be specific: use actual numbers, not vague claims like "elite" or "strong."
 
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
