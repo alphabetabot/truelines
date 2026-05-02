@@ -8,6 +8,38 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
+async function getMLBStats(teamId) {
+  try {
+    const res = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}?hydrate=record`)
+    const data = await res.json()
+    return {
+      wins: data.record?.[0]?.wins || 0,
+      losses: data.record?.[0]?.losses || 0,
+      runDiff: data.record?.[0]?.runDifferential || 0,
+    }
+  } catch (e) {
+    return { wins: 0, losses: 0, runDiff: 0 }
+  }
+}
+
+async function getPitcherStats(pitcherId) {
+  try {
+    const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${pitcherId}?hydrate=stats(type=season)`)
+    const data = await res.json()
+    const stats = data.stats?.[0]?.stats || {}
+    return {
+      era: (stats.era || 'N/A').toFixed(2),
+      wins: stats.wins || 0,
+      losses: stats.losses || 0,
+      ip: stats.inningsPitched || 0,
+      k9: stats.strikeOutsPer9Inn ? (stats.strikeOutsPer9Inn).toFixed(1) : 'N/A',
+      whip: stats.whip ? (stats.whip).toFixed(2) : 'N/A',
+    }
+  } catch (e) {
+    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
+  }
+}
+
 async function getTodaysGames() {
   const today = new Date().toISOString().split('T')[0]
   const games = []
@@ -20,11 +52,15 @@ async function getTodaysGames() {
         games.push({
           sport: 'MLB',
           away: g.teams?.away?.team?.name,
+          awayId: g.teams?.away?.team?.id,
           home: g.teams?.home?.team?.name,
+          homeId: g.teams?.home?.team?.id,
           venue: g.venue?.name,
           weather: g.weather,
           awayPitcher: g.teams?.away?.probablePitcher?.fullName,
+          awayPitcherId: g.teams?.away?.probablePitcher?.id,
           homePitcher: g.teams?.home?.probablePitcher?.fullName,
+          homePitcherId: g.teams?.home?.probablePitcher?.id,
           gameTime: g.gameDateTime,
         })
       })
@@ -34,13 +70,29 @@ async function getTodaysGames() {
   try {
     const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nbaData = await nbaRes.json()
-    nbaData?.forEach(g => games.push({ sport: 'NBA', away: g.away_team, home: g.home_team, bookmakers: g.bookmakers, commence_time: g.commence_time }))
+    nbaData?.forEach(g => games.push({ 
+      sport: 'NBA', 
+      away: g.away_team, 
+      home: g.home_team, 
+      bookmakers: g.bookmakers, 
+      commence_time: g.commence_time,
+      awayId: g.away_team?.toLowerCase().replace(/\s+/g, ''),
+      homeId: g.home_team?.toLowerCase().replace(/\s+/g, '')
+    }))
   } catch (e) { console.warn('NBA fetch failed') }
 
   try {
     const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nhlData = await nhlRes.json()
-    nhlData?.forEach(g => games.push({ sport: 'NHL', away: g.away_team, home: g.home_team, bookmakers: g.bookmakers, commence_time: g.commence_time }))
+    nhlData?.forEach(g => games.push({ 
+      sport: 'NHL', 
+      away: g.away_team, 
+      home: g.home_team, 
+      bookmakers: g.bookmakers, 
+      commence_time: g.commence_time,
+      awayId: g.away_team?.toLowerCase().replace(/\s+/g, ''),
+      homeId: g.home_team?.toLowerCase().replace(/\s+/g, '')
+    }))
   } catch (e) { console.warn('NHL fetch failed') }
 
   return games
@@ -68,7 +120,27 @@ async function generatePicks(games) {
     return true
   })
   
-  const slate = todaysGames.slice(0, 20).map(g => {
+  // Fetch stats for each game (MLB pitchers + teams, NBA/NHL teams)
+  const gamesWithStats = await Promise.all(todaysGames.slice(0, 10).map(async g => {
+    const stats = {}
+    if (g.sport === 'MLB') {
+      // Fetch pitcher stats
+      if (g.awayPitcherId) {
+        const awayStats = await getPitcherStats(g.awayPitcherId)
+        stats.awayPitcher = awayStats
+      }
+      if (g.homePitcherId) {
+        const homeStats = await getPitcherStats(g.homePitcherId)
+        stats.homePitcher = homeStats
+      }
+      // Fetch team records
+      if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId)
+      if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId)
+    }
+    return { ...g, stats }
+  }))
+  
+  const slate = gamesWithStats.map(g => {
     let line = `${g.sport}: ${g.away} @ ${g.home}`
     if (g.venue) line += ` | ${g.venue}`
     if (g.weather?.temp) line += ` | ${g.weather.temp}°F ${g.weather.condition || ''} ${g.weather.wind || ''}`
@@ -92,6 +164,25 @@ async function generatePicks(games) {
     return line
   }).join('\n')
 
+  // Build detailed stats context for Claude
+  let statsContext = 'REAL 2026 SEASON STATS (from official league APIs):\n\n'
+  gamesWithStats.forEach(g => {
+    statsContext += `${g.sport}: ${g.away} @ ${g.home}\n`
+    if (g.stats?.awayPitcher) {
+      statsContext += `  Away SP: ${g.awayPitcher} | ERA: ${g.stats.awayPitcher.era} | K/9: ${g.stats.awayPitcher.k9} | WHIP: ${g.stats.awayPitcher.whip}\n`
+    }
+    if (g.stats?.homePitcher) {
+      statsContext += `  Home SP: ${g.homePitcher} | ERA: ${g.stats.homePitcher.era} | K/9: ${g.stats.homePitcher.k9} | WHIP: ${g.stats.homePitcher.whip}\n`
+    }
+    if (g.stats?.awayTeam) {
+      statsContext += `  ${g.away}: ${g.stats.awayTeam.wins}W-${g.stats.awayTeam.losses}L | Run Diff: ${g.stats.awayTeam.runDiff}\n`
+    }
+    if (g.stats?.homeTeam) {
+      statsContext += `  ${g.home}: ${g.stats.homeTeam.wins}W-${g.stats.homeTeam.losses}L | Run Diff: ${g.stats.homeTeam.runDiff}\n`
+    }
+    statsContext += '\n'
+  })
+
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -106,8 +197,11 @@ async function generatePicks(games) {
         role: 'user',
         content: `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
 
+${statsContext}
 Today's slate (MLB, NBA, NHL):
 ${slate}
+
+⚠️ CRITICAL: Only cite stats from the provided data above. Do NOT make up or estimate statistics. If you reference a stat, it MUST be from the real 2026 data provided.
 
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
