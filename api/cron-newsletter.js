@@ -164,21 +164,21 @@ async function generatePicks(games) {
     return line
   }).join('\n')
 
-  // Build detailed stats context for Claude
-  let statsContext = 'REAL 2026 SEASON STATS (from official league APIs):\n\n'
+  // Build detailed stats context for Claude — REAL 2026 DATA ONLY
+  let statsContext = '=== REAL 2026 SEASON STATS (Official League APIs) ===\n\n'
   gamesWithStats.forEach(g => {
     statsContext += `${g.sport}: ${g.away} @ ${g.home}\n`
-    if (g.stats?.awayPitcher) {
-      statsContext += `  Away SP: ${g.awayPitcher} | ERA: ${g.stats.awayPitcher.era} | K/9: ${g.stats.awayPitcher.k9} | WHIP: ${g.stats.awayPitcher.whip}\n`
+    if (g.stats?.awayPitcher && g.awayPitcher) {
+      statsContext += `  Away SP ${g.awayPitcher}: ERA ${g.stats.awayPitcher.era} | K/9 ${g.stats.awayPitcher.k9} | WHIP ${g.stats.awayPitcher.whip}\n`
     }
-    if (g.stats?.homePitcher) {
-      statsContext += `  Home SP: ${g.homePitcher} | ERA: ${g.stats.homePitcher.era} | K/9: ${g.stats.homePitcher.k9} | WHIP: ${g.stats.homePitcher.whip}\n`
+    if (g.stats?.homePitcher && g.homePitcher) {
+      statsContext += `  Home SP ${g.homePitcher}: ERA ${g.stats.homePitcher.era} | K/9 ${g.stats.homePitcher.k9} | WHIP ${g.stats.homePitcher.whip}\n`
     }
     if (g.stats?.awayTeam) {
-      statsContext += `  ${g.away}: ${g.stats.awayTeam.wins}W-${g.stats.awayTeam.losses}L | Run Diff: ${g.stats.awayTeam.runDiff}\n`
+      statsContext += `  ${g.away}: ${g.stats.awayTeam.wins}W-${g.stats.awayTeam.losses}L (${(g.stats.awayTeam.runDiff >= 0 ? '+' : '')}${g.stats.awayTeam.runDiff} run diff)\n`
     }
     if (g.stats?.homeTeam) {
-      statsContext += `  ${g.home}: ${g.stats.homeTeam.wins}W-${g.stats.homeTeam.losses}L | Run Diff: ${g.stats.homeTeam.runDiff}\n`
+      statsContext += `  ${g.home}: ${g.stats.homeTeam.wins}W-${g.stats.homeTeam.losses}L (${(g.stats.homeTeam.runDiff >= 0 ? '+' : '')}${g.stats.homeTeam.runDiff} run diff)\n`
     }
     statsContext += '\n'
   })
@@ -201,11 +201,13 @@ ${statsContext}
 Today's slate (MLB, NBA, NHL):
 ${slate}
 
-⚠️ CRITICAL RULES:
-1. Only cite stats from the provided data above. DO NOT make up or estimate statistics.
-2. EVERY pick's Edge section MUST cite at least 2 specific real stats (e.g., "ERA is 2.89, K/9 is 10.2, therefore...")
-3. If you don't have stats for something, say "stats not available" instead of guessing.
-4. Be specific: use actual numbers, not vague claims like "elite" or "strong."
+⚠️ CRITICAL INTEGRITY RULES:
+1. ONLY cite the real stats provided above. NEVER make up statistics, estimates, or guesses.
+2. EVERY pick's Edge explanation MUST cite at least 2 specific real stats with exact numbers.
+   Example: "ERA is 2.89, K/9 is 10.2, therefore the edge is..."
+3. If you don't have stats for a matchup, say "insufficient data" instead of fabricating numbers.
+4. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
+5. If analyzing a player or team where stats aren't provided, acknowledge that limitation.
 
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
