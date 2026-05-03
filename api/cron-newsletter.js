@@ -8,33 +8,50 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-async function getMLBStats(teamId) {
+async function getMLBStats(teamId, teamName) {
   try {
-    const res = await fetch(`https://statsapi.mlb.com/api/v1/teams/${teamId}?hydrate=record`)
+    // Use standings endpoint which works reliably
+    const res = await fetch(`https://statsapi.mlb.com/api/v1/standings?leagueId=103,104`)
     const data = await res.json()
-    return {
-      wins: data.record?.[0]?.wins || 0,
-      losses: data.record?.[0]?.losses || 0,
-      runDiff: data.record?.[0]?.runDifferential || 0,
+    
+    // Find this team in the standings
+    for (const division of data.records || []) {
+      for (const tr of division.teamRecords || []) {
+        if (tr.team.id === teamId || tr.team.name === teamName) {
+          return {
+            wins: tr.wins || 0,
+            losses: tr.losses || 0,
+            runDiff: tr.runDifferential || 0,
+          }
+        }
+      }
     }
+    return { wins: 0, losses: 0, runDiff: 0 }
   } catch (e) {
     return { wins: 0, losses: 0, runDiff: 0 }
   }
 }
 
-async function getPitcherStats(pitcherId) {
+async function getPitcherStats(pitcherId, pitcherName) {
   try {
-    const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${pitcherId}?hydrate=stats(type=season)`)
+    // Try the standard endpoint
+    const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${pitcherId}`)
     const data = await res.json()
-    const stats = data.stats?.[0]?.stats || {}
-    return {
-      era: (stats.era || 'N/A').toFixed(2),
-      wins: stats.wins || 0,
-      losses: stats.losses || 0,
-      ip: stats.inningsPitched || 0,
-      k9: stats.strikeOutsPer9Inn ? (stats.strikeOutsPer9Inn).toFixed(1) : 'N/A',
-      whip: stats.whip ? (stats.whip).toFixed(2) : 'N/A',
+    
+    // Check if stats are available
+    if (data.stats && data.stats.length > 0) {
+      const stats = data.stats[0].stats || {}
+      return {
+        era: stats.era ? parseFloat(stats.era).toFixed(2) : 'N/A',
+        wins: stats.wins || 0,
+        losses: stats.losses || 0,
+        ip: stats.inningsPitched || 0,
+        k9: stats.strikeOutsPer9Inn ? parseFloat(stats.strikeOutsPer9Inn).toFixed(1) : 'N/A',
+        whip: stats.whip ? parseFloat(stats.whip).toFixed(2) : 'N/A',
+      }
     }
+    // If no stats, return N/A (pitcher might be new/injured)
+    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
   } catch (e) {
     return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
   }
@@ -134,8 +151,8 @@ async function generatePicks(games) {
         stats.homePitcher = homeStats
       }
       // Fetch team records
-      if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId)
-      if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId)
+      if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId, g.away)
+      if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId, g.home)
     }
     // For NBA/NHL, extract record from Vegas odds if available
     if (g.sport === 'NBA' || g.sport === 'NHL') {
