@@ -329,6 +329,12 @@ export default async function handler(req, res) {
     if (!games.length) return res.json({ sent: 0, message: 'No games today' })
 
     const picksText = await generatePicks(games)
+    
+    // If Claude refused to make picks, don't send anything. Silent.
+    if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data')) {
+      return res.json({ sent: 0, message: 'No picks generated - silent skip' })
+    }
+    
     const html = buildEmail(picksText, date)
 
     const { data: subscribers, error } = await supabase
@@ -351,15 +357,18 @@ export default async function handler(req, res) {
       sent += Math.min(50, emails.length - i)
     }
 
-    // Extract top pick for social posts
+    // Extract top pick for social posts (only if picks exist)
     const topPickSection = picksText.split('---')[0] || picksText
     const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
     const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
     const betLine = topPickSection.match(/- Bet: (.+)/)?.[1]?.trim() || ''
+    
+    // Only post to social if we actually have picks
+    const hasPicks = pickLine && betLine
 
-    // Auto-post to Telegram
+    // Auto-post to Telegram (only if picks exist)
     try {
-      if (pickLine) {
+      if (hasPicks && pickLine) {
         const tgMessage = `🏆 Vega's Top Pick — ${date}\n\n📌 ${pickLine}\n💰 ${betLine}\n\n💡 ${edgeLine}\n\n📊 Full analysis + 2 more picks:\n🔗 trueoddsiq.com/picks\n
 📧 Free daily newsletter → trueoddsiq.com\n\n#SportsBetting #VegaPicks #FreePicks`
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -372,9 +381,9 @@ export default async function handler(req, res) {
       console.warn('Telegram post failed:', tgErr.message)
     }
 
-    // Auto-post to X
+    // Auto-post to X (only if picks exist)
     try {
-      if (pickLine) {
+      if (hasPicks && pickLine) {
         const tweet = `🏆 Vega's Top Pick — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\n📊 2 more picks + full analysis:\ntrueoddsiq.com/picks\n\n#SportsBetting #VegaPicks #FreePicks`.slice(0, 280)
         await postTweet(tweet)
       }
