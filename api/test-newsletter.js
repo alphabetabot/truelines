@@ -1,12 +1,8 @@
 // Test newsletter endpoint - sends to user only for verification before public send
 import { Resend } from 'resend'
-import { createClient } from '@supabase/supabase-js'
+import { getSupabase } from './supabase-client.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
 
 // Import the main cron handler to reuse its logic
 import handler from './cron-newsletter.js'

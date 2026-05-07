@@ -1,12 +1,9 @@
 import { Resend } from 'resend'
-import { createClient } from '@supabase/supabase-js'
 import { postTweet } from './post-to-x.js'
+import { getSupabase } from './supabase-client.js'
+import { extractPicksFromResponse, storePicks } from './store-picks.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
-const supabase = createClient(
-  process.env.VITE_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
 
 async function getMLBStats(teamId, teamName) {
   try {
@@ -335,9 +332,19 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'No picks generated - silent skip' })
     }
     
+    // Store picks in database for the tracker
+    try {
+      const picks = extractPicksFromResponse(picksText)
+      if (picks.length > 0) {
+        await storePicks(picks, new Date())
+      }
+    } catch (storageErr) {
+      console.warn('Failed to store picks:', storageErr.message)
+    }
+    
     const html = buildEmail(picksText, date)
 
-    const { data: subscribers, error } = await supabase
+    const { data: subscribers, error } = await getSupabase()
       .from('newsletter_subscribers')
       .select('email')
       .eq('active', true)
