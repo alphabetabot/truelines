@@ -1,32 +1,39 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
-
-// Real picks tracked from April 23, 2026 — updated daily as results come in
-const RECENT_PICKS = [
-  { date: 'Apr 24', sport: 'NBA', game: 'Thunder vs Suns', pick: 'OKC -470', result: 'W', odds: -470, units: +0.21 },
-  { date: 'Apr 24', sport: 'MLB', game: 'Red Sox vs Orioles', pick: 'Boston -1.5', result: 'W', odds: -125, units: +0.80 },
-  { date: 'Apr 24', sport: 'NBA', game: 'Spurs vs Blazers', pick: 'San Antonio -142', result: 'W', odds: -142, units: +0.70 },
-  { date: 'Apr 25', sport: 'NBA', game: 'Celtics vs 76ers', pick: 'Boston -290', result: 'W', odds: -290, units: +0.34 },
-  { date: 'Apr 25', sport: 'MLB', game: 'Yankees vs Astros', pick: 'NY -1.5 RL', result: 'W', odds: +115, units: +1.15 },
-  { date: 'Apr 25', sport: 'NBA', game: 'Spurs vs Blazers', pick: 'San Antonio -218', result: 'W', odds: -218, units: +0.46 },
-  { date: 'Apr 26', sport: 'NBA', game: 'Thunder vs Suns', pick: 'OKC -500', result: 'W', odds: -500, units: +0.20 },
-  { date: 'Apr 26', sport: 'NHL', game: 'Wild vs Stars', pick: 'Minnesota +114', result: 'W', odds: +114, units: +1.14 },
-  { date: 'Apr 26', sport: 'MLB', game: 'Red Sox vs Blue Jays', pick: 'Under 8.5', result: 'W', odds: -110, units: +0.91 },
-  { date: 'Apr 27', sport: 'NBA', game: 'Celtics vs 76ers', pick: 'Boston -550', result: 'W', odds: -550, units: +0.18 },
-  { date: 'Apr 27', sport: 'MLB', game: 'Astros vs Orioles', pick: 'Houston ML', result: 'W', odds: -145, units: +0.69 },
-  { date: 'Apr 27', sport: 'NBA', game: 'Blazers vs Spurs', pick: 'Portland +440', result: 'L', odds: +440, units: -1.00 },
-]
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
 export default function PerformanceTracker() {
   const [expanded, setExpanded] = useState(false)
+  const [picks, setPicks] = useState([])
+  const [loading, setLoading] = useState(true)
 
-  const wins = RECENT_PICKS.filter(p => p.result === 'W').length
-  const losses = RECENT_PICKS.filter(p => p.result === 'L').length
-  const totalUnits = RECENT_PICKS.reduce((s, p) => s + p.units, 0)
-  const winRate = RECENT_PICKS.length > 0 ? Math.round((wins / RECENT_PICKS.length) * 100) + '%' : '—'
-  const isNew = RECENT_PICKS.length === 0
+  useEffect(() => {
+    async function fetchPicks() {
+      try {
+        const res = await fetch('/api/performance-picks')
+        if (res.ok) {
+          const data = await res.json()
+          setPicks(data)
+        }
+      } catch (err) {
+        console.error('Failed to fetch picks:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchPicks()
+  }, [])
+
+  const picksWithResults = picks.filter(p => p.result && p.result !== '')
+  const wins = picksWithResults.filter(p => p.result === 'W').length
+  const losses = picksWithResults.filter(p => p.result === 'L').length
+  const totalUnits = picksWithResults.reduce((s, p) => {
+    const units = parseFloat(p.units) || 0
+    return s + units
+  }, 0)
+  const winRate = picksWithResults.length > 0 ? Math.round((wins / picksWithResults.length) * 100) + '%' : '—'
+  const isNew = picksWithResults.length === 0
 
   return (
     <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
@@ -57,7 +64,7 @@ export default function PerformanceTracker() {
         <div className="grid grid-cols-3 gap-0 px-4 pb-3">
           {[
             { label: 'Record', record: isNew ? '—' : `${wins}-${losses}`, units: isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(1)}u` },
-            { label: 'Win Rate', record: winRate, units: isNew ? 'Since Apr 23' : `${RECENT_PICKS.length} picks` },
+            { label: 'Win Rate', record: winRate, units: isNew ? 'Since May 7' : `${picksWithResults.length} picks` },
             { label: 'Status', record: '3/day', units: 'Picks daily' },
           ].map(({ label, record, units }, i) => (
             <div key={label} className="text-center" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
@@ -80,7 +87,7 @@ export default function PerformanceTracker() {
             </div>
           ) : (
             <div className="space-y-2">
-              {RECENT_PICKS.map((pick, i) => (
+              {picksWithResults.map((pick, i) => (
                 <div key={i} className="flex items-center justify-between py-1.5"
                   style={{ borderBottom: '1px solid #f1f5f9' }}>
                   <div className="flex items-center gap-2 min-w-0">
