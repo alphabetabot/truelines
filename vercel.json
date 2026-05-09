@@ -3,7 +3,7 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [
-    { "path": "/api/log-results", "schedule": "0 21 * * *" },
+    { "path": "/api/log-results", "schedule": "30 22 * * *" },
     { "path": "/api/cron-blogs", "schedule": "0 7 * * *" },
     { "path": "/api/cron-blogs?weekly=true", "schedule": "0 8 * * 1" },
     { "path": "/api/cron-posts", "schedule": "0 12 * * *" },
