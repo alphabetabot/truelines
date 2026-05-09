@@ -154,7 +154,12 @@ Do NOT just repeat the topic title as the H1 — make it more compelling and spe
   const lines = content.split('\n').filter(l => l.trim())
   const titleLine = lines.find(l => l.startsWith('# ')) || lines[0]
   const title = titleLine.replace(/^#+ /, '').trim()
-  const slug = slugify(title.slice(0, 60)) + '-' + today
+  // Truncate at word boundary, max 80 chars
+  let truncated = title
+  if (title.length > 80) {
+    truncated = title.slice(0, 80).split(' ').slice(0, -1).join(' ')
+  }
+  const slug = slugify(truncated) + '-' + today
   const summary = lines.find(l => !l.startsWith('#') && l.length > 50 && l.length < 250)?.trim()
     || `${topic} — expert betting guide from TrueOddsIQ's AI analyst Vega.`
 
