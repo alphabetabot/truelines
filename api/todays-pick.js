@@ -26,12 +26,18 @@ async function getTopGame() {
         const awayML = h2h?.outcomes?.find(o => o.name === g.away_team)?.price
         const homeML = h2h?.outcomes?.find(o => o.name === g.home_team)?.price
         const total = totals?.outcomes?.find(o => o.name === 'Over')?.point
+        
+        // Validate odds are reasonable (between -5000 and +10000)
+        if (awayML && (awayML < -5000 || awayML > 10000)) continue
+        if (homeML && (homeML < -5000 || homeML > 10000)) continue
+        if (!awayML || !homeML) continue
+        
         return {
           sport: sport.label,
           away: g.away_team,
           home: g.home_team,
-          awayML: awayML ? (awayML > 0 ? `+${awayML}` : `${awayML}`) : null,
-          homeML: homeML ? (homeML > 0 ? `+${homeML}` : `${homeML}`) : null,
+          awayML: awayML > 0 ? `+${awayML}` : `${awayML}`,
+          homeML: homeML > 0 ? `+${homeML}` : `${homeML}`,
           total,
         }
       }
@@ -43,7 +49,7 @@ async function getTopGame() {
 export default async function handler(req, res) {
   const today = new Date().toISOString().split('T')[0]
 
-  // Check cache first
+  // Check cache first — but validate odds are real
   try {
     const cacheRes = await fetch(`${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${today}&select=*&limit=1`, {
       headers: {
@@ -53,7 +59,11 @@ export default async function handler(req, res) {
     })
     const cached = await cacheRes.json()
     if (cached?.[0]) {
-      return res.json(cached[0])
+      const pick = cached[0]
+      // Validate cached pick has reasonable odds in the bet field
+      if (pick.bet && !pick.bet.includes('-10000') && !pick.bet.includes('-99999')) {
+        return res.json(pick)
+      }
     }
   } catch {}
 
@@ -101,6 +111,11 @@ Respond in this EXACT JSON format (no markdown, just raw JSON):
     const pickData = JSON.parse(cleaned)
     const record = { date: today, ...pickData }
 
+    // Validate pick has real odds before caching
+    if (!pickData.bet || pickData.bet.includes('-10000') || pickData.bet.includes('-99999')) {
+      throw new Error('Invalid odds in pick data')
+    }
+    
     // Cache in Supabase
     await fetch(`${SUPABASE_URL}/rest/v1/daily_picks`, {
       method: 'POST',
@@ -115,6 +130,8 @@ Respond in this EXACT JSON format (no markdown, just raw JSON):
 
     return res.json(record)
   } catch (err) {
-    return res.status(500).json({ error: err.message })
+    console.error('Error generating pick:', err.message)
+    // Return empty response instead of bad data
+    return res.status(503).json({ error: 'Unable to generate valid pick today' })
   }
 }

@@ -25,9 +25,12 @@ export default function DailyPick() {
         const res = await fetch('/api/todays-pick')
         if (res.ok) {
           const data = await res.json()
-          setPick(data)
-          localStorage.setItem(CACHE_KEY, JSON.stringify(data))
-          localStorage.setItem(CACHE_DATE_KEY, today)
+          // Validate odds are real before displaying
+          if (data.bet && !data.bet.includes('-10000') && !data.bet.includes('-99999')) {
+            setPick(data)
+            localStorage.setItem(CACHE_KEY, JSON.stringify(data))
+            localStorage.setItem(CACHE_DATE_KEY, today)
+          }
         }
       } catch {}
       setLoading(false)
