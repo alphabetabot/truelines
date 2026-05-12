@@ -49,89 +49,30 @@ async function getTopGame() {
 export default async function handler(req, res) {
   const today = new Date().toISOString().split('T')[0]
 
-  // Check cache first — but validate odds are real
+  // ONLY use the newsletter's top pick (position='top') — no separate generation
   try {
-    const cacheRes = await fetch(`${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${today}&select=*&limit=1`, {
-      headers: {
-        'apikey': SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+    const topPickRes = await fetch(
+      `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${today}&position=eq.top&select=*&limit=1`,
+      {
+        headers: {
+          'apikey': SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
+        }
       }
-    })
-    const cached = await cacheRes.json()
-    if (cached?.[0]) {
-      const pick = cached[0]
-      // Validate cached pick has reasonable odds in the bet field
+    )
+    const topPickData = await topPickRes.json()
+    if (topPickData?.[0]) {
+      const pick = topPickData[0]
+      // Validate pick has reasonable odds
       if (pick.bet && !pick.bet.includes('-10000') && !pick.bet.includes('-99999')) {
         return res.json(pick)
       }
     }
   } catch {}
 
-  // Generate fresh pick
-  try {
-    const game = await getTopGame()
-    if (!game) return res.status(404).json({ error: 'No games today' })
-
-    const prompt = `You are Vega, TrueOddsIQ's AI sports betting analyst. Give ONE sharp betting pick for today.
-
-Game: ${game.away} @ ${game.home} (${game.sport})
-Moneyline: ${game.away} ${game.awayML} / ${game.home} ${game.homeML}
-Total: ${game.total || 'N/A'}
-
-Respond in this EXACT JSON format (no markdown, just raw JSON):
-{
-  "pick": "short pick label e.g. Cubs ML or Over 8.5",
-  "bet": "exact bet type and odds e.g. Moneyline at -115 via DraftKings",
-  "confidence": "⭐⭐⭐⭐",
-  "edge": "2-3 sentence explanation of why this bet has value — be specific about the stats, matchup, or line angle",
-  "game": "${game.away} @ ${game.home}",
-  "sport": "${game.sport}"
-}`
-
-    const aiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'x-api-key': ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    })
-
-    const aiData = await aiRes.json()
-    const text = aiData.content?.[0]?.text?.trim()
-    if (!text) throw new Error('No AI response')
-
-    // Strip markdown code fences if present
-    const cleaned = text.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```$/i, '').trim()
-    const pickData = JSON.parse(cleaned)
-    const record = { date: today, ...pickData }
-
-    // Validate pick has real odds before caching
-    if (!pickData.bet || pickData.bet.includes('-10000') || pickData.bet.includes('-99999')) {
-      throw new Error('Invalid odds in pick data')
-    }
-    
-    // Cache in Supabase
-    await fetch(`${SUPABASE_URL}/rest/v1/daily_picks`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_SERVICE_KEY,
-        'Authorization': `Bearer ${SUPABASE_SERVICE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates',
-      },
-      body: JSON.stringify(record),
-    })
-
-    return res.json(record)
-  } catch (err) {
-    console.error('Error generating pick:', err.message)
-    // Return empty response instead of bad data
-    return res.status(503).json({ error: 'Unable to generate valid pick today' })
-  }
+  // No valid top pick found — don't generate a different one
+  // Wait for the newsletter cron to generate picks
+  return res.status(503).json({ 
+    error: 'No picks yet — newsletter generates picks daily at 8 AM PT'
+  })
 }
