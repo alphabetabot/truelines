@@ -165,8 +165,6 @@ async function generatePicks(games) {
     if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
     if (g.bookmakers?.length) {
       const dk = g.bookmakers.find(b => b.key === 'draftkings')
-      const fd = g.bookmakers.find(b => b.key === 'fanduel')
-      const bm = g.bookmakers.find(b => b.key === 'betmgm')
       if (dk) {
         const h2h = dk.markets?.find(m => m.key === 'h2h')
         const spread = dk.markets?.find(m => m.key === 'spreads')
@@ -174,20 +172,48 @@ async function generatePicks(games) {
         if (h2h) {
           const a = h2h.outcomes?.find(o => o.name === g.away)
           const h = h2h.outcomes?.find(o => o.name === g.home)
-          if (a && h) line += ` | ML: ${a.price > 0 ? '+' : ''}${a.price}/${h.price > 0 ? '+' : ''}${h.price}`
+          if (a && h) {
+            line += ` | ML: ${a.price > 0 ? '+' : ''}${a.price}/${h.price > 0 ? '+' : ''}${h.price}`
+            // Store odds on game object for Claude reference
+            g.dkAwayML = a.price
+            g.dkHomeML = h.price
+          }
         }
         if (spread && g.sport !== 'MLB') {
           const a = spread.outcomes?.find(o => o.name === g.away)
-          if (a) line += ` | Spread: ${a.point > 0 ? '+' : ''}${a.point}`
+          if (a) {
+            line += ` | Spread: ${a.point > 0 ? '+' : ''}${a.point}`
+            g.dkAwaySpread = a.point
+            g.dkAwaySpreadOdds = a.price
+          }
         }
         if (tot) {
           const ov = tot.outcomes?.find(o => o.name === 'Over')
-          if (ov) line += ` | O/U: ${ov.point}`
+          const un = tot.outcomes?.find(o => o.name === 'Under')
+          if (ov) {
+            line += ` | O/U: ${ov.point} (O ${ov.price > 0 ? '+' : ''}${ov.price}/${un?.price > 0 ? '+' : ''}${un?.price})`
+            g.dkTotal = ov.point
+            g.dkOverOdds = ov.price
+            g.dkUnderOdds = un?.price
+          }
         }
       }
     }
     return line
   }).join('\n')
+
+  // Build game reference map so Claude can reference games by matchup with actual odds
+  const gameMap = gamesWithStats.map((g, idx) => ({
+    index: idx,
+    matchup: `${g.away} @ ${g.home}`,
+    sport: g.sport,
+    away: g.away,
+    home: g.home,
+    dkAwayML: g.dkAwayML,
+    dkHomeML: g.dkHomeML,
+    dkAwaySpread: g.dkAwaySpread,
+    dkTotal: g.dkTotal,
+  }))
 
   // Build detailed stats context for Claude — REAL 2026 DATA ONLY
   let statsContext = '=== REAL 2026 SEASON STATS (Official League APIs) ===\n\n'
@@ -207,6 +233,9 @@ async function generatePicks(games) {
     }
     statsContext += '\n'
   })
+
+  // Build game reference with ACTUAL DraftKings odds
+  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | DK ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -236,7 +265,15 @@ ${slate}
 5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
 6. If you lack sufficient data for a pick, skip it and move to the next game.
 
+🎯 MATCHUP REFERENCE (DRAFTKINGS LIVE ODDS):
+${gameReference}
+
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
+
+⚠️ CRITICAL: Each pick MUST include:
+1. Full matchup: "[Away Team] @ [Home Team]"
+2. Your pick with ACTUAL DraftKings odds from above
+3. Example: "Pirates @ Rockies → Pirates ML -345"
 
 Format EXACTLY like this:
 
@@ -278,12 +315,25 @@ Only pick games with genuine edge. Be specific with stats and reasoning.`
 
 function buildEmail(picksText, date) {
   const lines = picksText.split('\n').map(line => {
+    // Handle matchup with arrow → format: "Pirates @ Rockies → Pirates ML -345"
+    if (line.includes('@') && line.includes('→')) {
+      const [matchup, pick] = line.split('→')
+      return `<div style="background:#f1f5f9;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin:12px 0;">
+        <p style="margin:0 0 4px;font-size:14px;color:#0f172a;font-weight:600;">${matchup.trim()}</p>
+        <p style="margin:0;font-size:15px;color:#f59e0b;font-weight:700;">${pick.trim()}</p>
+      </div>`
+    }
     if (line.startsWith('**') && line.endsWith('**')) {
       const t = line.slice(2, -2)
       const color = t.includes('Fade') ? '#ef4444' : '#f59e0b'
       return `<p style="font-weight:900;font-size:16px;color:${color};margin:20px 0 6px;">${t}</p>`
     }
-    if (line.startsWith('- ')) return `<p style="margin:3px 0;padding-left:14px;color:#475569;font-size:14px;">• ${line.slice(2)}</p>`
+    if (line.startsWith('- ')) {
+      const content = line.slice(2)
+      // Highlight odds like "-345" or "+150"
+      const highlighted = content.replace(/([+-]\d+)/g, '<span style="color:#f59e0b;font-weight:700;">$1</span>')
+      return `<p style="margin:3px 0;padding-left:14px;color:#475569;font-size:14px;">• ${highlighted}</p>`
+    }
     if (!line.trim()) return '<div style="height:8px"></div>'
     return `<p style="margin:3px 0;color:#475569;font-size:14px;">${line}</p>`
   }).join('')
@@ -297,7 +347,7 @@ function buildEmail(picksText, date) {
   </div>
   <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;">
     <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin-bottom:16px;font-size:12px;color:#92400e;line-height:1.6;">
-      <strong>⚠️ Important Disclaimer:</strong> The picks and analysis in this newsletter are generated by artificial intelligence and are provided for informational and entertainment purposes only. Past performance does not guarantee future results. TrueOddsIQ assumes no liability for any wagering decisions made based on this content. Always bet within your means. Must be 21+ and located in a jurisdiction where sports betting is legal.
+      <strong>⚠️ Odds from DraftKings as of ${date}:</strong> These picks use live DraftKings odds. Shop other books (FanDuel, BetMGM, Caesars) for better lines. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
     </div>
     ${lines}
     <div style="text-align:center;margin-top:24px;">
