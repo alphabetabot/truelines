@@ -45,12 +45,16 @@ export async function storePicks(picks, date) {
     date: date.toISOString().split('T')[0],
     sport: extractSportFromPick(pick.pickLine),
     game: pick.pickLine,
+    pick: pick.pickLine,  // Match performance-picks API column
+    bet: `${pick.bestBook} ${pick.odds}`,  // Match performance-picks API column
     pick_type: pick.betType,
     pick_side: `${pick.bestBook} ${pick.odds}`,
     odds: parseInt(pick.odds.replace(/[^0-9-]/g, '')) || 0,
     best_book: pick.bestBook,
     confidence: pick.confidence,
+    edge: pick.edge,  // Match performance-picks API column
     edge_reasoning: pick.edge,
+    result: null,  // Match performance-picks API column
     status: 'pending',
     position: idx === 0 ? 'top' : `pick_${idx}`,
   }))
@@ -70,9 +74,14 @@ export async function storePicks(picks, date) {
 }
 
 function extractSportFromPick(pickLine) {
-  if (pickLine.toLowerCase().includes('nba') || pickLine.toLowerCase().includes('basketball')) return 'NBA'
-  if (pickLine.toLowerCase().includes('mlb') || pickLine.toLowerCase().includes('baseball')) return 'MLB'
-  if (pickLine.toLowerCase().includes('nhl') || pickLine.toLowerCase().includes('hockey')) return 'NHL'
-  if (pickLine.toLowerCase().includes('nfl') || pickLine.toLowerCase().includes('football')) return 'NFL'
+  // Extract sport from lines like "MLB: Pirates @ Rockies" or just "Pirates @ Rockies"
+  if (pickLine.toUpperCase().startsWith('MLB')) return 'MLB'
+  if (pickLine.toUpperCase().startsWith('NBA')) return 'NBA'
+  if (pickLine.toUpperCase().startsWith('NHL')) return 'NHL'
+  if (pickLine.toUpperCase().startsWith('NFL')) return 'NFL'
+  if (pickLine.toLowerCase().includes('baseball')) return 'MLB'
+  if (pickLine.toLowerCase().includes('basketball')) return 'NBA'
+  if (pickLine.toLowerCase().includes('hockey')) return 'NHL'
+  if (pickLine.toLowerCase().includes('football')) return 'NFL'
   return 'Mixed'
 }
