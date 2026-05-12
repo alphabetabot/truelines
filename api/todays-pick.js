@@ -49,10 +49,10 @@ async function getTopGame() {
 export default async function handler(req, res) {
   const today = new Date().toISOString().split('T')[0]
 
-  // ONLY use the newsletter's top pick (position='top') — no separate generation
+  // ONLY use the newsletter's picks (first pick = top pick) — no separate generation
   try {
     const topPickRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${today}&position=eq.top&select=*&limit=1`,
+      `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${today}&order=created_at.asc&limit=1`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_KEY,
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
     }
   } catch {}
 
-  // No valid top pick found — don't generate a different one
+  // No valid pick found — don't generate a different one
   // Wait for the newsletter cron to generate picks
   return res.status(503).json({ 
     error: 'No picks yet — newsletter generates picks daily at 8 AM PT'

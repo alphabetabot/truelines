@@ -45,25 +45,18 @@ export async function storePicks(picks, date) {
     date: date.toISOString().split('T')[0],
     sport: extractSportFromPick(pick.pickLine),
     game: pick.pickLine,
-    pick: pick.pickLine,  // Match performance-picks API column
-    bet: `${pick.bestBook} ${pick.odds}`,  // Match performance-picks API column
-    pick_type: pick.betType,
-    pick_side: `${pick.bestBook} ${pick.odds}`,
-    odds: parseInt(pick.odds.replace(/[^0-9-]/g, '')) || 0,
-    best_book: pick.bestBook,
+    pick: pick.pickLine,
+    bet: `${pick.bestBook} ${pick.odds}`,
     confidence: pick.confidence,
-    edge: pick.edge,  // Match performance-picks API column
-    edge_reasoning: pick.edge,
-    result: null,  // Match performance-picks API column
-    status: 'pending',
-    position: idx === 0 ? 'top' : `pick_${idx}`,
+    edge: pick.edge,
+    result: null,
   }))
 
   const supabase = getSupabase()
   const { data, error } = await supabase
     .from('daily_picks')
-    .insert(rows)
-    .select()
+    .insert(rows, { count: 'exact' })
+    .select('*')
 
   if (error) {
     console.error('Error storing picks:', error.message)
