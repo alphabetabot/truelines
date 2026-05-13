@@ -30,16 +30,21 @@ function checkResult(pickText, game) {
   
   if (away === null || home === null) return null // Game not done
   
-  const pick = pickText.toLowerCase().trim()
+  // Check if this is a fade (marked with FADE: prefix)
+  const isFade = pickText.toLowerCase().includes('fade:')
+  const pick = pickText.replace(/^FADE:\s*/i, '').toLowerCase().trim()
+  
   const awayTeamShort = game.away_team.split(' ').pop().toLowerCase()
   const homeTeamShort = game.home_team.split(' ').pop().toLowerCase()
   
+  let result = null
+  
   // Moneyline
   if (pick.includes('ml')) {
-    if (pick.includes(awayTeamShort) && away > home) return 'W'
-    if (pick.includes(awayTeamShort) && away < home) return 'L'
-    if (pick.includes(homeTeamShort) && home > away) return 'W'
-    if (pick.includes(homeTeamShort) && home < away) return 'L'
+    if (pick.includes(awayTeamShort) && away > home) result = 'W'
+    else if (pick.includes(awayTeamShort) && away < home) result = 'L'
+    else if (pick.includes(homeTeamShort) && home > away) result = 'W'
+    else if (pick.includes(homeTeamShort) && home < away) result = 'L'
   }
   
   // Over/Under
@@ -47,15 +52,20 @@ function checkResult(pickText, game) {
   const overMatch = pick.match(/over\s+(\d+\.?\d*)/)
   if (overMatch) {
     const line = parseFloat(overMatch[1])
-    return total > line ? 'W' : 'L'
+    result = total > line ? 'W' : 'L'
   }
   const underMatch = pick.match(/under\s+(\d+\.?\d*)/)
   if (underMatch) {
     const line = parseFloat(underMatch[1])
-    return total < line ? 'W' : 'L'
+    result = total < line ? 'W' : 'L'
   }
   
-  return null
+  // INVERT result if it's a fade (fade wins when pick loses)
+  if (isFade && result) {
+    result = result === 'W' ? 'L' : 'W'
+  }
+  
+  return result
 }
 
 function findGame(pickGameStr, games) {
@@ -124,6 +134,10 @@ export default async function handler(req, res) {
         continue
       }
       
+      // Add clarity to log about fades
+      const isFade = pick.pick.toLowerCase().includes('fade')
+      const resultNote = isFade ? `${result} (fade inverted)` : result
+      
       // Update Supabase
       const updateRes = await fetch(
         `${SUPABASE_URL}/rest/v1/daily_picks?id=eq.${pick.id}`,
@@ -139,7 +153,7 @@ export default async function handler(req, res) {
       )
       
       if (updateRes.ok) {
-        log.push(`UPDATE: ${pick.pick} = ${result}`)
+        log.push(`UPDATE: ${pick.pick} = ${resultNote}`)
         updated++
       } else {
         log.push(`ERROR: Failed to update ${pick.pick}`)

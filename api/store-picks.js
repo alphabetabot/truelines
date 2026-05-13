@@ -12,22 +12,29 @@ export function extractPicksFromResponse(claudeResponse) {
   for (const section of sections) {
     if (!section) continue
 
-    const pickMatch = section.match(/\*\*(.+?Pick.+?)\*\*/i)
+    const isFade = section.includes('FADE') || section.includes('❌')
+    const pickMatch = section.match(/\*\*(.+?)\*\*/i)
     const betMatch = section.match(/- Bet: (.+?) at (.+?) via (.+?)(?:\n|$)/i)
+    const whyMatch = section.match(/- Why: (.+?)(?:\n|$)/i)
     const confMatch = section.match(/- Confidence: ([\d★]+)/i)
-    const edgeMatch = section.match(/- Edge: (.+?)(?:\n\n|$)/is)
+    const edgeMatch = section.match(/- Edge: (.+?)(?:\n\n|$)/is) || whyMatch
 
-    if (pickMatch && betMatch) {
+    if (pickMatch) {
       const confidenceStr = confMatch ? confMatch[1] : '★★★'
       const stars = (confidenceStr.match(/★/g) || []).length
+      const pickText = pickMatch[1].trim()
+      
+      // Mark fades with FADE: prefix so log-results can invert them
+      const pickLineToStore = isFade ? `FADE: ${pickText}` : pickText
 
       picks.push({
-        pickLine: pickMatch[1].trim(),
-        betType: betMatch[1].trim(),
-        odds: betMatch[2].trim(),
-        bestBook: betMatch[3].trim(),
+        pickLine: pickLineToStore,
+        betType: betMatch ? betMatch[1].trim() : 'Fade',
+        odds: betMatch ? betMatch[2].trim() : 'N/A',
+        bestBook: betMatch ? betMatch[3].trim() : 'N/A',
         confidence: stars,
         edge: edgeMatch ? edgeMatch[1].trim() : '',
+        isFade,
       })
     }
   }
@@ -46,7 +53,7 @@ export async function storePicks(picks, date) {
     sport: extractSportFromPick(pick.pickLine),
     game: pick.pickLine,
     pick: pick.pickLine,
-    bet: `${pick.bestBook} ${pick.odds}`,
+    bet: pick.isFade ? `FADE: ${pick.bestBook} ${pick.odds}` : `${pick.bestBook} ${pick.odds}`,
     confidence: pick.confidence,
     edge: pick.edge,
     result: null,
@@ -67,14 +74,16 @@ export async function storePicks(picks, date) {
 }
 
 function extractSportFromPick(pickLine) {
+  // Remove FADE: prefix if present
+  const clean = pickLine.replace(/^FADE:\s*/i, '')
   // Extract sport from lines like "MLB: Pirates @ Rockies" or just "Pirates @ Rockies"
-  if (pickLine.toUpperCase().startsWith('MLB')) return 'MLB'
-  if (pickLine.toUpperCase().startsWith('NBA')) return 'NBA'
-  if (pickLine.toUpperCase().startsWith('NHL')) return 'NHL'
-  if (pickLine.toUpperCase().startsWith('NFL')) return 'NFL'
-  if (pickLine.toLowerCase().includes('baseball')) return 'MLB'
-  if (pickLine.toLowerCase().includes('basketball')) return 'NBA'
-  if (pickLine.toLowerCase().includes('hockey')) return 'NHL'
-  if (pickLine.toLowerCase().includes('football')) return 'NFL'
+  if (clean.toUpperCase().startsWith('MLB')) return 'MLB'
+  if (clean.toUpperCase().startsWith('NBA')) return 'NBA'
+  if (clean.toUpperCase().startsWith('NHL')) return 'NHL'
+  if (clean.toUpperCase().startsWith('NFL')) return 'NFL'
+  if (clean.toLowerCase().includes('baseball')) return 'MLB'
+  if (clean.toLowerCase().includes('basketball')) return 'NBA'
+  if (clean.toLowerCase().includes('hockey')) return 'NHL'
+  if (clean.toLowerCase().includes('football')) return 'NFL'
   return 'Mixed'
 }
