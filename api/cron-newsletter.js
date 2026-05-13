@@ -164,37 +164,38 @@ async function generatePicks(games) {
     if (g.weather?.temp) line += ` | ${g.weather.temp}°F ${g.weather.condition || ''} ${g.weather.wind || ''}`
     if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
     if (g.bookmakers?.length) {
+      // Use DraftKings primarily, fall back to FanDuel if needed
       const dk = g.bookmakers.find(b => b.key === 'draftkings')
-      if (dk) {
-        const h2h = dk.markets?.find(m => m.key === 'h2h')
-        const spread = dk.markets?.find(m => m.key === 'spreads')
-        const tot = dk.markets?.find(m => m.key === 'totals')
+      const fd = g.bookmakers.find(b => b.key === 'fanduel')
+      const book = dk || fd
+      const bookName = dk ? 'DraftKings' : fd ? 'FanDuel' : 'Unknown'
+      
+      if (book) {
+        const h2h = book.markets?.find(m => m.key === 'h2h')
         if (h2h) {
           const a = h2h.outcomes?.find(o => o.name === g.away)
           const h = h2h.outcomes?.find(o => o.name === g.home)
           if (a && h) {
-            line += ` | ML: ${a.price > 0 ? '+' : ''}${a.price}/${h.price > 0 ? '+' : ''}${h.price}`
-            // Store odds on game object for Claude reference
+            line += ` | ML: ${a.price > 0 ? '+' : ''}${a.price}/${h.price > 0 ? '+' : ''}${h.price} (${bookName})`
             g.dkAwayML = a.price
             g.dkHomeML = h.price
           }
         }
+        
+        const spread = book.markets?.find(m => m.key === 'spreads')
         if (spread && g.sport !== 'MLB') {
           const a = spread.outcomes?.find(o => o.name === g.away)
           if (a) {
-            line += ` | Spread: ${a.point > 0 ? '+' : ''}${a.point}`
+            line += ` | Spread: ${a.point > 0 ? '+' : ''}${a.point} (${bookName})`
             g.dkAwaySpread = a.point
-            g.dkAwaySpreadOdds = a.price
           }
         }
+        
+        const tot = book.markets?.find(m => m.key === 'totals')
         if (tot) {
           const ov = tot.outcomes?.find(o => o.name === 'Over')
-          const un = tot.outcomes?.find(o => o.name === 'Under')
           if (ov) {
-            line += ` | O/U: ${ov.point} (O ${ov.price > 0 ? '+' : ''}${ov.price}/${un?.price > 0 ? '+' : ''}${un?.price})`
             g.dkTotal = ov.point
-            g.dkOverOdds = ov.price
-            g.dkUnderOdds = un?.price
           }
         }
       }
@@ -203,17 +204,25 @@ async function generatePicks(games) {
   }).join('\n')
 
   // Build game reference map so Claude can reference games by matchup with actual odds
-  const gameMap = gamesWithStats.map((g, idx) => ({
-    index: idx,
-    matchup: `${g.away} @ ${g.home}`,
-    sport: g.sport,
-    away: g.away,
-    home: g.home,
-    dkAwayML: g.dkAwayML,
-    dkHomeML: g.dkHomeML,
-    dkAwaySpread: g.dkAwaySpread,
-    dkTotal: g.dkTotal,
-  }))
+  // ONLY include games that have odds
+  const gameMap = gamesWithStats
+    .filter(g => g.dkAwayML && g.dkHomeML) // Only games with ML odds
+    .map((g, idx) => ({
+      index: idx,
+      matchup: `${g.away} @ ${g.home}`,
+      sport: g.sport,
+      away: g.away,
+      home: g.home,
+      dkAwayML: g.dkAwayML,
+      dkHomeML: g.dkHomeML,
+      dkAwaySpread: g.dkAwaySpread,
+      dkTotal: g.dkTotal,
+    }))
+  
+  // Don't send email if no games have odds
+  if (gameMap.length === 0) {
+    return res.json({ sent: 0, message: 'No games with available odds' })
+  }
 
   // Build detailed stats context for Claude — REAL 2026 DATA ONLY
   let statsContext = '=== REAL 2026 SEASON STATS (Official League APIs) ===\n\n'
@@ -234,8 +243,8 @@ async function generatePicks(games) {
     statsContext += '\n'
   })
 
-  // Build game reference with ACTUAL DraftKings odds
-  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | DK ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
+  // Build game reference with ACTUAL odds (DraftKings or FanDuel)
+  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -265,7 +274,7 @@ ${slate}
 5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
 6. If you lack sufficient data for a pick, skip it and move to the next game.
 
-🎯 MATCHUP REFERENCE (DRAFTKINGS LIVE ODDS):
+🎯 MATCHUP REFERENCE (LIVE ODDS):
 ${gameReference}
 
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
@@ -378,8 +387,9 @@ export default async function handler(req, res) {
     const picksText = await generatePicks(games)
     
     // If Claude refused to make picks, don't send anything. Silent.
-    if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data')) {
-      return res.json({ sent: 0, message: 'No picks generated - silent skip' })
+    if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data') || picksText.includes('constraints') || picksText.includes('undefined')) {
+      console.warn('Claude refused picks:', picksText.slice(0, 200))
+      return res.json({ sent: 0, message: 'No picks generated - Claude refused (likely missing odds)' })
     }
     
     // Store picks in database for the tracker
