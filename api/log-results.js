@@ -69,7 +69,8 @@ function checkResult(pickText, game) {
 }
 
 function findGame(pickGameStr, games) {
-  // "Texas Rangers @ New York Yankees"
+  if (!pickGameStr || !pickGameStr.includes('@')) return null
+  
   const parts = pickGameStr.split('@').map(p => p.trim().toLowerCase())
   if (parts.length < 2) return null
   
@@ -78,10 +79,16 @@ function findGame(pickGameStr, games) {
   return games.find(g => {
     const gAway = g.away_team.toLowerCase()
     const gHome = g.home_team.toLowerCase()
+    const awayLastWord = gAway.split(' ').pop()
+    const homeLastWord = gHome.split(' ').pop()
+    const searchAwayLastWord = awaySearch.split(' ').pop()
+    const searchHomeLastWord = homeSearch.split(' ').pop()
     
-    // Check if team names appear in the game
-    return (gAway.includes(awaySearch) || awaySearch.includes(gAway.split(' ').pop())) &&
-           (gHome.includes(homeSearch) || homeSearch.includes(gHome.split(' ').pop()))
+    // Match: either full name includes search, or last word matches exactly
+    const awayMatches = gAway.includes(awaySearch) || awayLastWord === searchAwayLastWord
+    const homeMatches = gHome.includes(homeSearch) || homeLastWord === searchHomeLastWord
+    
+    return awayMatches && homeMatches
   })
 }
 
