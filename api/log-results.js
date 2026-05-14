@@ -1,82 +1,61 @@
-// Simple result logger with detailed logging for debugging
+// Result logger - completely rewritten for reliability
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
-const ODDS_API_KEY = process.env.VITE_ODDS_API_KEY
 
-async function getAllGames() {
+async function getMLBGames() {
   try {
+    const today = new Date()
+    const endDate = today.toISOString().split('T')[0]
+    const startDate = new Date(today.getTime() - 7*24*60*60*1000).toISOString().split('T')[0] // Last 7 days
+    
+    const res = await fetch(
+      `https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=${startDate}&endDate=${endDate}&hydrate=team`
+    )
+    const data = await res.json()
     const games = []
     
-    // MLB: Use statsapi.mlb.com for historical game data
-    try {
-      const today = new Date().toISOString().split('T')[0]
-      const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-05-05&endDate=${today}&hydrate=team`)
-      const data = await res.json()
-      
-      data.dates?.forEach(d => {
-        d.games?.forEach(g => {
-          // Only include completed games
-          if (g.status?.abstractGameState === 'Final' || g.status?.abstractGameState === 'Completed Early') {
-            games.push({
-              sport: 'MLB',
-              away_team: g.teams?.away?.team?.name,
-              home_team: g.teams?.home?.team?.name,
-              scores: [
-                { name: g.teams?.away?.team?.name, score: String(g.teams?.away?.score) },
-                { name: g.teams?.home?.team?.name, score: String(g.teams?.home?.score) }
-              ]
-            })
-          }
-        })
+    data.dates?.forEach(d => {
+      d.games?.forEach(g => {
+        if (g.status?.abstractGameState === 'Final' || g.status?.abstractGameState === 'Completed Early') {
+          games.push({
+            away_team: g.teams?.away?.team?.name,
+            home_team: g.teams?.home?.team?.name,
+            away_score: parseInt(g.teams?.away?.score || 0),
+            home_score: parseInt(g.teams?.home?.score || 0),
+            sport: 'MLB'
+          })
+        }
       })
-    } catch (e) {
-      console.warn('MLB API failed:', e.message)
-    }
-    
-    // NBA/NHL: Use The Odds API for recent games
-    const sports = ['basketball_nba', 'icehockey_nhl']
-    for (const sport of sports) {
-      try {
-        const res = await fetch(
-          `https://api.the-odds-api.com/v4/sports/${sport}/scores?apiKey=${ODDS_API_KEY}&daysFrom=5`
-        )
-        if (!res.ok) continue
-        const data = await res.json()
-        if (data?.length) games.push(...data.map(g => ({ ...g, sport: sport.includes('nba') ? 'NBA' : 'NHL' })))
-      } catch (e) {
-        console.warn(`${sport} API failed:`, e.message)
-      }
-    }
+    })
     
     return games
   } catch (e) {
-    console.error('Error fetching games:', e.message)
+    console.error('Error fetching MLB games:', e.message)
     return []
   }
 }
 
-function checkResult(pickText, game) {
-  const away = game.scores?.find(s => s.name === game.away_team)?.score ?? null
-  const home = game.scores?.find(s => s.name === game.home_team)?.score ?? null
+function getResult(pickText, game) {
+  const away = game.away_score
+  const home = game.home_score
   
-  if (away === null || home === null) return null // Game not done
+  if (away === null || home === null) return null
   
-  // Check if this is a fade (marked with FADE: prefix)
-  const isFade = pickText.toLowerCase().includes('fade:')
-  const pick = pickText.replace(/^FADE:\s*/i, '').toLowerCase().trim()
-  
-  const awayTeamShort = game.away_team.split(' ').pop().toLowerCase()
-  const homeTeamShort = game.home_team.split(' ').pop().toLowerCase()
+  const pick = pickText.toLowerCase().trim().replace(/^fade:\s*/i, '')
+  const isFade = pickText.toLowerCase().includes('fade')
   
   let result = null
   
   // Moneyline
   if (pick.includes('ml')) {
-    if (pick.includes(awayTeamShort) && away > home) result = 'W'
-    else if (pick.includes(awayTeamShort) && away < home) result = 'L'
-    else if (pick.includes(homeTeamShort) && home > away) result = 'W'
-    else if (pick.includes(homeTeamShort) && home < away) result = 'L'
+    const awayTeamLast = game.away_team.split(' ').pop().toLowerCase()
+    const homeTeamLast = game.home_team.split(' ').pop().toLowerCase()
+    
+    if (pick.includes(awayTeamLast) && away > home) result = 'W'
+    else if (pick.includes(awayTeamLast) && away < home) result = 'L'
+    else if (pick.includes(homeTeamLast) && home > away) result = 'W'
+    else if (pick.includes(homeTeamLast) && home < away) result = 'L'
   }
   
   // Over/Under
@@ -92,7 +71,7 @@ function checkResult(pickText, game) {
     result = total < line ? 'W' : 'L'
   }
   
-  // INVERT result if it's a fade (fade wins when pick loses)
+  // Invert if fade
   if (isFade && result) {
     result = result === 'W' ? 'L' : 'W'
   }
@@ -103,24 +82,22 @@ function checkResult(pickText, game) {
 function findGame(pickGameStr, games) {
   if (!pickGameStr || !pickGameStr.includes('@')) return null
   
-  const parts = pickGameStr.split('@').map(p => p.trim().toLowerCase())
+  const parts = pickGameStr.split('@').map(p => p.trim())
   if (parts.length < 2) return null
   
-  const [awaySearch, homeSearch] = parts
+  const [awayName, homeName] = parts
   
   return games.find(g => {
-    const gAway = g.away_team.toLowerCase()
-    const gHome = g.home_team.toLowerCase()
-    const awayLastWord = gAway.split(' ').pop()
-    const homeLastWord = gHome.split(' ').pop()
-    const searchAwayLastWord = awaySearch.split(' ').pop()
-    const searchHomeLastWord = homeSearch.split(' ').pop()
+    // Try exact match first
+    if (g.away_team === awayName && g.home_team === homeName) return true
     
-    // Match: either full name includes search, or last word matches exactly
-    const awayMatches = gAway.includes(awaySearch) || awayLastWord === searchAwayLastWord
-    const homeMatches = gHome.includes(homeSearch) || homeLastWord === searchHomeLastWord
+    // Try last word match (e.g., "Dodgers" matches "Los Angeles Dodgers")
+    const awayLast = g.away_team.split(' ').pop().toLowerCase()
+    const homeLast = g.home_team.split(' ').pop().toLowerCase()
+    const searchAwayLast = awayName.split(' ').pop().toLowerCase()
+    const searchHomeLast = homeName.split(' ').pop().toLowerCase()
     
-    return awayMatches && homeMatches
+    return awayLast === searchAwayLast && homeLast === searchHomeLast
   })
 }
 
@@ -128,11 +105,11 @@ export default async function handler(req, res) {
   const log = []
   
   try {
-    log.push('START: log-results cron')
+    log.push('START: log-results')
     
-    // Fetch picks
+    // Fetch picks without results
     const picksRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/daily_picks?select=*&result=is.null&limit=100`,
+      `${SUPABASE_URL}/rest/v1/daily_picks?select=*&result=is.null&limit=100&order=date.desc`,
       {
         headers: {
           'apikey': SUPABASE_SERVICE_KEY,
@@ -143,41 +120,41 @@ export default async function handler(req, res) {
     
     if (!picksRes.ok) {
       log.push(`ERROR: Failed to fetch picks (${picksRes.status})`)
-      return res.json({ success: false, log, error: 'Failed to fetch picks' })
+      return res.json({ success: false, log })
     }
     
     const picks = await picksRes.json()
-    log.push(`PICKS: Found ${picks.length} picks without results`)
+    log.push(`PICKS: Found ${picks.length} pending`)
     
     if (picks.length === 0) {
-      return res.json({ success: true, log, message: 'No pending picks' })
+      return res.json({ success: true, log, updated: 0 })
     }
     
-    // Fetch all games
-    const games = await getAllGames()
-    log.push(`GAMES: Found ${games.length} completed games`)
+    // Fetch games
+    const games = await getMLBGames()
+    log.push(`GAMES: Found ${games.length} final MLB games`)
     
     let updated = 0
     
-    // Process each pick
     for (const pick of picks) {
+      if (!pick.game) {
+        log.push(`SKIP: ${pick.pick} (no game field)`)
+        continue
+      }
+      
       const game = findGame(pick.game, games)
       if (!game) {
-        log.push(`SKIP: ${pick.pick} (no game found)`)
+        log.push(`SKIP: ${pick.game} (no match)`)
         continue
       }
       
-      const result = checkResult(pick.pick, game)
+      const result = getResult(pick.pick, game)
       if (!result) {
-        log.push(`SKIP: ${pick.pick} (can't determine result)`)
+        log.push(`SKIP: ${pick.pick} (can't determine W/L)`)
         continue
       }
       
-      // Add clarity to log about fades
-      const isFade = pick.pick.toLowerCase().includes('fade')
-      const resultNote = isFade ? `${result} (fade inverted)` : result
-      
-      // Update Supabase
+      // Update pick
       const updateRes = await fetch(
         `${SUPABASE_URL}/rest/v1/daily_picks?id=eq.${pick.id}`,
         {
@@ -192,17 +169,15 @@ export default async function handler(req, res) {
       )
       
       if (updateRes.ok) {
-        log.push(`UPDATE: ${pick.pick} = ${resultNote}`)
+        log.push(`UPDATED: ${pick.pick} = ${result}`)
         updated++
-      } else {
-        log.push(`ERROR: Failed to update ${pick.pick}`)
       }
     }
     
     log.push(`SUCCESS: Updated ${updated} picks`)
     return res.json({ success: true, updated, log })
   } catch (err) {
-    log.push(`FATAL ERROR: ${err.message}`)
+    log.push(`FATAL: ${err.message}`)
     return res.json({ success: false, log, error: err.message })
   }
 }
