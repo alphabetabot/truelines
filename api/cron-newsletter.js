@@ -158,17 +158,12 @@ async function generatePicks(games) {
     return { ...g, stats }
   }))
   
-  const slate = gamesWithStats.map(g => {
-    let line = `${g.sport}: ${g.away} @ ${g.home}`
-    if (g.venue) line += ` | ${g.venue}`
-    if (g.weather?.temp) line += ` | ${g.weather.temp}°F ${g.weather.condition || ''} ${g.weather.wind || ''}`
-    if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
+  // First pass: extract odds from all games
+  gamesWithStats.forEach(g => {
     if (g.bookmakers?.length) {
-      // Use DraftKings primarily, fall back to FanDuel if needed
       const dk = g.bookmakers.find(b => b.key === 'draftkings')
       const fd = g.bookmakers.find(b => b.key === 'fanduel')
       const book = dk || fd
-      const bookName = dk ? 'DraftKings' : fd ? 'FanDuel' : 'Unknown'
       
       if (book) {
         const h2h = book.markets?.find(m => m.key === 'h2h')
@@ -176,52 +171,51 @@ async function generatePicks(games) {
           const a = h2h.outcomes?.find(o => o.name === g.away)
           const h = h2h.outcomes?.find(o => o.name === g.home)
           if (a && h) {
-            line += ` | ML: ${a.price > 0 ? '+' : ''}${a.price}/${h.price > 0 ? '+' : ''}${h.price} (${bookName})`
             g.dkAwayML = a.price
             g.dkHomeML = h.price
           }
         }
-        
-        const spread = book.markets?.find(m => m.key === 'spreads')
-        if (spread && g.sport !== 'MLB') {
-          const a = spread.outcomes?.find(o => o.name === g.away)
-          if (a) {
-            line += ` | Spread: ${a.point > 0 ? '+' : ''}${a.point} (${bookName})`
-            g.dkAwaySpread = a.point
-          }
-        }
-        
         const tot = book.markets?.find(m => m.key === 'totals')
         if (tot) {
           const ov = tot.outcomes?.find(o => o.name === 'Over')
-          if (ov) {
-            g.dkTotal = ov.point
-          }
+          if (ov) g.dkTotal = ov.point
         }
       }
+    }
+  })
+
+  const slate = gamesWithStats.map(g => {
+    let line = `${g.sport}: ${g.away} @ ${g.home}`
+    if (g.venue) line += ` | ${g.venue}`
+    if (g.weather?.temp) line += ` | ${g.weather.temp}°F ${g.weather.condition || ''} ${g.weather.wind || ''}`
+    if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
+    // Build line for display (odds already extracted in first pass)
+    if (g.dkAwayML && g.dkHomeML) {
+      line += ` | ML: ${g.dkAwayML > 0 ? '+' : ''}${g.dkAwayML}/${g.dkHomeML > 0 ? '+' : ''}${g.dkHomeML}`
+    }
+    if (g.dkTotal) {
+      line += ` | O/U: ${g.dkTotal}`
     }
     return line
   }).join('\n')
 
   // Build game reference map so Claude can reference games by matchup with actual odds
-  // ONLY include games that have odds
-  const gameMap = gamesWithStats
-    .filter(g => g.dkAwayML && g.dkHomeML) // Only games with ML odds
-    .map((g, idx) => ({
-      index: idx,
-      matchup: `${g.away} @ ${g.home}`,
-      sport: g.sport,
-      away: g.away,
-      home: g.home,
-      dkAwayML: g.dkAwayML,
-      dkHomeML: g.dkHomeML,
-      dkAwaySpread: g.dkAwaySpread,
-      dkTotal: g.dkTotal,
-    }))
+  // Include ALL games, even if odds are missing (Claude will note which ones lack data)
+  const gameMap = gamesWithStats.map((g, idx) => ({
+    index: idx,
+    matchup: `${g.away} @ ${g.home}`,
+    sport: g.sport,
+    away: g.away,
+    home: g.home,
+    dkAwayML: g.dkAwayML || 'N/A',
+    dkHomeML: g.dkHomeML || 'N/A',
+    dkAwaySpread: g.dkAwaySpread || 'N/A',
+    dkTotal: g.dkTotal || 'N/A',
+  }))
   
-  // Don't send email if no games have odds
+  // Don't send email if no games at all
   if (gameMap.length === 0) {
-    return res.json({ sent: 0, message: 'No games with available odds' })
+    return res.json({ sent: 0, message: 'No games found for today' })
   }
 
   // Build detailed stats context for Claude — REAL 2026 DATA ONLY
@@ -272,7 +266,8 @@ ${slate}
    Example MLB: "ERA is 2.89, K/9 is 10.2, therefore the edge is..."
    Example NBA/NHL: "Spread favors away team at +150, therefore..."
 5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
-6. If you lack sufficient data for a pick, skip it and move to the next game.
+6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.
+7. Only pick games that have actual numerical odds in the reference list.
 
 🎯 MATCHUP REFERENCE (LIVE ODDS):
 ${gameReference}
@@ -281,8 +276,9 @@ Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly 
 
 ⚠️ CRITICAL: Each pick MUST include:
 1. Full matchup: "[Away Team] @ [Home Team]"
-2. Your pick with ACTUAL DraftKings odds from above
+2. Your pick with actual odds IF AVAILABLE
 3. Example: "Pirates @ Rockies → Pirates ML -345"
+4. If odds show as "N/A", skip that game and move to next
 
 Format EXACTLY like this:
 
