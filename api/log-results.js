@@ -7,16 +7,48 @@ const ODDS_API_KEY = process.env.VITE_ODDS_API_KEY
 async function getAllGames() {
   try {
     const games = []
-    const sports = ['baseball_mlb', 'basketball_nba', 'icehockey_nhl']
     
-    for (const sport of sports) {
-      const res = await fetch(
-        `https://api.the-odds-api.com/v4/sports/${sport}/scores?apiKey=${ODDS_API_KEY}&daysFrom=3`
-      )
-      if (!res.ok) continue
+    // MLB: Use statsapi.mlb.com for historical game data
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&startDate=2026-05-05&endDate=${today}&hydrate=team`)
       const data = await res.json()
-      if (data?.length) games.push(...data.map(g => ({ ...g, sport })))
+      
+      data.dates?.forEach(d => {
+        d.games?.forEach(g => {
+          // Only include completed games
+          if (g.status?.abstractGameState === 'Final' || g.status?.abstractGameState === 'Completed Early') {
+            games.push({
+              sport: 'MLB',
+              away_team: g.teams?.away?.team?.name,
+              home_team: g.teams?.home?.team?.name,
+              scores: [
+                { name: g.teams?.away?.team?.name, score: String(g.teams?.away?.score) },
+                { name: g.teams?.home?.team?.name, score: String(g.teams?.home?.score) }
+              ]
+            })
+          }
+        })
+      })
+    } catch (e) {
+      console.warn('MLB API failed:', e.message)
     }
+    
+    // NBA/NHL: Use The Odds API for recent games
+    const sports = ['basketball_nba', 'icehockey_nhl']
+    for (const sport of sports) {
+      try {
+        const res = await fetch(
+          `https://api.the-odds-api.com/v4/sports/${sport}/scores?apiKey=${ODDS_API_KEY}&daysFrom=5`
+        )
+        if (!res.ok) continue
+        const data = await res.json()
+        if (data?.length) games.push(...data.map(g => ({ ...g, sport: sport.includes('nba') ? 'NBA' : 'NHL' })))
+      } catch (e) {
+        console.warn(`${sport} API failed:`, e.message)
+      }
+    }
+    
     return games
   } catch (e) {
     console.error('Error fetching games:', e.message)
