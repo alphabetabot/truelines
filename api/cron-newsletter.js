@@ -391,8 +391,11 @@ export default async function handler(req, res) {
     // Store picks in database for the tracker
     try {
       const picks = extractPicksFromResponse(picksText)
+      console.log(`Extracted ${picks.length} picks from Claude response`)
       if (picks.length > 0) {
         await storePicks(picks, new Date())
+      } else {
+        console.warn('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
       }
     } catch (storageErr) {
       console.warn('Failed to store picks:', storageErr.message)
