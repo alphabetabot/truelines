@@ -7,11 +7,8 @@ const resend = new Resend(process.env.RESEND_API_KEY)
 
 async function getMLBStats(teamId, teamName) {
   try {
-    // Use standings endpoint which works reliably
     const res = await fetch(`https://statsapi.mlb.com/api/v1/standings?leagueId=103,104`)
     const data = await res.json()
-    
-    // Find this team in the standings
     for (const division of data.records || []) {
       for (const tr of division.teamRecords || []) {
         if (tr.team.id === teamId || tr.team.name === teamName) {
@@ -31,11 +28,8 @@ async function getMLBStats(teamId, teamName) {
 
 async function getPitcherStats(pitcherId, pitcherName) {
   try {
-    // Try the standard endpoint
     const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${pitcherId}`)
     const data = await res.json()
-    
-    // Check if stats are available
     if (data.stats && data.stats.length > 0) {
       const stats = data.stats[0].stats || {}
       return {
@@ -47,7 +41,6 @@ async function getPitcherStats(pitcherId, pitcherName) {
         whip: stats.whip ? parseFloat(stats.whip).toFixed(2) : 'N/A',
       }
     }
-    // If no stats, return N/A (pitcher might be new/injured)
     return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
   } catch (e) {
     return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
@@ -116,7 +109,6 @@ async function generatePicks(games) {
   const now = new Date()
   const date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
   
-  // Filter to only games that start today (after now, before midnight)
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
   const tomorrowStart = new Date(todayStart.getTime() + 86400000)
   
@@ -125,20 +117,16 @@ async function generatePicks(games) {
       const gTime = new Date(g.gameTime)
       return gTime >= todayStart && gTime < tomorrowStart
     }
-    // For NBA/NHL from The Odds API, check commence_time
     if (g.commence_time) {
       const gTime = new Date(g.commence_time)
       return gTime >= todayStart && gTime < tomorrowStart
     }
-    // If no time available, include it (safer than excluding)
     return true
   })
   
-  // Fetch stats for each game (MLB pitchers + teams, NBA/NHL teams)
   const gamesWithStats = await Promise.all(todaysGames.slice(0, 15).map(async g => {
     const stats = {}
     if (g.sport === 'MLB') {
-      // Fetch pitcher stats
       if (g.awayPitcherId) {
         const awayStats = await getPitcherStats(g.awayPitcherId)
         stats.awayPitcher = awayStats
@@ -147,18 +135,15 @@ async function generatePicks(games) {
         const homeStats = await getPitcherStats(g.homePitcherId)
         stats.homePitcher = homeStats
       }
-      // Fetch team records
       if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId, g.away)
       if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId, g.home)
     }
-    // For NBA/NHL, extract record from Vegas odds if available
     if (g.sport === 'NBA' || g.sport === 'NHL') {
       stats.note = 'Use Vegas odds and team names below for analysis'
     }
     return { ...g, stats }
   }))
   
-  // First pass: extract odds from all games
   gamesWithStats.forEach(g => {
     if (g.bookmakers?.length) {
       const dk = g.bookmakers.find(b => b.key === 'draftkings')
@@ -187,9 +172,8 @@ async function generatePicks(games) {
   const slate = gamesWithStats.map(g => {
     let line = `${g.sport}: ${g.away} @ ${g.home}`
     if (g.venue) line += ` | ${g.venue}`
-    if (g.weather?.temp) line += ` | ${g.weather.temp}°F ${g.weather.condition || ''} ${g.weather.wind || ''}`
+    if (g.weather?.temp) line += ` | ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}`
     if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
-    // Build line for display (odds already extracted in first pass)
     if (g.dkAwayML && g.dkHomeML) {
       line += ` | ML: ${g.dkAwayML > 0 ? '+' : ''}${g.dkAwayML}/${g.dkHomeML > 0 ? '+' : ''}${g.dkHomeML}`
     }
@@ -199,8 +183,6 @@ async function generatePicks(games) {
     return line
   }).join('\n')
 
-  // Build game reference map so Claude can reference games by matchup with actual odds
-  // Include ALL games, even if odds are missing (Claude will note which ones lack data)
   const gameMap = gamesWithStats.map((g, idx) => ({
     index: idx,
     matchup: `${g.away} @ ${g.home}`,
@@ -213,12 +195,10 @@ async function generatePicks(games) {
     dkTotal: g.dkTotal || 'N/A',
   }))
   
-  // Don't send email if no games at all
   if (gameMap.length === 0) {
-    return res.json({ sent: 0, message: 'No games found for today' })
+    return 'No games found for today'
   }
 
-  // Build detailed stats context for Claude — REAL 2026 DATA ONLY
   let statsContext = '=== REAL 2026 SEASON STATS (Official League APIs) ===\n\n'
   gamesWithStats.forEach(g => {
     statsContext += `${g.sport}: ${g.away} @ ${g.home}\n`
@@ -237,12 +217,68 @@ async function generatePicks(games) {
     statsContext += '\n'
   })
 
-  // Build game reference with ACTUAL odds (DraftKings or FanDuel)
   const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
 
-  let res, data
+  const prompt = `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
+
+${statsContext}
+Today's slate (MLB, NBA, NHL):
+${slate}
+
+CRITICAL RULES:
+1. ONLY cite stats you know for certain. NEVER make up statistics, estimates, player names, or team records.
+2. For MLB: Cite pitcher ERA, K/9, WHIP, and team win/loss records from the stats provided.
+3. For NBA/NHL: Cite Vegas odds and matchup dynamics. If you don't know a team's record, say "record not provided" instead of guessing.
+4. EVERY pick's Edge explanation MUST reference specific real information.
+5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
+6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.
+7. Only pick games that have actual numerical odds in the reference list.
+
+MATCHUP REFERENCE (LIVE ODDS):
+${gameReference}
+
+Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
+
+CRITICAL: Each pick MUST include:
+1. Full matchup: "[Away Team] @ [Home Team]"
+2. Your pick with actual odds IF AVAILABLE
+3. Example: "Pirates @ Rockies → Pirates ML -345"
+4. If odds show as "N/A", skip that game and move to next
+
+Format EXACTLY like this:
+
+TOP PICK OF THE DAY
+**[SPORT] Pick: [Team/Total/Spread]**
+- Bet: [type] at [odds] via [best book]
+- Confidence: [rating out of 5]
+- Edge: [2-3 sentences of specific analysis]
+
+---
+
+PICK #2
+**[SPORT] Pick: [Team/Total/Spread]**
+- Bet: [type] at [odds] via [best book]
+- Confidence: [rating out of 5]
+- Edge: [2-3 sentences of specific analysis]
+
+---
+
+PICK #3
+**[SPORT] Pick: [Team/Total/Spread]**
+- Bet: [type] at [odds] via [best book]
+- Confidence: [rating out of 5]
+- Edge: [2-3 sentences of specific analysis]
+
+---
+
+FADE OF THE DAY
+**[SPORT]: [Team/Total to avoid]**
+- Why: [reason the public is wrong on this one]
+
+Only pick games with genuine edge. Be specific with stats and reasoning.`
+
   try {
-    res = await fetch('https://api.anthropic.com/v1/messages', {
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -252,92 +288,25 @@ async function generatePicks(games) {
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
         max_tokens: 1500,
-        messages: [{
-          role: 'user',
-          content: `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
-
-${statsContext}
-Today's slate (MLB, NBA, NHL):
-${slate}
-
-⚠️ CRITICAL INTEGRITY RULES:
-1. ONLY cite stats or data you know for certain. NEVER make up statistics, estimates, player names, or team records.
-2. For MLB: Cite pitcher ERA, K/9, WHIP, and team win/loss records from the stats provided.
-3. For NBA/NHL: Cite Vegas odds and matchup dynamics. If you don't know a team's record, say "record not provided" instead of guessing.
-4. EVERY pick's Edge explanation MUST reference specific real information.
-   Example MLB: "ERA is 2.89, K/9 is 10.2, therefore the edge is..."
-   Example NBA/NHL: "Spread favors away team at +150, therefore..."
-5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
-6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.
-7. Only pick games that have actual numerical odds in the reference list.
-
-🎯 MATCHUP REFERENCE (LIVE ODDS):
-${gameReference}
-
-Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
-
-⚠️ CRITICAL: Each pick MUST include:
-1. Full matchup: "[Away Team] @ [Home Team]"
-2. Your pick with actual odds IF AVAILABLE
-3. Example: "Pirates @ Rockies → Pirates ML -345"
-4. If odds show as "N/A", skip that game and move to next
-
-Format EXACTLY like this:
-
-🏆 TOP PICK OF THE DAY
-**[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
-- Confidence: [⭐ rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
-
----
-
-📌 PICK #2
-**[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
-- Confidence: [⭐ rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
-
----
-
-📌 PICK #3
-**[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
-- Confidence: [⭐ rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
-
----
-
-❌ FADE OF THE DAY
-**[SPORT]: [Team/Total to avoid]**
-- Why: [reason the public is wrong on this one]
-
-Only pick games with genuine edge. Be specific with stats and reasoning.`
-      }],
-    }),
+        messages: [{ role: 'user', content: prompt }]
       })
     })
 
-    if (!res.ok) {
-      console.error('Claude API error:', res.status, res.statusText)
-      return 'Check trueoddsiq.com for today\'s picks.'
+    if (!apiRes.ok) {
+      console.error('Claude API error:', apiRes.status, apiRes.statusText)
+      return ''
     }
 
-    data = await res.json()
-    if (!data.content?.[0]?.text) {
-      console.error('Claude response missing content:', data)
-      return 'Check trueoddsiq.com for today\'s picks.'
-    }
-    return data.content[0].text
+    const data = await apiRes.json()
+    return data.content?.[0]?.text || ''
   } catch (err) {
     console.error('Claude API fetch error:', err.message)
-    return 'Check trueoddsiq.com for today\'s picks.'
+    return ''
   }
 }
 
 function buildEmail(picksText, date) {
   const lines = picksText.split('\n').map(line => {
-    // Handle matchup with arrow → format: "Pirates @ Rockies → Pirates ML -345"
     if (line.includes('@') && line.includes('→')) {
       const [matchup, pick] = line.split('→')
       return `<div style="background:#f1f5f9;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin:12px 0;">
@@ -352,7 +321,6 @@ function buildEmail(picksText, date) {
     }
     if (line.startsWith('- ')) {
       const content = line.slice(2)
-      // Highlight odds like "-345" or "+150"
       const highlighted = content.replace(/([+-]\d+)/g, '<span style="color:#f59e0b;font-weight:700;">$1</span>')
       return `<p style="margin:3px 0;padding-left:14px;color:#475569;font-size:14px;">• ${highlighted}</p>`
     }
@@ -365,26 +333,25 @@ function buildEmail(picksText, date) {
 <div style="max-width:600px;margin:0 auto;padding:20px;">
   <div style="background:#0f172a;border-radius:16px 16px 0 0;padding:24px;text-align:center;">
     <h1 style="margin:0;color:#fff;font-size:26px;font-weight:900;">TrueOdds<span style="color:#f59e0b;">IQ</span></h1>
-    <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">Daily AI Picks · ${date} · MLB · NBA · NHL</p>
+    <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">Daily AI Picks | ${date} | MLB | NBA | NHL</p>
   </div>
   <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;">
     <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin-bottom:16px;font-size:12px;color:#92400e;line-height:1.6;">
-      <strong>⚠️ Odds from DraftKings as of ${date}:</strong> These picks use live DraftKings odds. Shop other books (FanDuel, BetMGM, Caesars) for better lines. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
+      <strong>Odds from DraftKings as of ${date}:</strong> These picks use live DraftKings odds. Shop other books (FanDuel, BetMGM, Caesars) for better lines. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
     </div>
     ${lines}
     <div style="text-align:center;margin-top:24px;">
-      <a href="https://trueoddsiq.com/picks" style="background:#0f172a;color:#fff;padding:14px 28px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;">View Full Analysis & Live Odds →</a>
+      <a href="https://trueoddsiq.com/picks" style="background:#0f172a;color:#fff;padding:14px 28px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;">View Full Analysis and Live Odds</a>
     </div>
   </div>
   <div style="background:#f8fafc;border-radius:0 0 16px 16px;padding:14px;text-align:center;border:1px solid #e2e8f0;border-top:none;">
-    <p style="margin:0;color:#94a3b8;font-size:11px;">TrueOddsIQ · trueoddsiq.com · Must be 21+ · Gambling problem? <a href="tel:18004264537" style="color:#16a34a;">1-800-GAMBLER</a></p>
+    <p style="margin:0;color:#94a3b8;font-size:11px;">TrueOddsIQ | trueoddsiq.com | Must be 21+ | Gambling problem? <a href="tel:18004264537" style="color:#16a34a;">1-800-GAMBLER</a></p>
     <p style="margin:4px 0 0;"><a href="https://trueoddsiq.com/unsubscribe" style="color:#94a3b8;font-size:11px;">Unsubscribe</a></p>
   </div>
 </div></body></html>`
 }
 
 export default async function handler(req, res) {
-  // Allow Vercel cron (no auth header) or manual trigger with secret
   const secret = req.headers['x-newsletter-secret']
   const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
 
@@ -399,20 +366,16 @@ export default async function handler(req, res) {
 
     const picksText = await generatePicks(games)
     
-    // If Claude refused to make picks, don't send anything. Silent.
-    if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data') || picksText.includes('constraints') || picksText.includes('undefined')) {
-      console.warn('Claude refused picks:', picksText.slice(0, 200))
-      return res.json({ sent: 0, message: 'No picks generated - Claude refused (likely missing odds)' })
+    if (!picksText || picksText.trim().length < 100) {
+      console.warn('No valid picks generated')
+      return res.json({ sent: 0, message: 'No picks generated' })
     }
     
-    // CRITICAL: Don't send blank emails. Check if picksText contains actual picks (not just header)
-    const hasRealPicks = picksText.includes('Pick:') || picksText.includes('PICK') || picksText.includes('⭐')
-    if (!hasRealPicks || picksText.trim().length < 100) {
-      console.warn('Refusing to send blank email. picksText length:', picksText.length)
-      return res.json({ sent: 0, message: 'No valid picks in response', picks: picksText.slice(0, 300) })
+    if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data')) {
+      console.warn('Claude refused picks')
+      return res.json({ sent: 0, message: 'Claude refused to generate picks' })
     }
     
-    // Store picks in database for the tracker
     try {
       const picks = extractPicksFromResponse(picksText)
       console.log(`Extracted ${picks.length} picks from Claude response`)
@@ -447,20 +410,15 @@ export default async function handler(req, res) {
       sent += Math.min(50, emails.length - i)
     }
 
-    // Extract top pick for social posts (only if picks exist)
     const topPickSection = picksText.split('---')[0] || picksText
     const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
     const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
     const betLine = topPickSection.match(/- Bet: (.+)/)?.[1]?.trim() || ''
-    
-    // Only post to social if we actually have picks
     const hasPicks = pickLine && betLine
 
-    // Auto-post to Telegram (only if picks exist)
     try {
       if (hasPicks && pickLine) {
-        const tgMessage = `🏆 Vega's Top Pick — ${date}\n\n📌 ${pickLine}\n💰 ${betLine}\n\n💡 ${edgeLine}\n\n📊 Full analysis + 2 more picks:\n🔗 trueoddsiq.com/picks\n
-📧 Free daily newsletter → trueoddsiq.com\n\n#SportsBetting #VegaPicks #FreePicks`
+        const tgMessage = `TOP PICK — ${date}\n\n ${pickLine}\n ${betLine}\n\n ${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -471,10 +429,9 @@ export default async function handler(req, res) {
       console.warn('Telegram post failed:', tgErr.message)
     }
 
-    // Auto-post to X (only if picks exist)
     try {
       if (hasPicks && pickLine) {
-        const tweet = `🏆 Vega's Top Pick — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\n📊 2 more picks + full analysis:\ntrueoddsiq.com/picks\n\n#SportsBetting #VegaPicks #FreePicks`.slice(0, 280)
+        const tweet = `TOP PICK — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`.slice(0, 280)
         await postTweet(tweet)
       }
     } catch (tweetErr) {
