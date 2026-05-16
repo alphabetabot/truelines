@@ -240,19 +240,21 @@ async function generatePicks(games) {
   // Build game reference with ACTUAL odds (DraftKings or FanDuel)
   const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
 
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
-      'anthropic-version': '2023-06-01',
-    },
-    body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1500,
-      messages: [{
-        role: 'user',
-        content: `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
+  let res, data
+  try {
+    res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        messages: [{
+          role: 'user',
+          content: `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
 
 ${statsContext}
 Today's slate (MLB, NBA, NHL):
@@ -313,9 +315,24 @@ Format EXACTLY like this:
 Only pick games with genuine edge. Be specific with stats and reasoning.`
       }],
     }),
-  })
-  const data = await res.json()
-  return data.content?.[0]?.text || 'Check trueoddsiq.com for today\'s picks.'
+      })
+    })
+
+    if (!res.ok) {
+      console.error('Claude API error:', res.status, res.statusText)
+      return 'Check trueoddsiq.com for today\'s picks.'
+    }
+
+    data = await res.json()
+    if (!data.content?.[0]?.text) {
+      console.error('Claude response missing content:', data)
+      return 'Check trueoddsiq.com for today\'s picks.'
+    }
+    return data.content[0].text
+  } catch (err) {
+    console.error('Claude API fetch error:', err.message)
+    return 'Check trueoddsiq.com for today\'s picks.'
+  }
 }
 
 function buildEmail(picksText, date) {
@@ -386,6 +403,13 @@ export default async function handler(req, res) {
     if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data') || picksText.includes('constraints') || picksText.includes('undefined')) {
       console.warn('Claude refused picks:', picksText.slice(0, 200))
       return res.json({ sent: 0, message: 'No picks generated - Claude refused (likely missing odds)' })
+    }
+    
+    // CRITICAL: Don't send blank emails. Check if picksText contains actual picks (not just header)
+    const hasRealPicks = picksText.includes('Pick:') || picksText.includes('PICK') || picksText.includes('⭐')
+    if (!hasRealPicks || picksText.trim().length < 100) {
+      console.warn('Refusing to send blank email. picksText length:', picksText.length)
+      return res.json({ sent: 0, message: 'No valid picks in response', picks: picksText.slice(0, 300) })
     }
     
     // Store picks in database for the tracker
