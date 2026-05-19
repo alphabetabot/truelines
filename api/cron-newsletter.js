@@ -75,6 +75,27 @@ async function getTodaysGames() {
   } catch (e) { console.warn('MLB fetch failed') }
 
   try {
+    const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const mlbOddsData = await mlbOddsRes.json()
+    if (Array.isArray(mlbOddsData)) {
+      mlbOddsData.forEach(g => {
+        const existingGame = games.find(eg => eg.sport === 'MLB' && eg.away === g.away_team && eg.home === g.home_team)
+        if (existingGame) {
+          existingGame.bookmakers = g.bookmakers
+        } else {
+          games.push({
+            sport: 'MLB',
+            away: g.away_team,
+            home: g.home_team,
+            bookmakers: g.bookmakers,
+            commence_time: g.commence_time
+          })
+        }
+      })
+    }
+  } catch (e) { console.warn('MLB odds fetch failed') }
+
+  try {
     const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nbaData = await nbaRes.json()
     nbaData?.forEach(g => games.push({ 
