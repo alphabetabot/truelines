@@ -3,6 +3,7 @@ import { postTweet } from './post-to-x.js'
 import { getSupabase } from './supabase-client.js'
 import { extractPicksFromResponse, storePicks } from './store-picks.js'
 import { buildOddsByMatchup, buildEmailFromPicks, formatTopPickSocial } from './pick-utils.js'
+import { sendNewsletterToSubscribers } from './send-newsletter.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -408,16 +409,8 @@ export default async function handler(req, res) {
     }
 
     const emails = subscribers.map(s => s.email)
-    let sent = 0
-    for (let i = 0; i < emails.length; i += 50) {
-      await resend.emails.send({
-        from: 'TrueOddsIQ Picks <picks@trueoddsiq.com>',
-        to: emails.slice(i, i + 50),
-        subject: `TrueOddsIQ Daily Picks — ${date}`,
-        html,
-      })
-      sent += Math.min(50, emails.length - i)
-    }
+    const subject = `TrueOddsIQ Daily Picks — ${date}`
+    const sent = await sendNewsletterToSubscribers(resend, emails, { subject, html })
 
     const top = stored[0]
     const { pickLine, betLine, edgeLine, hasPicks } = formatTopPickSocial(top, date)

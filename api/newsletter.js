@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
+import { sendNewsletterToSubscribers } from './send-newsletter.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const supabase = createClient(
@@ -32,23 +33,10 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'No subscribers' })
     }
 
-    // Send to all subscribers
     const emails = subscribers.map(s => s.email)
-
-    // Batch send (Resend supports up to 100 at a time)
-    const batchSize = 50
-    let sent = 0
-
-    for (let i = 0; i < emails.length; i += batchSize) {
-      const batch = emails.slice(i, i + batchSize)
-      await resend.emails.send({
-        from: 'TrueOddsIQ Picks <picks@trueoddsiq.com>',
-        to: batch,
-        subject: subject || `TrueOddsIQ Daily Picks - ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`,
-        html: htmlContent || generateNewsletterHTML(picks),
-      })
-      sent += batch.length
-    }
+    const emailSubject = subject || `TrueOddsIQ Daily Picks - ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`
+    const html = htmlContent || generateNewsletterHTML(picks)
+    const sent = await sendNewsletterToSubscribers(resend, emails, { subject: emailSubject, html })
 
     return res.json({ sent, message: `Newsletter sent to ${sent} subscribers` })
   } catch (err) {
