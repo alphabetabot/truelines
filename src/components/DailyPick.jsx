@@ -70,7 +70,11 @@ export default function DailyPick() {
         <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>{pick.game}</p>
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="font-black text-lg leading-tight" style={{ color: '#fff' }}>{pick.pick}</h3>
-          <span className="text-sm flex-shrink-0" style={{ color: '#f59e0b' }}>{pick.confidence}</span>
+          <span className="text-sm flex-shrink-0 tracking-widest" style={{ color: '#f59e0b' }}>
+            {typeof pick.confidence === 'string' && pick.confidence.includes('★')
+              ? pick.confidence
+              : '★'.repeat(Math.min(5, Math.max(1, parseInt(pick.confidence, 10) || 3)))}
+          </span>
         </div>
         <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
           💡 {pick.edge}

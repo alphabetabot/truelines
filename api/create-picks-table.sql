@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS daily_picks (
   sport TEXT NOT NULL,
   game TEXT,
   pick TEXT NOT NULL,
+  bet TEXT,
   bet_type TEXT,
   odds FLOAT,
   confidence TEXT,
@@ -17,16 +18,16 @@ CREATE TABLE IF NOT EXISTS daily_picks (
   UNIQUE(date, pick)
 );
 
--- Create index for fast lookups
-CREATE INDEX idx_daily_picks_date ON daily_picks(date DESC);
-CREATE INDEX idx_daily_picks_sport ON daily_picks(sport);
+-- Add columns if table already exists without them
+ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS bet TEXT;
+ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS bet_type TEXT;
+ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS odds FLOAT;
+ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS units FLOAT;
 
--- Enable RLS
+CREATE INDEX IF NOT EXISTS idx_daily_picks_date ON daily_picks(date DESC);
+CREATE INDEX IF NOT EXISTS idx_daily_picks_sport ON daily_picks(sport);
+
 ALTER TABLE daily_picks ENABLE ROW LEVEL SECURITY;
 
--- Policy: anyone can read picks, only authenticated users can write
 CREATE POLICY "Anyone can read picks" ON daily_picks
   FOR SELECT USING (true);
-
--- Run this to verify:
--- SELECT * FROM daily_picks ORDER BY date DESC LIMIT 10;

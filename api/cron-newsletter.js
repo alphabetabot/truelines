@@ -261,14 +261,15 @@ ${gameReference}
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
 CRITICAL: Each pick MUST include:
-1. Full matchup: "[Away Team] @ [Home Team]"
+1. Full matchup on its own line: "[Away Team] @ [Home Team]"
 2. Your pick with actual odds IF AVAILABLE
-3. Example: "Pirates @ Rockies → Pirates ML -345"
+3. Example matchup line: "Pirates @ Rockies"
 4. If odds show as "N/A", skip that game and move to next
 
 Format EXACTLY like this:
 
 TOP PICK OF THE DAY
+[Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [rating out of 5]
@@ -277,6 +278,7 @@ TOP PICK OF THE DAY
 ---
 
 PICK #2
+[Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [rating out of 5]
@@ -285,6 +287,7 @@ PICK #2
 ---
 
 PICK #3
+[Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [rating out of 5]
@@ -293,6 +296,7 @@ PICK #3
 ---
 
 FADE OF THE DAY
+[Away Team] @ [Home Team]
 **[SPORT]: [Team/Total to avoid]**
 - Why: [reason the public is wrong on this one]
 
