@@ -139,7 +139,7 @@ export default function AIPicks() {
       setStoredLoading(true)
       setStoredError(null)
       try {
-        const res = await fetch('/api/daily-picks')
+        const res = await fetch('/api/todays-pick?all=1')
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Picks not available yet')
