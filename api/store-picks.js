@@ -7,6 +7,7 @@ import {
   extractSportFromPick,
   parseAmericanOdds,
   formatConfidence,
+  preparePicksForStore,
 } from './pick-utils.js'
 
 /**
@@ -60,15 +61,16 @@ export function extractPicksFromResponse(claudeResponse) {
 }
 
 /**
- * Store picks in daily_picks table (replaces same-day rows)
+ * Validate, attach DraftKings odds, and store picks (replaces same-day rows)
  */
-export async function storePicks(picks, date) {
-  if (!picks || picks.length === 0) return []
+export async function storePicks(rawPicks, date, oddsByMatchup) {
+  const picks = preparePicksForStore(rawPicks, oddsByMatchup)
+  if (!picks.length) return []
 
   const dateStr = date.toISOString().split('T')[0]
 
   const rows = picks.map((pick) => {
-    const oddsNum = parseAmericanOdds(pick.odds)
+    const oddsNum = typeof pick.odds === 'number' ? pick.odds : parseAmericanOdds(pick.odds)
     const bet = formatBetDisplay(pick)
 
     return {
@@ -88,7 +90,6 @@ export async function storePicks(picks, date) {
 
   const supabase = getSupabase()
 
-  // Replace today's picks so cron re-runs don't hit UNIQUE(date, pick)
   await supabase.from('daily_picks').delete().eq('date', dateStr)
 
   const { data, error } = await supabase
@@ -97,7 +98,6 @@ export async function storePicks(picks, date) {
     .select('*')
 
   if (error) {
-    // Fallback: prod may use `bet` without bet_type/odds columns
     const fallbackRows = picks.map((pick) => ({
       date: dateStr,
       sport: pick.sport,

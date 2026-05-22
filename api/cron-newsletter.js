@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { postTweet } from './post-to-x.js'
 import { getSupabase } from './supabase-client.js'
 import { extractPicksFromResponse, storePicks } from './store-picks.js'
+import { buildOddsByMatchup, buildEmailFromPicks, formatTopPickSocial } from './pick-utils.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -166,27 +167,40 @@ async function generatePicks(games) {
   }))
   
   gamesWithStats.forEach(g => {
-    if (g.bookmakers?.length) {
-      const dk = g.bookmakers.find(b => b.key === 'draftkings')
-      const fd = g.bookmakers.find(b => b.key === 'fanduel')
-      const book = dk || fd
-      
-      if (book) {
-        const h2h = book.markets?.find(m => m.key === 'h2h')
-        if (h2h) {
-          const a = h2h.outcomes?.find(o => o.name === g.away)
-          const h = h2h.outcomes?.find(o => o.name === g.home)
-          if (a && h) {
-            g.dkAwayML = a.price
-            g.dkHomeML = h.price
-          }
-        }
-        const tot = book.markets?.find(m => m.key === 'totals')
-        if (tot) {
-          const ov = tot.outcomes?.find(o => o.name === 'Over')
-          if (ov) g.dkTotal = ov.point
-        }
+    const dk = g.bookmakers?.find(b => b.key === 'draftkings')
+    if (!dk) return
+
+    const h2h = dk.markets?.find(m => m.key === 'h2h')
+    if (h2h) {
+      const a = h2h.outcomes?.find(o => o.name === g.away)
+      const h = h2h.outcomes?.find(o => o.name === g.home)
+      if (a && h) {
+        g.dkAwayML = a.price
+        g.dkHomeML = h.price
       }
+    }
+    const spreads = dk.markets?.find(m => m.key === 'spreads')
+    if (spreads) {
+      const a = spreads.outcomes?.find(o => o.name === g.away)
+      const h = spreads.outcomes?.find(o => o.name === g.home)
+      if (a) {
+        g.dkAwaySpread = a.point
+        g.dkAwaySpreadOdds = a.price
+      }
+      if (h) {
+        g.dkHomeSpread = h.point
+        g.dkHomeSpreadOdds = h.price
+      }
+    }
+    const tot = dk.markets?.find(m => m.key === 'totals')
+    if (tot) {
+      const ov = tot.outcomes?.find(o => o.name === 'Over')
+      const un = tot.outcomes?.find(o => o.name === 'Under')
+      if (ov) {
+        g.dkTotal = ov.point
+        g.dkOverOdds = ov.price
+      }
+      if (un) g.dkUnderOdds = un.price
     }
   })
 
@@ -201,6 +215,9 @@ async function generatePicks(games) {
     if (g.dkTotal) {
       line += ` | O/U: ${g.dkTotal}`
     }
+    if (g.dkAwaySpread != null) {
+      line += ` | Spread: ${g.dkAwaySpread > 0 ? '+' : ''}${g.dkAwaySpread}/${g.dkHomeSpread > 0 ? '+' : ''}${g.dkHomeSpread}`
+    }
     return line
   }).join('\n')
 
@@ -212,8 +229,8 @@ async function generatePicks(games) {
     home: g.home,
     dkAwayML: g.dkAwayML || 'N/A',
     dkHomeML: g.dkHomeML || 'N/A',
-    dkAwaySpread: g.dkAwaySpread || 'N/A',
-    dkTotal: g.dkTotal || 'N/A',
+    dkAwaySpread: g.dkAwaySpread ?? 'N/A',
+    dkTotal: g.dkTotal ?? 'N/A',
   }))
   
   if (gameMap.length === 0) {
@@ -238,7 +255,12 @@ async function generatePicks(games) {
     statsContext += '\n'
   })
 
-  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
+  const gameReference = gameMap.map(gm => {
+    let ref = `${gm.sport}: ${gm.matchup} | DK ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`
+    if (gm.dkAwaySpread !== 'N/A') ref += ` | DK Spread: ${gm.dkAwaySpread}/${gm.dkHomeSpread}`
+    if (gm.dkTotal !== 'N/A') ref += ` | DK Total: ${gm.dkTotal}`
+    return ref
+  }).join('\n')
 
   const prompt = `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
 
@@ -250,10 +272,11 @@ CRITICAL RULES:
 1. ONLY cite stats you know for certain. NEVER make up statistics, estimates, player names, or team records.
 2. For MLB: Cite pitcher ERA, K/9, WHIP, and team win/loss records from the stats provided.
 3. For NBA/NHL: Cite Vegas odds and matchup dynamics. If you don't know a team's record, say "record not provided" instead of guessing.
-4. EVERY pick's Edge explanation MUST reference specific real information.
+4. EVERY pick's Edge explanation MUST be at least 2 full sentences with specific stats or odds from the data provided — no vague hype.
 5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
 6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.
-7. Only pick games that have actual numerical odds in the reference list.
+7. Only pick games that have actual DraftKings numerical odds in the reference list.
+8. Use "via DraftKings" on every Bet line. Odds will be verified against DraftKings automatically.
 
 MATCHUP REFERENCE (LIVE ODDS):
 ${gameReference}
@@ -271,7 +294,7 @@ Format EXACTLY like this:
 TOP PICK OF THE DAY
 [Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
+- Bet: [type] at [odds] via DraftKings
 - Confidence: [rating out of 5]
 - Edge: [2-3 sentences of specific analysis]
 
@@ -280,7 +303,7 @@ TOP PICK OF THE DAY
 PICK #2
 [Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
+- Bet: [type] at [odds] via DraftKings
 - Confidence: [rating out of 5]
 - Edge: [2-3 sentences of specific analysis]
 
@@ -289,7 +312,7 @@ PICK #2
 PICK #3
 [Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
+- Bet: [type] at [odds] via DraftKings
 - Confidence: [rating out of 5]
 - Edge: [2-3 sentences of specific analysis]
 
@@ -330,52 +353,6 @@ Only pick games with genuine edge. Be specific with stats and reasoning.`
   }
 }
 
-function buildEmail(picksText, date) {
-  const lines = picksText.split('\n').map(line => {
-    if (line.includes('@') && line.includes('→')) {
-      const [matchup, pick] = line.split('→')
-      return `<div style="background:#f1f5f9;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin:12px 0;">
-        <p style="margin:0 0 4px;font-size:14px;color:#0f172a;font-weight:600;">${matchup.trim()}</p>
-        <p style="margin:0;font-size:15px;color:#f59e0b;font-weight:700;">${pick.trim()}</p>
-      </div>`
-    }
-    if (line.startsWith('**') && line.endsWith('**')) {
-      const t = line.slice(2, -2)
-      const color = t.includes('Fade') ? '#ef4444' : '#f59e0b'
-      return `<p style="font-weight:900;font-size:16px;color:${color};margin:20px 0 6px;">${t}</p>`
-    }
-    if (line.startsWith('- ')) {
-      const content = line.slice(2)
-      const highlighted = content.replace(/([+-]\d+)/g, '<span style="color:#f59e0b;font-weight:700;">$1</span>')
-      return `<p style="margin:3px 0;padding-left:14px;color:#475569;font-size:14px;">• ${highlighted}</p>`
-    }
-    if (!line.trim()) return '<div style="height:8px"></div>'
-    return `<p style="margin:3px 0;color:#475569;font-size:14px;">${line}</p>`
-  }).join('')
-
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f4f8;font-family:-apple-system,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:20px;">
-  <div style="background:#0f172a;border-radius:16px 16px 0 0;padding:24px;text-align:center;">
-    <h1 style="margin:0;color:#fff;font-size:26px;font-weight:900;">TrueOdds<span style="color:#f59e0b;">IQ</span></h1>
-    <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">Daily AI Picks | ${date} | MLB | NBA | NHL</p>
-  </div>
-  <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;">
-    <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin-bottom:16px;font-size:12px;color:#92400e;line-height:1.6;">
-      <strong>Odds from DraftKings as of ${date}:</strong> These picks use live DraftKings odds. Shop other books (FanDuel, BetMGM, Caesars) for better lines. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
-    </div>
-    ${lines}
-    <div style="text-align:center;margin-top:24px;">
-      <a href="https://trueoddsiq.com/picks" style="background:#0f172a;color:#fff;padding:14px 28px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;">View Full Analysis and Live Odds</a>
-    </div>
-  </div>
-  <div style="background:#f8fafc;border-radius:0 0 16px 16px;padding:14px;text-align:center;border:1px solid #e2e8f0;border-top:none;">
-    <p style="margin:0;color:#94a3b8;font-size:11px;">TrueOddsIQ | trueoddsiq.com | Must be 21+ | Gambling problem? <a href="tel:18004264537" style="color:#16a34a;">1-800-GAMBLER</a></p>
-    <p style="margin:4px 0 0;"><a href="https://trueoddsiq.com/unsubscribe" style="color:#94a3b8;font-size:11px;">Unsubscribe</a></p>
-  </div>
-</div></body></html>`
-}
-
 export default async function handler(req, res) {
   const secret = req.headers['x-newsletter-secret']
   const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
@@ -389,6 +366,7 @@ export default async function handler(req, res) {
     const games = await getTodaysGames()
     if (!games.length) return res.json({ sent: 0, message: 'No games today' })
 
+    const oddsByMatchup = buildOddsByMatchup(games)
     const picksText = await generatePicks(games)
     
     if (!picksText || picksText.trim().length < 100) {
@@ -401,19 +379,23 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'Claude refused to generate picks' })
     }
     
+    let stored = []
     try {
-      const picks = extractPicksFromResponse(picksText)
-      console.log(`Extracted ${picks.length} picks from Claude response`)
-      if (picks.length > 0) {
-        await storePicks(picks, new Date())
-      } else {
-        console.warn('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
-      }
+      const rawPicks = extractPicksFromResponse(picksText)
+      console.log(`Extracted ${rawPicks.length} picks from Claude response`)
+      stored = await storePicks(rawPicks, new Date(), oddsByMatchup)
+      console.log(`Stored ${stored.length} valid picks (DK odds + edge validated)`)
     } catch (storageErr) {
       console.warn('Failed to store picks:', storageErr.message)
+      return res.json({ sent: 0, message: 'Failed to store valid picks', error: storageErr.message })
     }
-    
-    const html = buildEmail(picksText, date)
+
+    if (!stored.length) {
+      console.warn('No valid picks after DK/edge validation. Raw (first 500):', picksText.slice(0, 500))
+      return res.json({ sent: 0, message: 'No valid picks to send (missing DK odds or edge)' })
+    }
+
+    const html = buildEmailFromPicks(stored, date)
 
     const { data: subscribers, error } = await getSupabase()
       .from('newsletter_subscribers')
@@ -421,7 +403,9 @@ export default async function handler(req, res) {
       .eq('active', true)
 
     if (error) throw error
-    if (!subscribers?.length) return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText })
+    if (!subscribers?.length) {
+      return res.json({ sent: 0, message: 'No subscribers yet', stored: stored.length })
+    }
 
     const emails = subscribers.map(s => s.email)
     let sent = 0
@@ -435,15 +419,12 @@ export default async function handler(req, res) {
       sent += Math.min(50, emails.length - i)
     }
 
-    const topPickSection = picksText.split('---')[0] || picksText
-    const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
-    const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
-    const betLine = topPickSection.match(/- Bet: (.+)/)?.[1]?.trim() || ''
-    const hasPicks = pickLine && betLine
+    const top = stored[0]
+    const { pickLine, betLine, edgeLine, hasPicks } = formatTopPickSocial(top, date)
 
     try {
-      if (hasPicks && pickLine) {
-        const tgMessage = `TOP PICK — ${date}\n\n ${pickLine}\n ${betLine}\n\n ${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`
+      if (hasPicks) {
+        const tgMessage = `TOP PICK — ${date}\n\n${top.game}\n${pickLine}\n${betLine}\n\n${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -455,15 +436,15 @@ export default async function handler(req, res) {
     }
 
     try {
-      if (hasPicks && pickLine) {
-        const tweet = `TOP PICK — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`.slice(0, 280)
+      if (hasPicks) {
+        const tweet = `TOP PICK — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\ntrueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`.slice(0, 280)
         await postTweet(tweet)
       }
     } catch (tweetErr) {
       console.warn('X post failed:', tweetErr.message)
     }
 
-    return res.json({ sent, message: `Sent to ${sent} subscribers`, picks: picksText })
+    return res.json({ sent, message: `Sent to ${sent} subscribers`, stored: stored.length })
   } catch (err) {
     console.error('Newsletter error:', err)
     return res.status(500).json({ error: err.message })
