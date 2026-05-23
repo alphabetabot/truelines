@@ -97,7 +97,7 @@ function parseBetLine(betLine, isFade) {
     .replace(/\bvia\s+.+$/i, '')
     .replace(/\b(?:at|on)\s+[A-Za-z][A-Za-z0-9 .'-]+$/i, '')
     .replace(/\s+at\s+[+-]\d{3,5}\b/i, '')
-    .replace(/\b[+-]\d{3,5}\b/g, '')
+    .replace(/[+-]\d{3,5}\b/g, '')
     .replace(/\s{2,}/g, ' ')
     .trim()
 
