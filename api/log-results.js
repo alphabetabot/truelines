@@ -139,13 +139,17 @@ function findGame(pickGameStr, games) {
 
   return games.find(g => {
     if (g.away_team === awayName && g.home_team === homeName) return true
+    if (g.away_team === homeName && g.home_team === awayName) return true
 
     const awayLast = teamLast(g.away_team)
     const homeLast = teamLast(g.home_team)
     const searchAwayLast = teamLast(awayName)
     const searchHomeLast = teamLast(homeName)
 
-    return awayLast === searchAwayLast && homeLast === searchHomeLast
+    return (
+      (awayLast === searchAwayLast && homeLast === searchHomeLast) ||
+      (awayLast === searchHomeLast && homeLast === searchAwayLast)
+    )
   })
 }
 
