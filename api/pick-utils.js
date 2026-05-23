@@ -24,15 +24,25 @@ export function formatConfidence(stars) {
 
 /** Extract "Away @ Home" from a pick section */
 export function extractMatchup(section) {
-  const arrowMatch = section.match(/([A-Za-z0-9\s.'-]+?)\s+@\s+([A-Za-z0-9\s.'-]+?)\s*(?:→|->)/)
-  if (arrowMatch) {
-    return `${arrowMatch[1].trim()} @ ${arrowMatch[2].trim()}`
+  const lines = String(section || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean)
+
+  for (const line of lines) {
+    const atMatch = line.match(/^(?:[A-Z]{2,4}:?\s*)?([^@]+?)\s+@\s+([^@]+?)(?:\s*(?:→|->|\|).*)?$/)
+    if (atMatch) {
+      const away = cleanTeamName(atMatch[1])
+      const home = cleanTeamName(atMatch[2])
+      if (away && home) return `${away} @ ${home}`
+    }
   }
-  const atMatch = section.match(/(?:^|\n)\s*(?:[A-Z]{2,4}:?\s*)?([A-Za-z0-9\s.'-]+?)\s+@\s+([A-Za-z0-9\s.'-]+?)(?:\s|$|\n)/m)
-  if (atMatch) {
-    return `${atMatch[1].trim()} @ ${atMatch[2].trim()}`
-  }
+
   return null
+}
+
+function cleanTeamName(value) {
+  return value
+    .replace(/\s*(?:→|->|\|).*$/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
 }
 
 /** Strip sport prefix from pick headline */

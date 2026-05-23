@@ -401,16 +401,36 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'Claude refused to generate picks' })
     }
     
+    const picks = extractPicksFromResponse(picksText)
+    console.log(`Extracted ${picks.length} picks from Claude response`)
+
+    if (picks.length === 0) {
+      console.error('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
+      return res.status(500).json({
+        error: 'No picks extracted from generated newsletter',
+        picksPreview: picksText.slice(0, 500),
+      })
+    }
+
+    let storedPicks = []
     try {
-      const picks = extractPicksFromResponse(picksText)
-      console.log(`Extracted ${picks.length} picks from Claude response`)
-      if (picks.length > 0) {
-        await storePicks(picks, new Date())
-      } else {
-        console.warn('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
-      }
+      storedPicks = await storePicks(picks, new Date())
     } catch (storageErr) {
-      console.warn('Failed to store picks:', storageErr.message)
+      console.error('Failed to store picks:', storageErr.message)
+      return res.status(500).json({
+        error: 'Failed to store generated picks',
+        detail: storageErr.message,
+        extracted: picks.length,
+      })
+    }
+
+    if (storedPicks.length === 0) {
+      console.error('Store completed without returning saved pick rows')
+      return res.status(500).json({
+        error: 'Generated picks were not stored',
+        extracted: picks.length,
+        stored: 0,
+      })
     }
     
     const html = buildEmail(picksText, date)
@@ -421,7 +441,9 @@ export default async function handler(req, res) {
       .eq('active', true)
 
     if (error) throw error
-    if (!subscribers?.length) return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText })
+    if (!subscribers?.length) {
+      return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText, stored: storedPicks.length })
+    }
 
     const emails = subscribers.map(s => s.email)
     let sent = 0
@@ -463,7 +485,7 @@ export default async function handler(req, res) {
       console.warn('X post failed:', tweetErr.message)
     }
 
-    return res.json({ sent, message: `Sent to ${sent} subscribers`, picks: picksText })
+    return res.json({ sent, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
   } catch (err) {
     console.error('Newsletter error:', err)
     return res.status(500).json({ error: err.message })
