@@ -4,6 +4,7 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 const SELECT_FIELDS = 'id,date,pick,bet,game,sport,result,units,created_at'
+const LEGACY_SELECT_FIELDS = 'id,date,pick,bet,game,sport,result'
 
 function isoDate(date) {
   return date.toISOString().split('T')[0]
@@ -39,39 +40,58 @@ function summarizeRows(rows) {
 }
 
 async function fetchPicksByDate(date) {
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${date}&order=created_at.asc&select=${SELECT_FIELDS}`,
-    {
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      },
-    }
-  )
+  const response = await fetchDailyPicks({
+    searchParams: { date: `eq.${date}`, order: 'created_at.asc', select: SELECT_FIELDS },
+  })
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch picks for ${date} (${response.status})`)
+  if (response.ok) return response.json()
+
+  const fallback = await fetchDailyPicks({
+    searchParams: { date: `eq.${date}`, select: LEGACY_SELECT_FIELDS },
+  })
+
+  if (!fallback.ok) {
+    throw new Error(`Failed to fetch picks for ${date} (${fallback.status}): ${await fallback.text()}`)
   }
 
-  return response.json()
+  return fallback.json()
 }
 
 async function fetchRecentGraded(limit = 10) {
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/daily_picks?result=not.is.null&order=date.desc&limit=${limit}&select=${SELECT_FIELDS}`,
-    {
-      headers: {
-        apikey: SUPABASE_SERVICE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
-      },
-    }
-  )
+  const response = await fetchDailyPicks({
+    searchParams: { result: 'not.is.null', order: 'date.desc', limit, select: SELECT_FIELDS },
+  })
 
-  if (!response.ok) {
-    throw new Error(`Failed to fetch recent graded picks (${response.status})`)
+  if (response.ok) return response.json()
+
+  // Production may still be on the original table shape without `units` or
+  // `created_at`. Fall back to the stable columns and filter graded rows here.
+  const fallback = await fetchDailyPicks({
+    searchParams: { order: 'date.desc', limit: 100, select: LEGACY_SELECT_FIELDS },
+  })
+
+  if (!fallback.ok) {
+    throw new Error(`Failed to fetch recent graded picks (${fallback.status}): ${await fallback.text()}`)
   }
 
-  return response.json()
+  const rows = await fallback.json()
+  return rows
+    .filter(p => p.result && String(p.result).trim() !== '')
+    .slice(0, limit)
+}
+
+function fetchDailyPicks({ searchParams }) {
+  const url = new URL(`${SUPABASE_URL}/rest/v1/daily_picks`)
+  Object.entries(searchParams).forEach(([key, value]) => {
+    url.searchParams.set(key, String(value))
+  })
+
+  return fetch(url, {
+    headers: {
+      apikey: SUPABASE_SERVICE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_KEY}`,
+    },
+  })
 }
 
 export default async function handler(req, res) {
