@@ -12,6 +12,7 @@ const NAV = [
   { to: '/analysis', label: 'AI Analysis', icon: Brain },
   { to: '/picks', label: 'AI Picks', icon: Zap },
   { to: '/blog', label: 'Blog', icon: BookOpen },
+  { to: '/fantasy', label: 'DFS Preview', icon: Trophy },
 ]
 
 export default function Layout({ children }) {
