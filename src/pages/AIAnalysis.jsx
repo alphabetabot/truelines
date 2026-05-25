@@ -8,6 +8,7 @@ import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Brain, ChevronDown, Zap } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
+import OddsLoadError from '../components/OddsLoadError'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -23,7 +24,7 @@ export default function AIAnalysis() {
   const [gptLoading, setGptLoading] = useState(false)
   const [gptError, setGptError] = useState(null)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['odds', sport],
     queryFn: () => getOdds(sport),
     staleTime: 30_000,
@@ -94,6 +95,11 @@ export default function AIAnalysis() {
       </div>
 
       <AIDisclaimer />
+
+      {isError && (
+        <OddsLoadError message={error?.message} onRetry={() => refetch()} />
+      )}
+
       <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null); setClaudeData(null); setGptData(null) }} />
 
       {/* Game selector */}

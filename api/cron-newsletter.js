@@ -47,7 +47,7 @@ async function getMLBStats(teamId, teamName) {
       }
     }
     return { wins: 0, losses: 0, runDiff: 0 }
-  } catch (e) {
+  } catch {
     return { wins: 0, losses: 0, runDiff: 0 }
   }
 }
@@ -76,8 +76,8 @@ async function getPitcherStats(pitcherId, pitcherName) {
       }
     }
     return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
-  } catch (e) {
-    console.warn(`Pitcher stats fetch failed for ${pitcherName || pitcherId}:`, e.message)
+  } catch {
+    console.warn(`Pitcher stats fetch failed for ${pitcherName || pitcherId}`)
     return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
   }
 }
@@ -107,7 +107,7 @@ async function getTodaysGames() {
         })
       })
     })
-  } catch (e) { console.warn('MLB fetch failed') }
+  } catch { console.warn('MLB fetch failed') }
 
   try {
     const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
@@ -128,7 +128,7 @@ async function getTodaysGames() {
         }
       })
     }
-  } catch (e) { console.warn('MLB odds fetch failed') }
+  } catch { console.warn('MLB odds fetch failed') }
 
   try {
     const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
@@ -142,7 +142,7 @@ async function getTodaysGames() {
       awayId: g.away_team?.toLowerCase().replace(/\s+/g, ''),
       homeId: g.home_team?.toLowerCase().replace(/\s+/g, '')
     }))
-  } catch (e) { console.warn('NBA fetch failed') }
+  } catch { console.warn('NBA fetch failed') }
 
   try {
     const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
@@ -156,7 +156,7 @@ async function getTodaysGames() {
       awayId: g.away_team?.toLowerCase().replace(/\s+/g, ''),
       homeId: g.home_team?.toLowerCase().replace(/\s+/g, '')
     }))
-  } catch (e) { console.warn('NHL fetch failed') }
+  } catch { console.warn('NHL fetch failed') }
 
   return games
 }

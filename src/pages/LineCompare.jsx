@@ -4,6 +4,7 @@ import { useLocation } from 'react-router-dom'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import SportSelector from '../components/SportSelector'
 import LineCompareTable from '../components/LineCompareTable'
+import OddsLoadError from '../components/OddsLoadError'
 import { ChevronDown, BarChart2 } from 'lucide-react'
 
 export default function LineCompare() {
@@ -13,7 +14,7 @@ export default function LineCompare() {
   const [sport, setSport] = useState(preSelected?.sport || 'basketball_nba')
   const [selectedGame, setSelectedGame] = useState(preSelected)
 
-  const { data, isLoading, isError, error } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['odds', sport],
     queryFn: () => getOdds(sport),
     staleTime: 30_000,
@@ -33,6 +34,10 @@ export default function LineCompare() {
       </div>
 
       <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null) }} />
+
+      {isError && (
+        <OddsLoadError message={error?.message} onRetry={() => refetch()} />
+      )}
 
       {/* Game selector */}
       <div className="mb-6">

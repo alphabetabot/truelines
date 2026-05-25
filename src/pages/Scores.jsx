@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { SPORTS } from '../lib/oddsApi'
 import { format, subDays, isSameDay } from 'date-fns'
 import { getScores } from '../lib/oddsApi'
+import OddsLoadError from '../components/OddsLoadError'
 
 const SCOREABLE_SPORTS = SPORTS.filter(s =>
   !['tennis_atp_french_open', 'mma_mixed_martial_arts'].includes(s.key)
@@ -95,7 +96,7 @@ export default function Scores({ sport }) {
 
   const selectedDate = dates.find(d => format(d, 'M/d') === selectedLabel) || today
 
-  const { data, isLoading, isError } = useQuery({
+  const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['scores', sport],
     queryFn: () => getScores(sport),
     staleTime: 60_000,
@@ -130,9 +131,11 @@ export default function Scores({ sport }) {
       )}
 
       {isError && (
-        <p className="text-sm text-center py-8" style={{ color: '#94a3b8' }}>
-          Scores unavailable for this sport
-        </p>
+        <OddsLoadError
+          title="Failed to load scores"
+          message={error?.message || 'Scores unavailable for this sport'}
+          onRetry={() => refetch()}
+        />
       )}
 
       {!isLoading && !isError && games.length === 0 && (

@@ -1,6 +1,6 @@
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS } from '../lib/oddsApi'
-import { format } from 'date-fns'
 import { useNavigate } from 'react-router-dom'
+import { getOddsGameTimeLabel } from '../lib/gameStatus'
 
 function TeamCell({ name, isAway }) {
   return (
@@ -18,7 +18,7 @@ function TeamCell({ name, isAway }) {
   )
 }
 
-function OddsCell({ awaySpread, awaySpreadOdds, overPoint, overOdds, awayMl, homeMl, homeSpread, homeSpreadOdds, underPoint, underOdds, bestAwayMl, bestHomeMl, bestAwaySpread, bestHomeSpread }) {
+function OddsCell({ awaySpread, awaySpreadOdds, overPoint, overOdds, bestAwaySpread }) {
   return (
     <td className="px-0 py-0" style={{ borderLeft: '1px solid var(--border-light)', minWidth: 110, verticalAlign: 'top' }}>
       {/* Away row: spread */}
@@ -113,14 +113,7 @@ function MatchupRow({ game, index, onSelect }) {
         {/* Time header */}
         <div className="flex items-center gap-2 px-3"
           style={{ height: 14, background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--border-light)' }}>
-          {isLive ? (
-            <span className="flex items-center gap-1 font-bold" style={{ color: 'var(--green)', fontSize: 9 }}>
-              <span className="live-dot w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'var(--green)' }} />
-              LIVE
-            </span>
-          ) : (
-            <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>{dateLabel} {timeLabel}</span>
-          )}
+          <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>{timeLabel}</span>
         </div>
         {/* Away team */}
         <TeamCell name={game.away} isAway={true} />

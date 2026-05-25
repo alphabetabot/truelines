@@ -1,4 +1,4 @@
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
@@ -29,6 +29,7 @@ export default function Layout({ children }) {
     const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
     const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
     if (ios && !standalone) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- install banner runs once on mount
       setIsIOS(true)
       setShowInstall(true)
     }
@@ -86,7 +87,9 @@ export default function Layout({ children }) {
         <div className="max-w-5xl mx-auto px-3">
           {/* Row 1: Live Odds + Line Compare */}
           <div className="flex items-center gap-1" style={{ height: 40 }}>
-            {NAV.slice(0, 2).map(({ to, label, icon: Icon, exact }) => (
+            {NAV.slice(0, 2).map(({ to, label, icon, exact }) => {
+                const NavIcon = icon
+                return (
               <NavLink key={to} to={to} end={exact}
                 className="flex items-center gap-2 px-4 h-full font-bold transition-all whitespace-nowrap"
                 style={({ isActive }) => ({
@@ -94,13 +97,15 @@ export default function Layout({ children }) {
                   color: isActive ? '#0f172a' : 'rgba(255,255,255,0.8)',
                   fontSize: 14,
                 })}>
-                <Icon size={14} />{label}
+                <NavIcon size={14} />{label}
               </NavLink>
-            ))}
+            )})}
           </div>
           {/* Row 2: AI Analysis + AI Picks + Blog + Fantasy Sports */}
           <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            {NAV.slice(2).map(({ to, label, icon: Icon, exact }) => (
+            {NAV.slice(2).map(({ to, label, icon, exact }) => {
+                const NavIcon = icon
+                return (
               <NavLink key={to} to={to} end={exact}
                 className="flex items-center gap-1.5 px-3 h-full font-bold transition-all whitespace-nowrap"
                 style={({ isActive }) => ({
@@ -108,9 +113,9 @@ export default function Layout({ children }) {
                   color: isActive ? '#0f172a' : 'rgba(255,255,255,0.7)',
                   fontSize: 13,
                 })}>
-                <Icon size={13} />{label}
+                <NavIcon size={13} />{label}
               </NavLink>
-            ))}
+            )})}
 
           </div>
         </div>

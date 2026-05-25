@@ -26,7 +26,6 @@ async function callClaude(messages, systemPrompt, maxTokens = 1024) {
 }
 
 export async function analyzeGame(game, pitchers = {}) {
-  const isMLB = game.sport === 'baseball_mlb'
   const sportContexts = {
     baseball_mlb: `For MLB you MUST analyze: starting pitcher matchup (ERA, WHIP, K/9, opp AVG), ballpark factors (pitcher vs hitter friendly), weather (wind speed/direction is critical for totals, temp affects carry), bullpen strength, team batting vs LHP/RHP splits, recent form last 10 games, and how all these affect the total.`,
     basketball_nba: `For NBA analyze: home/away splits, pace of play, offensive/defensive ratings, injury reports, back-to-back situations, rest advantage, key player matchups, recent form, and referee tendencies for pace/fouls.`,

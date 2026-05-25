@@ -58,7 +58,7 @@ async function getTodayGames() {
           commenceTime: game.commence_time,
         }
       }
-    } catch {}
+    } catch { /* skip */ }
   }
   return null
 }

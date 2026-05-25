@@ -36,7 +36,7 @@ function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
     best[label] = prices.length ? Math.max(...prices) : null
   })
 
-  const rowLabels = {
+  const _rowLabels = {
     h2h: { a: 'Away ML', b: 'Home ML' },
     spreads: { a: 'Away Spread', b: 'Home Spread' },
     totals: { a: 'Over', b: 'Under' },

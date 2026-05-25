@@ -1,9 +1,5 @@
 import express from 'express'
 import cors from 'cors'
-import { createServer } from 'http'
-import { readFileSync } from 'fs'
-import { fileURLToPath } from 'url'
-import { dirname, join } from 'path'
 
 // Load .env manually (dotenv ESM)
 import 'dotenv/config'

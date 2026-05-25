@@ -1,11 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useEffect } from 'react'
 import { getScores } from '../lib/oddsApi'
+import { getScoresTickerColor, getScoresTickerLabel } from '../lib/gameStatus'
 
 function TickerItem({ game }) {
-  const gameTime = new Date(game.commence_time)
-  const now = new Date()
-  const isLive = !game.completed && gameTime < now
   const isFinal = game.completed
 
   const awayShort = game.away_team.split(' ').slice(-1)[0]
