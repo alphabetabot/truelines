@@ -2,7 +2,7 @@ export default function Disclaimer() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       <h1 className="mb-2" style={{ color: '#0f172a' }}>Site Disclaimer</h1>
-      <p className="mb-8 text-sm" style={{ color: '#64748b' }}>Last updated: April 2026</p>
+      <p className="mb-8 text-sm" style={{ color: '#64748b' }}>Last updated: May 2026</p>
 
       {/* General */}
       <section className="mb-8 p-5 rounded-2xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
@@ -57,10 +57,15 @@ export default function Disclaimer() {
       {/* Affiliate Links */}
       <section className="mb-8 p-5 rounded-2xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
         <h2 className="mb-3" style={{ color: '#0f172a', fontSize: '1.1rem' }}>Affiliate Disclosure</h2>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: '#475569' }}>
+          Some outbound sportsbook links on TrueOddsIQ may be direct links, paid links, or affiliate links.
+          If you click one of those links and create an account or take another qualifying action,
+          TrueOddsIQ may earn a commission at no additional cost to you.
+        </p>
         <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>
-          TrueOddsIQ may earn a commission when users sign up with sportsbooks through links on this site.
-          This does not affect the odds data we display or our editorial independence.
-          Sportsbook links are provided for user convenience only.
+          Compensation does not affect the odds data we display, the order of best-price highlights,
+          or our AI-assisted analysis. Odds are sourced from third-party data providers, and
+          sportsbook links are provided for user convenience only.
         </p>
       </section>
 

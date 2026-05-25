@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { Brain, BarChart2, Shield, TrendingUp } from 'lucide-react'
 
 export default function About() {
@@ -39,12 +40,12 @@ export default function About() {
             {
               icon: Shield,
               title: 'Transparent & Independent',
-              desc: 'We are not a sportsbook. We take no bets. We have no financial relationship with any book that influences the odds we display. Our only goal is giving you the clearest picture of the market.'
+              desc: 'We are not a sportsbook and we do not take bets. Sportsbook links may generate a commission, but compensation does not change the odds data, best-price highlights, rankings, or analysis shown on TrueOddsIQ.'
             },
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex gap-4 p-4 rounded-xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
               <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#f1f5f9' }}>
-                <Icon size={18} style={{ color: '#2563eb' }} />
+                {createElement(Icon, { size: 18, style: { color: '#2563eb' } })}
               </div>
               <div>
                 <p className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>{title}</p>
