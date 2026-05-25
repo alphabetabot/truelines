@@ -1,3 +1,4 @@
+/* global process */
 // Dynamic sitemap generator - pulls blog posts from Supabase in real-time
 // Serves as /api/sitemap and should be aliased to /sitemap.xml in vercel.json
 
