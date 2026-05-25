@@ -14,7 +14,7 @@ export default function HeroBanner() {
         <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-        AI-assisted betting research using live odds, matchup context, and transparent result tracking.
+        AI-assisted betting research using current odds, available matchup context, and transparent result tracking.
       </p>
       <div className="flex flex-wrap gap-3 mb-4">
         {[

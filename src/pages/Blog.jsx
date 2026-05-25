@@ -10,7 +10,7 @@ const STATIC_POSTS = [
     title: 'How to Shop Betting Lines and Save Money Every Week',
     date: '2026-04-21',
     sport: 'General',
-    summary: 'Most bettors lose money not because they pick wrong — but because they use only one sportsbook. Here\'s how line shopping can add hundreds of dollars to your bottom line.',
+    summary: 'Using only one sportsbook can mean accepting worse prices. Here\'s how line shopping can improve the number you get before placing a bet.',
     content: `
 ## What Is Line Shopping?
 
@@ -26,7 +26,7 @@ Here's a real example:
 
 If you bet $100 on the Cowboys spread, you need to risk $115 at DraftKings, $108 at FanDuel, or just $105 at Pinnacle to win $100.
 
-Over 500 bets a year, that difference adds up to **$500+ in savings** — just from shopping lines.
+Over a large sample of bets, consistently taking the better available price can meaningfully improve your expected return compared with always using one book.
 
 ## The Best Books to Compare
 
@@ -40,13 +40,13 @@ For US bettors, the main books to compare are:
 
 ## How TrueOddsIQ Makes This Easy
 
-Instead of opening 6 different apps, TrueOddsIQ shows you all lines side by side in real time. Best odds are highlighted in green so you know exactly where to bet in seconds.
+Instead of opening several sportsbook apps, TrueOddsIQ shows available lines side by side from the books returned by our odds provider. Best listed odds are highlighted in green so you can quickly compare prices before deciding where to bet.
 
 [Compare lines now at TrueOddsIQ →](https://trueoddsiq.com/compare)
 
 ## The Bottom Line
 
-Line shopping is the single easiest way to improve your sports betting results without changing how you pick games. If you're not doing it, you're leaving real money on the table every week.
+Line shopping is one of the simplest habits for getting a better price without changing your handicap. It does not guarantee profit, but it can help you avoid routinely taking worse numbers.
     `,
   },
   {
@@ -95,10 +95,10 @@ You're betting on the combined runs scored by both teams.
 ## Use TrueOddsIQ for MLB Betting
 
 TrueOddsIQ shows you:
-- Live MLB odds across DraftKings, FanDuel, BetMGM, Caesars, Pinnacle & Bet365
-- Starting pitcher stats (ERA, WHIP, K/9) for each game
-- Ballpark factors and weather conditions
-- AI analysis from Vega on every matchup
+- Current MLB odds from available sportsbooks such as DraftKings, FanDuel, BetMGM, Caesars, Pinnacle and Bet365
+- Probable pitcher stats such as ERA, WHIP and K/9 when available
+- Venue and weather context when available from the MLB schedule feed
+- AI-assisted analysis from Vega using the current odds snapshot and available matchup context
 
 [Check today's MLB odds →](https://trueoddsiq.com)
     `,
@@ -108,42 +108,40 @@ TrueOddsIQ shows you:
     title: 'How Vega\'s AI Picks Work: The Technology Behind TrueOddsIQ',
     date: '2026-04-21',
     sport: 'General',
-    summary: 'TrueOddsIQ\'s AI analyst Vega uses real-time data to generate sports betting analysis. Here\'s exactly what data goes in and how the picks are generated.',
+    summary: 'TrueOddsIQ\'s AI analyst Vega uses current odds snapshots and available matchup context to generate sports betting research. Here\'s what data goes in and what does not.',
     content: `
 ## Who Is Vega?
 
-Vega is TrueOddsIQ's AI sports betting analyst, powered by Claude (Anthropic). Unlike generic AI chatbots, Vega is specifically prompted to think like a sharp bettor — analyzing value, line movement, and market inefficiencies rather than just predicting winners.
+Vega is TrueOddsIQ's AI sports betting analyst, powered by Claude (Anthropic). Unlike a generic chatbot, Vega is prompted to compare the current odds snapshot, available matchup context, and line-shopping differences rather than simply predicting a winner.
 
 ## What Data Does Vega Analyze?
 
 For every game, Vega receives:
 
 **Odds Data**
-- Live moneyline, spread, and total from 6 major sportsbooks
-- Line movement (how odds have shifted)
+- Current moneyline, spread, and total prices from available sportsbooks
+- Differences in available prices across books
 - Best available price for each bet type
 
 **MLB-Specific Data**
 - Starting pitcher: name, ERA, WHIP, K/9, opponent batting average
-- Ballpark run factor (pitcher vs hitter friendly)
-- Weather conditions: temperature, wind speed and direction
+- Venue and weather details such as temperature, wind speed and direction when available
 
 **Sport-Specific Context**
-- NBA: pace of play, rest/travel, back-to-backs, home/away splits
-- NHL: goalie matchup, power play %, back-to-back situations
-- NFL: injury reports, weather, home field advantage, divisional familiarity
+- Team names, sport, start time, home/away matchup, and current prices
+- Additional injury, betting-split, and historical line-movement feeds are not currently ingested
 
 ## How Vega Generates Picks
 
 Vega is instructed to:
-1. Identify where the line has value based on true probability vs implied odds
-2. Flag sharp money signals (line movement against public betting)
-3. Consider situational factors (travel, rest, weather)
-4. Only recommend bets with genuine edge — never forced picks
+1. Compare current prices and implied probabilities across available books
+2. Highlight where line shopping produces a better listed number
+3. Use available matchup context while being clear about missing data
+4. Avoid forcing picks when the available information is thin
 
 ## Why Two AI Models?
 
-TrueOddsIQ offers analysis from both **Vega (Claude)** and **ChatGPT**. Different AI architectures sometimes catch different angles on the same game. Getting two independent perspectives helps bettors make more informed decisions.
+TrueOddsIQ offers analysis from both **Vega (Claude)** and **ChatGPT**. Different AI systems can frame the same odds snapshot in different ways, which can help you pressure-test a betting idea before making your own decision.
 
 ## The Disclaimer
 

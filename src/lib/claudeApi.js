@@ -28,24 +28,24 @@ async function callClaude(messages, systemPrompt, maxTokens = 1024) {
 export async function analyzeGame(game, pitchers = {}) {
   const isMLB = game.sport === 'baseball_mlb'
   const sportContexts = {
-    baseball_mlb: `For MLB you MUST analyze: starting pitcher matchup (ERA, WHIP, K/9, opp AVG), ballpark factors (pitcher vs hitter friendly), weather (wind speed/direction is critical for totals, temp affects carry), bullpen strength, team batting vs LHP/RHP splits, recent form last 10 games, and how all these affect the total.`,
-    basketball_nba: `For NBA analyze: home/away splits, pace of play, offensive/defensive ratings, injury reports, back-to-back situations, rest advantage, key player matchups, recent form, and referee tendencies for pace/fouls.`,
-    basketball_ncaab: `For NCAAB analyze: home court advantage (massive in college), tempo, key player matchups, travel fatigue, coaching tendencies, conference familiarity, and line movement indicating sharp action.`,
-    americanfootball_nfl: `For NFL analyze: offensive/defensive rankings, injury report (especially QB, OL, CB), weather (wind over 15mph kills passing games, cold affects kicking), home field advantage, divisional familiarity, coaching matchup, rest/travel, and recent ATS record.`,
-    americanfootball_ncaaf: `For NCAAF analyze: talent gap, home field advantage, key player injuries, weather, coaching matchup, offensive scheme vs defensive scheme, and line movement.`,
-    icehockey_nhl: `For NHL analyze: goalie matchup (save%, GAA), power play/penalty kill percentages, home/away splits, back-to-back situations, line combinations, recent form, and team shooting percentages.`,
-    soccer_epl: `For EPL analyze: home/away form, key injuries/suspensions, head-to-head record, squad depth, European competition fatigue, manager tactics, and weather.`,
-    soccer_usa_mls: `For MLS analyze: home field advantage (travel distances are huge), turf vs grass preference, key player availability, form guide, and conference standings implications.`,
-    mma_mixed_martial_arts: `For MMA analyze: fighting styles (striker vs grappler), reach/size advantages, recent form, camp quality, weight cut issues, judges tendencies for the venue, and how the matchup plays stylistically.`,
+    baseball_mlb: `For MLB, use the supplied probable pitcher stats, venue, weather, and current odds when present. If pitcher, weather, bullpen, lineup, injury, or historical trend data is missing, say it is not available rather than guessing.`,
+    basketball_nba: `For NBA, use current moneyline, spread, and total prices plus basic home/away context. Do not invent injuries, rest data, pace metrics, or ratings unless they are explicitly included in the supplied data.`,
+    basketball_ncaab: `For NCAAB, use current prices and basic matchup context. Do not infer travel, tempo, injuries, or market movement unless supplied.`,
+    americanfootball_nfl: `For NFL, use current prices and basic matchup context. Do not invent injury reports, weather, rankings, or rest/travel details unless supplied.`,
+    americanfootball_ncaaf: `For NCAAF, use current prices and basic matchup context. Do not invent injuries, schemes, or market movement unless supplied.`,
+    icehockey_nhl: `For NHL, use current prices and basic matchup context. Do not invent goalie confirmations, special-teams metrics, line combinations, or recent form unless supplied.`,
+    soccer_epl: `For EPL, use current prices and basic matchup context. Do not invent injuries, suspensions, squad depth, travel, or tactics unless supplied.`,
+    soccer_usa_mls: `For MLS, use current prices and basic matchup context. Do not invent availability, form, or travel details unless supplied.`,
+    mma_mixed_martial_arts: `For MMA, use current prices and basic matchup context. Do not invent camp, weight-cut, judge, or form details unless supplied.`,
   }
 
-  const sportContext = sportContexts[game.sport] || 'Analyze all relevant matchup factors, recent form, injuries, and situational angles.'
+  const sportContext = sportContexts[game.sport] || 'Use the supplied odds and matchup context only. Do not invent injuries, form, or situational angles.'
 
-  const system = `You are Vega, TrueOddsIQ's AI analyst and an elite sports betting analyst with deep knowledge of line movement, market inefficiencies, injury impacts, and statistical modeling. You think like a sharp bettor.
+  const system = `You are Vega, TrueOddsIQ's AI analyst. Your job is to compare current sportsbook prices, explain what the available data supports, and be explicit about missing inputs.
 
 For this game: ${sportContext}
 
-Always include: line movement interpretation, public vs sharp money signals, best value bet, and best book for each bet type.
+Do not claim access to betting splits, sharp money, injury feeds, or historical line movement unless the user message provides that data. Focus on price comparison, implied probability, available MLB pitcher/weather context, and the best listed book for each bet type.
 Be concise, direct, data-driven. No fluff. No generic gambling disclaimers.`
 
   const oddsSnapshot = formatGameForAI(game, pitchers)
@@ -53,12 +53,12 @@ Be concise, direct, data-driven. No fluff. No generic gambling disclaimers.`
   const messages = [
     {
       role: 'user',
-      content: `Analyze this game and its betting lines:\n\n${oddsSnapshot}\n\nProvide a sharp, complete analysis covering:
-1. **Matchup Breakdown** - Key factors that determine the outcome (pitchers/QBs/goalies/etc, injuries, form, situational edges)
-2. **Line Movement & Sharp Money** - What do the current lines tell us? Any steam moves or reverse line movement?
-3. **Environmental Factors** - Weather, venue, home/away splits, travel, rest advantages
-4. **Best Bet** - The single best value play with reasoning
-5. **Line Shopping Edge** - Which book has the best number for each bet type`,
+      content: `Analyze this game and its betting lines:\n\n${oddsSnapshot}\n\nProvide a complete analysis covering:
+1. **Matchup Context** - Use only the teams, sport, start time, and any supplied pitcher/weather/venue details
+2. **Current Market Snapshot** - Compare the listed moneyline, spread, and total prices without inferring historical movement
+3. **Data Gaps** - Briefly state important context not provided, such as injuries or betting splits, if relevant
+4. **Best Bet** - The single best value play supported by the listed prices and available context
+5. **Line Shopping Edge** - Which book has the best listed number for each bet type`,
     },
   ]
 
@@ -66,9 +66,9 @@ Be concise, direct, data-driven. No fluff. No generic gambling disclaimers.`
 }
 
 export async function getAIPick(game, pitchers = {}) {
-  const system = `You are Vega, TrueOddsIQ's AI analyst — a professional sports handicapper who thinks like a sharp bettor.
-Analyze the matchup, lines, injuries, weather, venue, and situational factors to make a specific confident pick.
-Format: Pick, Odds, Book, Confidence (1-5 stars), Reasoning (include key factors like pitcher matchup, weather, injuries, line value).
+  const system = `You are Vega, TrueOddsIQ's AI analyst. Use only the supplied odds and matchup context to make a specific research pick.
+Do not invent injuries, betting splits, sharp money, or historical line movement. If context is missing, keep the confidence modest and explain the limitation.
+Format: Pick, Odds, Book, Confidence (1-5 stars), Reasoning (include available factors like price differences, pitcher matchup, weather, or venue when supplied).
 Be direct. No hedging. No disclaimers.`
 
   const oddsSnapshot = formatGameForAI(game, pitchers)
@@ -88,9 +88,9 @@ Be direct. No hedging. No disclaimers.`
 }
 
 export async function getDailyPicks(games) {
-  const system = `You are Vega, TrueOddsIQ's AI analyst and an elite sports betting analyst. 
-You review the entire slate of games and identify the TOP 3-5 best bets of the day.
-Focus on line value, steam moves, and market inefficiencies.
+  const system = `You are Vega, TrueOddsIQ's AI analyst.
+You review the available slate and identify the top research picks supported by current listed prices.
+Focus on line-shopping value and clearly available matchup context. Do not claim steam moves, sharp money, betting splits, injuries, or historical line movement unless supplied in the slate.
 Be specific with picks, books, and reasoning. No fluff.`
 
   const slate = games
@@ -101,14 +101,14 @@ Be specific with picks, books, and reasoning. No fluff.`
   const messages = [
     {
       role: 'user',
-      content: `Here is today's betting slate:\n\n${slate}\n\nIdentify the TOP 3-5 BEST BETS of the day. 
+      content: `Here is today's betting slate:\n\n${slate}\n\nIdentify up to 3-5 best research picks of the day.
 For each pick provide:
 **Pick #N: [Team/Side] - [Sport]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [★ rating]
-- Reasoning: [sharp, concise edge]
+- Reasoning: [concise edge based on listed prices and supplied context]
 
-End with a brief **Fade of the Day** (most public bet to avoid).`,
+End with a brief **Fade of the Day** only if the listed prices clearly support one; otherwise say no fade identified from the available data.`,
     },
   ]
 
@@ -116,12 +116,12 @@ End with a brief **Fade of the Day** (most public bet to avoid).`,
 }
 
 export async function analyzeLineMovement(game, historicalNote) {
-  const system = `You are Vega, TrueOddsIQ's AI analyst specializing in line movement analysis and sharp money detection.`
+  const system = `You are Vega, TrueOddsIQ's AI analyst. Analyze only the historical line information supplied by the user and do not infer sharp money or public betting splits without explicit data.`
 
   const messages = [
     {
       role: 'user',
-      content: `Analyze line movement for:\n${formatGameForAI(game)}\n\nContext: ${historicalNote}\n\nWhat does this movement tell us?`,
+      content: `Analyze the supplied line-history note for:\n${formatGameForAI(game)}\n\nContext: ${historicalNote}\n\nWhat can and cannot be concluded from this supplied movement?`,
     },
   ]
 
