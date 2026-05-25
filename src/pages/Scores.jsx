@@ -13,6 +13,8 @@ function ScoreCard({ game }) {
   const away = game.scores?.find(s => s.name === game.away_team)
   const isCompleted = game.completed
   const gameTime = new Date(game.commence_time)
+  const hasScore = away?.score != null || home?.score != null
+  const isInProgress = !isCompleted && gameTime < new Date() && hasScore
 
   return (
     <div className="rounded-xl overflow-hidden mb-2"
@@ -25,10 +27,10 @@ function ScoreCard({ game }) {
         </span>
         <span className="text-xs font-bold px-2 py-0.5 rounded-full"
           style={{
-            background: isCompleted ? 'rgba(74,222,128,0.2)' : 'rgba(251,191,36,0.2)',
-            color: isCompleted ? '#4ade80' : '#fbbf24'
+            background: isCompleted ? 'rgba(74,222,128,0.2)' : isInProgress ? 'rgba(59,130,246,0.2)' : 'rgba(251,191,36,0.2)',
+            color: isCompleted ? '#4ade80' : isInProgress ? '#93c5fd' : '#fbbf24'
           }}>
-          {isCompleted ? 'Final' : format(gameTime, 'h:mm a')}
+          {isCompleted ? 'Final' : isInProgress ? 'In Progress' : format(gameTime, 'h:mm a')}
         </span>
       </div>
 
@@ -47,7 +49,7 @@ function ScoreCard({ game }) {
             color: away?.score > home?.score ? '#16a34a' : '#0f172a',
             minWidth: 36, textAlign: 'right'
           }}>
-            {isCompleted ? (away?.score ?? '—') : '—'}
+            {hasScore ? (away?.score ?? '—') : '—'}
           </span>
         </div>
         {/* Home */}
@@ -62,7 +64,7 @@ function ScoreCard({ game }) {
             color: home?.score > away?.score ? '#16a34a' : '#0f172a',
             minWidth: 36, textAlign: 'right'
           }}>
-            {isCompleted ? (home?.score ?? '—') : '—'}
+            {hasScore ? (home?.score ?? '—') : '—'}
           </span>
         </div>
       </div>

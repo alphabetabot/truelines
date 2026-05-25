@@ -1,37 +1,41 @@
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { createElement, useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import { useAuth } from '../lib/AuthContext'
 
 const NAV = [
-  { to: '/', label: 'Live Odds', icon: Activity, exact: true },
+  { to: '/', label: 'Odds Board', icon: Activity, exact: true },
   { to: '/compare', label: 'Line Compare', icon: BarChart2 },
   { to: '/analysis', label: 'AI Analysis', icon: Brain },
   { to: '/picks', label: 'AI Picks', icon: Zap },
   { to: '/blog', label: 'Blog', icon: BookOpen },
 ]
 
+function shouldShowIOSInstall() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
+  const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
+  return ios && !standalone
+}
+
 export default function Layout({ children }) {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const [installPrompt, setInstallPrompt] = useState(null)
-  const [showInstall, setShowInstall] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
+  const [isIOS] = useState(shouldShowIOSInstall)
+  const [showInstall, setShowInstall] = useState(isIOS)
   const [showIOSHint, setShowIOSHint] = useState(false)
 
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', e => {
+    function handleBeforeInstallPrompt(e) {
       e.preventDefault()
       setInstallPrompt(e)
       setShowInstall(true)
-    })
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
-    const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
-    if (ios && !standalone) {
-      setIsIOS(true)
-      setShowInstall(true)
     }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   }, [])
 
   const handleInstall = async () => {
@@ -42,7 +46,7 @@ export default function Layout({ children }) {
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
 
-      {/* ── Top bar: Logo + Install + Live ── */}
+      {/* ── Top bar: Logo + Install + Data badge ── */}
       <div style={{ background: '#0f172a' }}>
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 68 }}>
           {/* Logo */}
@@ -72,9 +76,9 @@ export default function Layout({ children }) {
               </button>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
-              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
-              <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
+              style={{ background: 'rgba(59,130,246,0.12)', border: '1px solid rgba(59,130,246,0.3)' }}>
+              <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#60a5fa' }} />
+              <span style={{ color: '#93c5fd', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>ODDS DATA</span>
             </div>
           </div>
         </div>
@@ -83,7 +87,7 @@ export default function Layout({ children }) {
       {/* ── Nav tabs ── */}
       <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
         <div className="max-w-5xl mx-auto px-3">
-          {/* Row 1: Live Odds + Line Compare */}
+          {/* Row 1: Odds Board + Line Compare */}
           <div className="flex items-center gap-1" style={{ height: 40 }}>
             {NAV.slice(0, 2).map(({ to, label, icon: Icon, exact }) => (
               <NavLink key={to} to={to} end={exact}
@@ -93,7 +97,7 @@ export default function Layout({ children }) {
                   color: isActive ? '#0f172a' : 'rgba(255,255,255,0.8)',
                   fontSize: 14,
                 })}>
-                <Icon size={14} />{label}
+                {createElement(Icon, { size: 14 })}{label}
               </NavLink>
             ))}
           </div>
@@ -107,7 +111,7 @@ export default function Layout({ children }) {
                   color: isActive ? '#0f172a' : 'rgba(255,255,255,0.7)',
                   fontSize: 13,
                 })}>
-                <Icon size={13} />{label}
+                {createElement(Icon, { size: 13 })}{label}
               </NavLink>
             ))}
 

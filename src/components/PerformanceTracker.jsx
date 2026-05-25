@@ -73,7 +73,7 @@ export default function PerformanceTracker() {
 
         <div className="grid grid-cols-3 gap-0 px-4 pb-3">
           {[
-            { label: 'Record', record: isNew ? '—' : `${wins}-${losses}`, units: isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
+            { label: 'Record', record: isNew ? '—' : `${wins}-${losses}`, units: isNew ? 'Awaiting graded picks' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
             { label: 'Win Rate', record: winRate, units: isNew ? 'Results after games' : `${picksWithResults.length} graded` },
             { label: 'Last Graded', record: formatDate(latestDate), units: 'Auto-graded daily' },
           ].map(({ label, record, units }, i) => (
