@@ -10,7 +10,7 @@ import PerformanceTracker from '../components/PerformanceTracker'
 import HeroBanner from '../components/HeroBanner'
 import TodaysEdges from '../components/TodaysEdges'
 import DailyPick from '../components/DailyPick'
-import { RefreshCw, Search, AlertTriangle, Trophy } from 'lucide-react'
+import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
 const TABS = ['Odds', 'Scores']
@@ -86,26 +86,6 @@ export default function LiveOdds() {
       <DailyPick />
       <TodaysEdges />
       <PerformanceTracker />
-
-      {/* Fantasy Sports Preview Banner */}
-      <div
-        onClick={() => navigate('/fantasy')}
-        className="rounded-2xl p-4 mb-4 cursor-pointer flex items-center gap-3"
-        style={{
-          background: 'linear-gradient(135deg, #334155, #0f172a)',
-          border: '1px solid #475569',
-        }}
-      >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#f59e0b' }}>
-          <Trophy size={20} style={{ color: '#0f172a' }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-xs font-black mb-0.5" style={{ color: '#f59e0b' }}>DFS OPTIMIZER PREVIEW</div>
-          <div className="text-xs" style={{ color: '#e2e8f0' }}>Sample research tool while live DFS data integration is in progress</div>
-        </div>
-        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>Beta</span>
-        <div className="font-bold text-lg flex-shrink-0" style={{ color: '#f59e0b' }}>›</div>
-      </div>
 
       <SportSelector selected={sport} onChange={s => { setSport(s); setSearch(''); setActiveTab('Odds') }} />
 

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Trophy, Zap, TrendingUp, Users, RefreshCw, Lock } from 'lucide-react'
+import { Trophy, Zap, Lock } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 
@@ -14,29 +13,30 @@ const CONTEST_TYPES = [
   { key: 'gpp', label: 'GPP Tournaments', desc: 'High upside — swing big' },
 ]
 
-// Salary data is mocked for now — will integrate with DraftKings API when affiliate approved
+// Demo-only sample data. These rows are intentionally fictional so the preview
+// cannot be mistaken for live DFS salary, projection, or ownership advice.
 const MOCK_MLB_PLAYERS = [
-  { name: 'Aaron Judge', team: 'NYY', pos: 'OF', salary: 6200, projPts: 42.3, value: 6.8, ownership: 28, hotness: 'hot', reason: 'Vs LHP, 8 HR last 15 games, home park' },
-  { name: 'Shohei Ohtani', team: 'LAD', pos: 'SP/OF', salary: 10500, projPts: 68.1, value: 6.5, ownership: 45, hotness: 'hot', reason: 'SP tonight, 11.2 K/9, elite matchup vs BAL' },
-  { name: 'Freddie Freeman', team: 'LAD', pos: '1B', salary: 5400, projPts: 34.8, value: 6.4, ownership: 18, hotness: 'warm', reason: 'Low ownership value play, 3 hits last 3 games' },
-  { name: 'Gunnar Henderson', team: 'BAL', pos: 'SS', salary: 5800, projPts: 36.2, value: 6.2, ownership: 22, hotness: 'warm', reason: 'Team stacking play, hits cleanup' },
-  { name: 'Juan Soto', team: 'NYM', pos: 'OF', salary: 5900, projPts: 36.0, value: 6.1, ownership: 31, hotness: 'warm', reason: 'High OBP, favorable matchup vs RHP' },
-  { name: 'Manny Machado', team: 'SD', pos: '3B', salary: 4800, projPts: 28.9, value: 6.0, ownership: 12, hotness: 'cold', reason: 'Low ownership GPP dart, vs weak SP' },
-  { name: 'Yordan Alvarez', team: 'HOU', pos: 'OF', salary: 5600, projPts: 33.5, value: 6.0, ownership: 19, hotness: 'warm', reason: 'Consistent floor, minefield spot' },
-  { name: 'Trea Turner', team: 'PHI', pos: 'SS', salary: 4600, projPts: 27.4, value: 5.9, ownership: 15, hotness: 'cold', reason: 'Contrarian play, due for breakout game' },
-  { name: 'Paul Goldschmidt', team: 'STL', pos: '1B', salary: 4200, projPts: 24.3, value: 5.8, ownership: 8, hotness: 'cold', reason: 'Elite salary relief, fills roster spot' },
-  { name: 'Gerrit Cole', team: 'NYY', pos: 'SP', salary: 9200, projPts: 52.1, value: 5.7, ownership: 33, hotness: 'hot', reason: 'Strong K upside vs weak lineup' },
+  { name: 'Sample Slugger A', team: 'TST', pos: 'OF', salary: 6200, projPts: 42.3, value: 6.8, ownership: 28, hotness: 'hot', reason: 'Demo high-salary bat with strong projected value' },
+  { name: 'Sample Ace B', team: 'TST', pos: 'SP', salary: 10500, projPts: 68.1, value: 6.5, ownership: 45, hotness: 'hot', reason: 'Demo pitcher profile with high projected strikeout upside' },
+  { name: 'Sample First Base C', team: 'TST', pos: '1B', salary: 5400, projPts: 34.8, value: 6.4, ownership: 18, hotness: 'warm', reason: 'Demo mid-salary value profile' },
+  { name: 'Sample Shortstop D', team: 'TST', pos: 'SS', salary: 5800, projPts: 36.2, value: 6.2, ownership: 22, hotness: 'warm', reason: 'Demo stacking profile for product display' },
+  { name: 'Sample Outfielder E', team: 'TST', pos: 'OF', salary: 5900, projPts: 36.0, value: 6.1, ownership: 31, hotness: 'warm', reason: 'Demo high-floor hitter profile' },
+  { name: 'Sample Third Base F', team: 'TST', pos: '3B', salary: 4800, projPts: 28.9, value: 6.0, ownership: 12, hotness: 'cold', reason: 'Demo low-ownership tournament profile' },
+  { name: 'Sample Outfielder G', team: 'TST', pos: 'OF', salary: 5600, projPts: 33.5, value: 6.0, ownership: 19, hotness: 'warm', reason: 'Demo balanced salary and projection profile' },
+  { name: 'Sample Shortstop H', team: 'TST', pos: 'SS', salary: 4600, projPts: 27.4, value: 5.9, ownership: 15, hotness: 'cold', reason: 'Demo contrarian profile for sorting behavior' },
+  { name: 'Sample First Base I', team: 'TST', pos: '1B', salary: 4200, projPts: 24.3, value: 5.8, ownership: 8, hotness: 'cold', reason: 'Demo salary-relief profile' },
+  { name: 'Sample Pitcher J', team: 'TST', pos: 'SP', salary: 9200, projPts: 52.1, value: 5.7, ownership: 33, hotness: 'hot', reason: 'Demo premium pitching profile' },
 ]
 
 const MOCK_NBA_PLAYERS = [
-  { name: 'Nikola Jokic', team: 'DEN', pos: 'C', salary: 11200, projPts: 65.4, value: 5.8, ownership: 38, hotness: 'hot', reason: 'Triple-double machine, favorable matchup' },
-  { name: 'Luka Doncic', team: 'DAL', pos: 'PG', salary: 10800, projPts: 61.2, value: 5.7, ownership: 42, hotness: 'hot', reason: '35+ pts last 4 games, pace up matchup' },
-  { name: 'Jayson Tatum', team: 'BOS', pos: 'SF', salary: 9400, projPts: 52.3, value: 5.6, ownership: 25, hotness: 'warm', reason: 'Home game, usage spike with Brown out' },
-  { name: 'Anthony Edwards', team: 'MIN', pos: 'SG', salary: 8600, projPts: 47.8, value: 5.6, ownership: 28, hotness: 'warm', reason: 'High usage, attacking weak perimeter D' },
-  { name: 'Bam Adebayo', team: 'MIA', pos: 'C', salary: 7200, projPts: 39.5, value: 5.5, ownership: 14, hotness: 'warm', reason: 'Value C in a pace-up game' },
-  { name: "De'Aaron Fox", team: 'SAC', pos: 'PG', salary: 7800, projPts: 42.1, value: 5.4, ownership: 21, hotness: 'warm', reason: 'Blowup game upside, fast pace' },
-  { name: 'Draymond Green', team: 'GSW', pos: 'PF', salary: 5400, projPts: 28.4, value: 5.3, ownership: 9, hotness: 'cold', reason: 'Cheap assist/reb floor, GPP only' },
-  { name: 'Tyrese Haliburton', team: 'IND', pos: 'PG', salary: 8200, projPts: 43.1, value: 5.3, ownership: 32, hotness: 'warm', reason: 'Playmaking monster, high assist ceiling' },
+  { name: 'Sample Center A', team: 'TST', pos: 'C', salary: 11200, projPts: 65.4, value: 5.8, ownership: 38, hotness: 'hot', reason: 'Demo premium center profile' },
+  { name: 'Sample Guard B', team: 'TST', pos: 'PG', salary: 10800, projPts: 61.2, value: 5.7, ownership: 42, hotness: 'hot', reason: 'Demo high-usage guard profile' },
+  { name: 'Sample Forward C', team: 'TST', pos: 'SF', salary: 9400, projPts: 52.3, value: 5.6, ownership: 25, hotness: 'warm', reason: 'Demo balanced wing profile' },
+  { name: 'Sample Guard D', team: 'TST', pos: 'SG', salary: 8600, projPts: 47.8, value: 5.6, ownership: 28, hotness: 'warm', reason: 'Demo scoring guard profile' },
+  { name: 'Sample Center E', team: 'TST', pos: 'C', salary: 7200, projPts: 39.5, value: 5.5, ownership: 14, hotness: 'warm', reason: 'Demo mid-tier value profile' },
+  { name: 'Sample Guard F', team: 'TST', pos: 'PG', salary: 7800, projPts: 42.1, value: 5.4, ownership: 21, hotness: 'warm', reason: 'Demo tournament-upside profile' },
+  { name: 'Sample Forward G', team: 'TST', pos: 'PF', salary: 5400, projPts: 28.4, value: 5.3, ownership: 9, hotness: 'cold', reason: 'Demo low-salary roster filler profile' },
+  { name: 'Sample Guard H', team: 'TST', pos: 'PG', salary: 8200, projPts: 43.1, value: 5.3, ownership: 32, hotness: 'warm', reason: 'Demo assist-heavy guard profile' },
 ]
 
 function hotColor(hotness) {
@@ -178,17 +178,17 @@ export default function Fantasy() {
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-1">
           <Trophy size={20} style={{ color: '#f59e0b' }} />
-          <h1 style={{ color: '#0f172a', margin: 0 }}>Fantasy & DFS Optimizer Preview</h1>
+          <h1 style={{ color: '#0f172a', margin: 0 }}>DFS Demo Sandbox</h1>
         </div>
         <p className="text-sm" style={{ color: '#64748b' }}>
-          Sample player-ranking experience while live salary, ownership, and projection feeds are being integrated.
+          Product preview using fictional sample players. Live salary, ownership, and projection feeds are not active.
         </p>
       </div>
 
       <div className="rounded-xl p-3 mb-4" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
         <p className="text-xs leading-relaxed" style={{ color: '#92400e' }}>
-          Preview mode: this page currently uses sample data and should not be treated as live DFS advice.
-          Live DraftKings/FanDuel salary and projection integrations are not active yet.
+          Demo mode only: every player, salary, projection, ownership value, and ranking on this page is fictional sample data.
+          Do not use this page to build lineups or make DFS entries.
         </p>
       </div>
 
@@ -284,32 +284,14 @@ export default function Fantasy() {
       {/* DFS CTA */}
       <div className="mt-6 rounded-2xl p-5 text-center" style={{ background: 'linear-gradient(135deg, #1e3a5f, #1e293b)' }}>
         <div className="text-2xl mb-2">🏆</div>
-        <div className="font-bold mb-1" style={{ color: '#fff' }}>DFS integrations coming soon</div>
-        <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Use official sportsbook and DFS apps to verify salaries, contests, and projections before playing.</p>
-        <div className="flex gap-3 justify-center">
-          <a
-            href="https://www.draftkings.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2.5 rounded-xl font-bold text-sm"
-            style={{ background: '#1a7a4a', color: '#fff', textDecoration: 'none' }}
-          >
-            DraftKings
-          </a>
-          <a
-            href="https://www.fanduel.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2.5 rounded-xl font-bold text-sm"
-            style={{ background: '#1d4ed8', color: '#fff', textDecoration: 'none' }}
-          >
-            FanDuel
-          </a>
-        </div>
+        <div className="font-bold mb-1" style={{ color: '#fff' }}>Live DFS integrations are not active</div>
+        <p className="text-xs" style={{ color: '#94a3b8' }}>
+          Use official DFS operators to verify salaries, contests, projections, and eligibility before playing.
+        </p>
       </div>
 
       <p className="text-xs text-center mt-4" style={{ color: '#94a3b8' }}>
-        Preview data is for product demonstration only. Always gamble responsibly.
+        Demo data is for product demonstration only. Always play responsibly.
       </p>
     </div>
   )
