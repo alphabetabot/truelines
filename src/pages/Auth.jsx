@@ -32,7 +32,7 @@ export default function Auth({ onAuth = () => {} }) {
           email,
           password,
           options: {
-            emailRedirectTo: 'https://trueoddsiq.com/login',
+            emailRedirectTo: 'https://trueoddsiq.com/auth/callback',
             data: { newsletter_opt_in: newsletter },
           },
         })
@@ -195,6 +195,8 @@ export default function Auth({ onAuth = () => {} }) {
 
       <p className="text-xs mt-6 text-center" style={{ color: '#94a3b8' }}>
         Must be 21+ · For informational use only · <a href="/disclaimer" style={{ color: '#2563eb' }}>Disclaimer</a>
+        {' '}· <a href="/privacy" style={{ color: '#2563eb' }}>Privacy</a>
+        {' '}· <a href="/terms" style={{ color: '#2563eb' }}>Terms</a>
       </p>
     </div>
   )

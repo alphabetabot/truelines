@@ -147,6 +147,10 @@ export default function Layout({ children }) {
             {' '}·{' '}
             <Link to="/disclaimer" style={{ color: '#2563eb', fontWeight: 600 }}>Site Disclaimer</Link>
             {' '}·{' '}
+            <Link to="/privacy" style={{ color: '#2563eb', fontWeight: 600 }}>Privacy</Link>
+            {' '}·{' '}
+            <Link to="/terms" style={{ color: '#2563eb', fontWeight: 600 }}>Terms</Link>
+            {' '}·{' '}
             <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb', fontWeight: 600 }}>Contact Us</a>
           </div>
         </div>

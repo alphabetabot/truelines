@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { createClient } from '@supabase/supabase-js'
+import { sendNewsletterEmail, unsubscribeUrl, verifyUnsubscribeToken } from './newsletter-utils.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const supabase = createClient(
@@ -9,6 +10,10 @@ const supabase = createClient(
 
 // Called by a cron job or manually to send daily picks newsletter
 export default async function handler(req, res) {
+  if (req.query?.action === 'unsubscribe') {
+    return handleUnsubscribe(req, res)
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
 
   // Simple auth check
@@ -32,22 +37,34 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'No subscribers' })
     }
 
-    // Send to all subscribers
     const emails = subscribers.map(s => s.email)
-
-    // Batch send (Resend supports up to 100 at a time)
-    const batchSize = 50
     let sent = 0
+    const failures = []
 
-    for (let i = 0; i < emails.length; i += batchSize) {
-      const batch = emails.slice(i, i + batchSize)
-      await resend.emails.send({
-        from: 'TrueOddsIQ Picks <picks@trueoddsiq.com>',
-        to: batch,
-        subject: subject || `TrueOddsIQ Daily Picks - ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`,
-        html: htmlContent || generateNewsletterHTML(picks),
+    for (const email of emails) {
+      try {
+        const unsubscribe = unsubscribeUrl(email)
+        await sendNewsletterEmail({
+          resend,
+          to: email,
+          subject: subject || `TrueOddsIQ Daily Picks - ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}`,
+          html: htmlContent ? appendUnsubscribeFooter(htmlContent, unsubscribe) : generateNewsletterHTML(picks, unsubscribe),
+          text: `TrueOddsIQ Daily Picks\n\nView full analysis: https://trueoddsiq.com/picks\nUnsubscribe: ${unsubscribe}`,
+        })
+        sent++
+      } catch (sendErr) {
+        console.error(`Newsletter send failed for ${email}:`, sendErr.message)
+        failures.push({ email, error: sendErr.message })
+      }
+    }
+
+    if (failures.length) {
+      return res.status(502).json({
+        error: 'One or more newsletter emails failed to send',
+        sent,
+        failed: failures.length,
+        failures: failures.slice(0, 10),
       })
-      sent += batch.length
     }
 
     return res.json({ sent, message: `Newsletter sent to ${sent} subscribers` })
@@ -57,7 +74,40 @@ export default async function handler(req, res) {
   }
 }
 
-function generateNewsletterHTML(picks) {
+async function handleUnsubscribe(req, res) {
+  if (req.method !== 'GET' && req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const email = String(req.query?.email || req.body?.email || '').trim().toLowerCase()
+  const token = String(req.query?.token || req.body?.token || '')
+
+  if (!email || !token || !verifyUnsubscribeToken(email, token)) {
+    return res.status(400).json({ ok: false, error: 'Invalid unsubscribe link' })
+  }
+
+  const { error } = await supabase
+    .from('newsletter_subscribers')
+    .update({ active: false })
+    .eq('email', email)
+
+  if (error) {
+    console.error('Unsubscribe failed:', error.message)
+    return res.status(500).json({ ok: false, error: 'Failed to unsubscribe' })
+  }
+
+  return res.json({ ok: true, message: 'You have been unsubscribed.' })
+}
+
+function appendUnsubscribeFooter(html, unsubscribeHref) {
+  const footer = `<p style="margin:16px 0 0;color:#94a3b8;font-size:11px;text-align:center;"><a href="${unsubscribeHref}" style="color:#2563eb;">Unsubscribe</a></p>`
+  if (String(html).includes('</body>')) {
+    return String(html).replace('</body>', `${footer}</body>`)
+  }
+  return `${html}${footer}`
+}
+
+function generateNewsletterHTML(picks, unsubscribeHref = 'https://trueoddsiq.com/unsubscribe') {
   const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
   
   return `
@@ -121,7 +171,7 @@ function generateNewsletterHTML(picks) {
         Gambling problem? Call 1-800-GAMBLER · Must be 21+ to wager
       </p>
       <p style="margin:8px 0 0;color:#94a3b8;font-size:11px;">
-        <a href="https://trueoddsiq.com/unsubscribe" style="color:#2563eb;">Unsubscribe</a>
+        <a href="${unsubscribeHref}" style="color:#2563eb;">Unsubscribe</a>
       </p>
     </div>
   </div>
