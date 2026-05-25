@@ -67,7 +67,7 @@ export default function Auth({ onAuth = () => {} }) {
 
       {/* Logo */}
       <div className="mb-8 text-center">
-        <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', margin: '0 auto 12px' }} />
+        <img src="/logo.svg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', margin: '0 auto 12px' }} />
         <p className="text-sm" style={{ color: '#64748b' }}>
           {mode === 'login' ? 'Sign in to access AI Picks' : 'Create your free account'}
         </p>

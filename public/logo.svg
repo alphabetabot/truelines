@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="160" viewBox="0 0 560 160" role="img" aria-labelledby="title desc">
+  <title id="title">TrueOddsIQ</title>
+  <desc id="desc">TrueOddsIQ logo with dark navy background and gold IQ mark.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fbbf24"/>
+      <stop offset="1" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+  <rect width="560" height="160" rx="28" fill="url(#bg)"/>
+  <g transform="translate(36 34)">
+    <rect width="92" height="92" rx="24" fill="url(#gold)"/>
+    <path d="M27 59c14-6 24-18 29-36 9 19 5 40-11 54-9 8-21 13-35 15 5-13 10-24 17-33Z" fill="#0f172a"/>
+    <circle cx="64" cy="31" r="7" fill="#0f172a"/>
+  </g>
+  <text x="150" y="76" fill="#ffffff" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="42" font-weight="900" letter-spacing="-1.8">
+    TrueOdds<tspan fill="#f59e0b">IQ</tspan>
+  </text>
+  <text x="153" y="112" fill="#94a3b8" font-family="Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="18" font-weight="600">
+    Live odds comparison + AI-assisted pick tracking
+  </text>
+</svg>
