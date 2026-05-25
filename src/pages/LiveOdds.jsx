@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
@@ -20,6 +20,8 @@ export default function LiveOdds() {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('Odds')
   const navigate = useNavigate()
+  const location = useLocation()
+  const trackerRequested = new URLSearchParams(location.search).get('tracker') === '1' || location.hash === '#pick-tracker'
 
   const { data, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ['odds', sport],
@@ -85,7 +87,7 @@ export default function LiveOdds() {
       <HeroBanner />
       <DailyPick />
       <TodaysEdges />
-      <PerformanceTracker />
+      <PerformanceTracker defaultExpanded={trackerRequested} />
 
       {/* Fantasy Sports Preview Banner */}
       <div

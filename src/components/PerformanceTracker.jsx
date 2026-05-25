@@ -16,8 +16,8 @@ function formatOdds(odds) {
   return n > 0 ? `+${n}` : `${n}`
 }
 
-export default function PerformanceTracker() {
-  const [expanded, setExpanded] = useState(false)
+export default function PerformanceTracker({ defaultExpanded = false }) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
   const [picks, setPicks] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -53,7 +53,7 @@ export default function PerformanceTracker() {
   const latestDate = picksWithResults[0]?.date
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+    <div id="pick-tracker" className="rounded-2xl overflow-hidden mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
 
       <button
         onClick={() => setExpanded(!expanded)}
