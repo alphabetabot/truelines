@@ -1,10 +1,11 @@
 // Grade pending picks and store W/L + units
 
+import { requireCronAuth } from './auth-utils.js'
 import { profitUnits, parseAmericanOdds } from './pick-utils.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
-const ODDS_API_KEY = process.env.VITE_ODDS_API_KEY
+const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
 async function getMLBGames() {
   try {
@@ -209,6 +210,8 @@ function resolveOdds(pick) {
 }
 
 export default async function handler(req, res) {
+  if (!requireCronAuth(req, res)) return
+
   const log = []
 
   try {
@@ -226,7 +229,7 @@ export default async function handler(req, res) {
 
     if (!picksRes.ok) {
       log.push(`ERROR: Failed to fetch picks (${picksRes.status})`)
-      return res.json({ success: false, log })
+      return res.status(500).json({ success: false, log })
     }
 
     const picks = await picksRes.json()
@@ -307,6 +310,6 @@ export default async function handler(req, res) {
     return res.json({ success: true, updated, log })
   } catch (err) {
     log.push(`FATAL: ${err.message}`)
-    return res.json({ success: false, log, error: err.message })
+    return res.status(500).json({ success: false, log, error: err.message })
   }
 }

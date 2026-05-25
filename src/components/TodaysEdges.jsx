@@ -1,17 +1,13 @@
 import { useQuery } from '@tanstack/react-query'
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
-
-const ODDS_API_KEY = import.meta.env.VITE_ODDS_API_KEY
+import { getOdds } from '../lib/oddsApi'
 
 async function fetchEdges() {
   const edges = []
 
   // Fetch MLB totals
   try {
-    const res = await fetch(
-      `https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=totals&oddsFormat=american&bookmakers=draftkings,fanduel,pinnacle`
-    )
-    const games = await res.json()
+    const games = await getOdds('baseball_mlb', 'totals', 'draftkings,fanduel,pinnacle')
     games?.slice(0, 6).forEach(g => {
       const books = g.bookmakers || []
       const totals = books.map(b => {
@@ -47,10 +43,7 @@ async function fetchEdges() {
 
   // Fetch NBA spreads
   try {
-    const res = await fetch(
-      `https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=spreads&oddsFormat=american&bookmakers=draftkings,fanduel,pinnacle`
-    )
-    const games = await res.json()
+    const games = await getOdds('basketball_nba', 'spreads', 'draftkings,fanduel,pinnacle')
     games?.slice(0, 4).forEach(g => {
       const books = g.bookmakers || []
       const spreads = books.map(b => {

@@ -8,8 +8,12 @@ import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
 import { Brain, ChevronDown, Zap } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
+import { useAuth } from '../lib/AuthContext'
+import { useNavigate } from 'react-router-dom'
 
 export default function AIAnalysis() {
+  const { user, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [sport, setSport] = useState('basketball_nba')
   const [selectedGame, setSelectedGame] = useState(null)
   const [claudeData, setClaudeData] = useState(null)
@@ -43,6 +47,10 @@ export default function AIAnalysis() {
 
   async function runClaude() {
     if (!selectedGame) return
+    if (!user) {
+      navigate('/login')
+      return
+    }
     setClaudeLoading(true); setClaudeError(null); setClaudeData(null)
     try {
       setClaudeData(await analyzeGame(selectedGame, pitchers))
@@ -55,6 +63,10 @@ export default function AIAnalysis() {
 
   async function runGPT() {
     if (!selectedGame) return
+    if (!user) {
+      navigate('/login')
+      return
+    }
     setGptLoading(true); setGptError(null); setGptData(null)
     try {
       setGptData(await analyzeGameGPT(selectedGame, pitchers))
@@ -105,38 +117,44 @@ export default function AIAnalysis() {
         </div>
       </div>
 
+      {!authLoading && !user && (
+        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
+          Sign in to run AI analysis. Live odds remain free to browse.
+        </div>
+      )}
+
       {/* Two analyze buttons */}
       <div className="flex gap-3 mb-6">
         {/* Claude */}
         <button
           onClick={runClaude}
-          disabled={!selectedGame || claudeLoading}
+          disabled={!selectedGame || claudeLoading || authLoading}
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
           style={{
-            background: selectedGame && !claudeLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#f1f5f9',
-            color: selectedGame && !claudeLoading ? '#fff' : '#94a3b8',
-            cursor: selectedGame && !claudeLoading ? 'pointer' : 'not-allowed',
-            boxShadow: selectedGame && !claudeLoading ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
+            background: selectedGame && !claudeLoading && !authLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#f1f5f9',
+            color: selectedGame && !claudeLoading && !authLoading ? '#fff' : '#94a3b8',
+            cursor: selectedGame && !claudeLoading && !authLoading ? 'pointer' : 'not-allowed',
+            boxShadow: selectedGame && !claudeLoading && !authLoading ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
           }}
         >
           <Zap size={15} />
-          {claudeLoading ? 'Vega Analyzing...' : 'Analyze with Vega (Claude)'}
+          {claudeLoading ? 'Vega Analyzing...' : user ? 'Analyze with Vega (Claude)' : 'Sign in for Vega'}
         </button>
 
         {/* GPT-4o */}
         <button
           onClick={runGPT}
-          disabled={!selectedGame || gptLoading}
+          disabled={!selectedGame || gptLoading || authLoading}
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
           style={{
-            background: selectedGame && !gptLoading ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#f1f5f9',
-            color: selectedGame && !gptLoading ? '#fff' : '#94a3b8',
-            cursor: selectedGame && !gptLoading ? 'pointer' : 'not-allowed',
-            boxShadow: selectedGame && !gptLoading ? '0 4px 14px rgba(22,163,74,0.3)' : 'none',
+            background: selectedGame && !gptLoading && !authLoading ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#f1f5f9',
+            color: selectedGame && !gptLoading && !authLoading ? '#fff' : '#94a3b8',
+            cursor: selectedGame && !gptLoading && !authLoading ? 'pointer' : 'not-allowed',
+            boxShadow: selectedGame && !gptLoading && !authLoading ? '0 4px 14px rgba(22,163,74,0.3)' : 'none',
           }}
         >
           <Brain size={15} />
-          {gptLoading ? 'ChatGPT Analyzing...' : 'Analyze with ChatGPT'}
+          {gptLoading ? 'ChatGPT Analyzing...' : user ? 'Analyze with ChatGPT' : 'Sign in for ChatGPT'}
         </button>
       </div>
 

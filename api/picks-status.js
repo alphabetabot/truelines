@@ -1,5 +1,6 @@
 // Health/status endpoint for the daily picks pipeline.
 
+import { requireCronAuth } from './auth-utils.js'
 import { getSupabase } from './supabase-client.js'
 import { storePicks } from './store-picks.js'
 
@@ -189,6 +190,7 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'POST' && req.query?.action === 'backfill-may22') {
+      if (!requireCronAuth(req, res)) return
       return res.json(await backfillMay22Picks())
     }
 

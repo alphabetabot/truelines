@@ -4,6 +4,7 @@ import { getSupabase } from './supabase-client.js'
 import { extractPicksFromResponse, storePicks } from './store-picks.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
+const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
 async function getMLBStats(teamId, teamName) {
   try {
@@ -75,7 +76,7 @@ async function getTodaysGames() {
   } catch (e) { console.warn('MLB fetch failed') }
 
   try {
-    const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const mlbOddsData = await mlbOddsRes.json()
     if (Array.isArray(mlbOddsData)) {
       mlbOddsData.forEach(g => {
@@ -96,7 +97,7 @@ async function getTodaysGames() {
   } catch (e) { console.warn('MLB odds fetch failed') }
 
   try {
-    const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nbaData = await nbaRes.json()
     nbaData?.forEach(g => games.push({ 
       sport: 'NBA', 
@@ -110,7 +111,7 @@ async function getTodaysGames() {
   } catch (e) { console.warn('NBA fetch failed') }
 
   try {
-    const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${process.env.VITE_ODDS_API_KEY}&regions=us&markets=h2h,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
     const nhlData = await nhlRes.json()
     nhlData?.forEach(g => games.push({ 
       sport: 'NHL', 
