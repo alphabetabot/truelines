@@ -7,7 +7,6 @@ import { useNavigate } from 'react-router-dom'
 const SPORTS = [
   { key: 'baseball_mlb', label: 'MLB', emoji: '⚾' },
   { key: 'basketball_nba', label: 'NBA', emoji: '🏀' },
-  { key: 'icehockey_nhl', label: 'NHL', emoji: '🏒' },
 ]
 
 const CONTEST_TYPES = [
@@ -179,10 +178,17 @@ export default function Fantasy() {
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-1">
           <Trophy size={20} style={{ color: '#f59e0b' }} />
-          <h1 style={{ color: '#0f172a', margin: 0 }}>Fantasy & DFS Optimizer</h1>
+          <h1 style={{ color: '#0f172a', margin: 0 }}>Fantasy & DFS Optimizer Preview</h1>
         </div>
         <p className="text-sm" style={{ color: '#64748b' }}>
-          Vega ranks today's top DFS plays by value, upside, and ownership
+          Sample player-ranking experience while live salary, ownership, and projection feeds are being integrated.
+        </p>
+      </div>
+
+      <div className="rounded-xl p-3 mb-4" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+        <p className="text-xs leading-relaxed" style={{ color: '#92400e' }}>
+          Preview mode: this page currently uses sample data and should not be treated as live DFS advice.
+          Live DraftKings/FanDuel salary and projection integrations are not active yet.
         </p>
       </div>
 
@@ -232,9 +238,9 @@ export default function Fantasy() {
           <Zap size={16} style={{ color: '#fff' }} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-xs font-bold" style={{ color: '#f59e0b' }}>VEGA'S TOP {contestType === 'gpp' ? 'GPP' : 'CASH'} PLAYS</div>
+          <div className="text-xs font-bold" style={{ color: '#f59e0b' }}>SAMPLE {contestType === 'gpp' ? 'GPP' : 'CASH'} PLAYER RANKINGS</div>
           <div className="text-xs" style={{ color: '#94a3b8' }}>
-            {contestType === 'cash' ? 'Sorted by floor & consistency' : 'Sorted by upside & low ownership'}
+            {contestType === 'cash' ? 'Demo sort by floor & consistency' : 'Demo sort by upside & low ownership'}
           </div>
         </div>
         {!user && (
@@ -278,8 +284,8 @@ export default function Fantasy() {
       {/* DFS CTA */}
       <div className="mt-6 rounded-2xl p-5 text-center" style={{ background: 'linear-gradient(135deg, #1e3a5f, #1e293b)' }}>
         <div className="text-2xl mb-2">🏆</div>
-        <div className="font-bold mb-1" style={{ color: '#fff' }}>Ready to play DFS?</div>
-        <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Vega's top plays are live. Enter a contest now on DraftKings or FanDuel.</p>
+        <div className="font-bold mb-1" style={{ color: '#fff' }}>DFS integrations coming soon</div>
+        <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Use official sportsbook and DFS apps to verify salaries, contests, and projections before playing.</p>
         <div className="flex gap-3 justify-center">
           <a
             href="https://www.draftkings.com"
@@ -303,7 +309,7 @@ export default function Fantasy() {
       </div>
 
       <p className="text-xs text-center mt-4" style={{ color: '#94a3b8' }}>
-        Projections are for entertainment purposes only. Always gamble responsibly.
+        Preview data is for product demonstration only. Always gamble responsibly.
       </p>
     </div>
   )

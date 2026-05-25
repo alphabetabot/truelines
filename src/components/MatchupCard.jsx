@@ -71,11 +71,11 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
   const bestAwayNum = bookRows.length ? Math.max(...bookRows.map(r => r.awayNum ?? -Infinity)) : null
   const bestHomeNum = bookRows.length ? Math.max(...bookRows.map(r => r.homeNum ?? -Infinity)) : null
 
-  // Implied betting %
+  // Implied win probability from the first available moneyline.
   const awayMl = Object.values(game.bookmakers || {}).map(m => m.h2h?.find(o => o.name === game.away)?.price).find(p => p != null)
   const awayImpl = awayMl != null ? (awayMl > 0 ? 100 / (awayMl + 100) : Math.abs(awayMl) / (Math.abs(awayMl) + 100)) : 0.5
-  const awayBetPct = Math.round((1 - awayImpl) * 100)
-  const homeBetPct = 100 - awayBetPct
+  const awayImpliedPct = Math.round(awayImpl * 100)
+  const homeImpliedPct = 100 - awayImpliedPct
 
   return (
     <div className="mb-3"
@@ -236,18 +236,18 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
         <span style={{ color: '#94a3b8', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
       </div>
 
-      {/* Betting % bar */}
+      {/* Implied probability bar */}
       <div className="px-4 py-2.5" style={{ borderTop: '1px solid #f1f5f9' }}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-semibold" style={{ color: '#94a3b8', fontSize: 10 }}>% OF BETS (implied)</span>
+          <span className="text-xs font-semibold" style={{ color: '#94a3b8', fontSize: 10 }}>IMPLIED WIN PROBABILITY</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold w-8 text-right" style={{ color: '#f59e0b' }}>{awayBetPct}%</span>
+          <span className="text-xs font-bold w-8 text-right" style={{ color: '#f59e0b' }}>{awayImpliedPct}%</span>
           <div className="flex-1 flex rounded-full overflow-hidden" style={{ height: 7, background: '#e2e8f0' }}>
-            <div style={{ width: `${awayBetPct}%`, background: '#f59e0b' }} />
-            <div style={{ width: `${homeBetPct}%`, background: '#3b82f6' }} />
+            <div style={{ width: `${awayImpliedPct}%`, background: '#f59e0b' }} />
+            <div style={{ width: `${homeImpliedPct}%`, background: '#3b82f6' }} />
           </div>
-          <span className="text-xs font-bold w-8" style={{ color: '#3b82f6' }}>{homeBetPct}%</span>
+          <span className="text-xs font-bold w-8" style={{ color: '#3b82f6' }}>{homeImpliedPct}%</span>
         </div>
         <div className="flex justify-between mt-1">
           <span className="text-xs truncate" style={{ color: '#94a3b8', maxWidth: 140 }}>{game.away}</span>
