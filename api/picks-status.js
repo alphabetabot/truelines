@@ -3,6 +3,7 @@
 import { requireCronAuth } from './auth-utils.js'
 import { getSupabase } from './supabase-client.js'
 import { storePicks } from './store-picks.js'
+import { verifyUnsubscribeToken } from './newsletter-utils.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -213,6 +214,28 @@ async function proxyOddsRequest(req, res) {
   return res.status(upstream.status).send(text)
 }
 
+async function handleUnsubscribe(req, res) {
+  const email = String(req.query?.email || req.body?.email || '').trim().toLowerCase()
+  const token = String(req.query?.token || req.body?.token || '')
+
+  if (!email || !token || !verifyUnsubscribeToken(email, token)) {
+    return res.status(400).json({ ok: false, error: 'Invalid unsubscribe link' })
+  }
+
+  const supabase = getSupabase()
+  const { error } = await supabase
+    .from('newsletter_subscribers')
+    .update({ active: false })
+    .eq('email', email)
+
+  if (error) {
+    console.error('Unsubscribe failed:', error.message)
+    return res.status(500).json({ ok: false, error: 'Failed to unsubscribe' })
+  }
+
+  return res.json({ ok: true, message: 'You have been unsubscribed.' })
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -232,6 +255,10 @@ export default async function handler(req, res) {
     if (req.method === 'POST' && req.query?.action === 'backfill-may22') {
       if (!requireCronAuth(req, res)) return
       return res.json(await backfillMay22Picks())
+    }
+
+    if (req.query?.action === 'unsubscribe') {
+      return handleUnsubscribe(req, res)
     }
 
     const today = req.query?.date || isoDate(new Date())
