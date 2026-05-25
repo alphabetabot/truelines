@@ -3,8 +3,17 @@ import { useNavigate } from 'react-router-dom'
 import { Zap, ChevronRight, Star } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 
-const CACHE_KEY = 'truelines_teaser_pick'
-const CACHE_DATE_KEY = 'truelines_teaser_date'
+function isPlaceholderBet(bet) {
+  return !bet || bet.includes('-10000') || bet.includes('-99999')
+}
+
+function formatConfidence(confidence) {
+  if (typeof confidence === 'string' && confidence.includes('★')) {
+    return confidence
+  }
+  const stars = Math.min(5, Math.max(1, parseInt(confidence, 10) || 4))
+  return '★'.repeat(stars)
+}
 
 export default function AIPickTeaser() {
   const [pick, setPick] = useState(null)
@@ -17,51 +26,34 @@ export default function AIPickTeaser() {
   }, [])
 
   async function loadTeaserPick() {
-    const today = new Date().toDateString()
-    const cached = localStorage.getItem(CACHE_KEY)
-    const cachedDate = localStorage.getItem(CACHE_DATE_KEY)
-
-    // Use cached pick if from today
-    if (cached && cachedDate === today) {
-      setPick(JSON.parse(cached))
-      setLoading(false)
-      return
-    }
-
     try {
-      // Get today's MLB schedule for the best teaser game
-      const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&hydrate=probablePitcher,venue&date=' + new Date().toISOString().split('T')[0])
-      const data = await res.json()
-      const games = data.dates?.[0]?.games || []
+      const res = await fetch('/api/todays-pick')
+      const text = await res.text()
 
-      if (games.length === 0) {
-        setLoading(false)
+      if (!res.ok) {
+        let errMsg = ''
+        try {
+          const body = text ? JSON.parse(text) : null
+          errMsg = body?.error || ''
+        } catch {
+          // Response body may not be JSON
+        }
+        if (errMsg || text) {
+          console.warn('Teaser pick fetch failed:', res.status, errMsg || text.slice(0, 200))
+        }
         return
       }
 
-      // Pick the most interesting matchup (both pitchers announced)
-      const bestGame = games.find(g =>
-        g.teams?.away?.probablePitcher && g.teams?.home?.probablePitcher
-      ) || games[0]
+      const data = text ? JSON.parse(text) : null
+      if (!data?.bet || isPlaceholderBet(data.bet)) return
 
-      const away = bestGame.teams?.away?.team?.name
-      const home = bestGame.teams?.home?.team?.name
-
-      // Use static pick to avoid API costs — updated daily via newsletter
-      // TODO: Replace with server-side cached pick
-      const staticPick = {
-        game: `${away} @ ${home}`,
-        pick: 'Check AI Picks tab for today\'s best bet',
-        confidence: '⭐⭐⭐⭐',
-        bullets: ['Pitcher matchup analyzed', 'Ballpark & weather factored in', 'Line value confirmed across 6 books'],
-        teaser: 'Sign up free to see Vega\'s full analysis and best bet.',
-        sport: 'MLB',
-      }
-      localStorage.setItem(CACHE_KEY, JSON.stringify(staticPick))
-      localStorage.setItem(CACHE_DATE_KEY, today)
-      setPick(staticPick)
-      setLoading(false)
-      return
+      setPick({
+        game: data.game,
+        pick: data.pick,
+        confidence: formatConfidence(data.confidence),
+        bullets: data.edge ? [data.edge] : [],
+        sport: data.sport || 'MLB',
+      })
     } catch (e) {
       console.warn('Teaser pick failed:', e)
     } finally {
