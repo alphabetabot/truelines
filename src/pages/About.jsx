@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { Brain, BarChart2, Shield, TrendingUp } from 'lucide-react'
 
 export default function About() {
@@ -44,7 +45,7 @@ export default function About() {
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex gap-4 p-4 rounded-xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
               <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#f1f5f9' }}>
-                <Icon size={18} style={{ color: '#2563eb' }} />
+                {createElement(Icon, { size: 18, style: { color: '#2563eb' } })}
               </div>
               <div>
                 <p className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>{title}</p>

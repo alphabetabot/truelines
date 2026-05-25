@@ -26,7 +26,6 @@ async function callClaude(messages, systemPrompt, maxTokens = 1024) {
 }
 
 export async function analyzeGame(game, pitchers = {}) {
-  const isMLB = game.sport === 'baseball_mlb'
   const sportContexts = {
     baseball_mlb: `For MLB, use the supplied probable pitcher stats, venue, weather, and current odds when present. If pitcher, weather, bullpen, lineup, injury, or historical trend data is missing, say it is not available rather than guessing.`,
     basketball_nba: `For NBA, use current moneyline, spread, and total prices plus basic home/away context. Do not invent injuries, rest data, pace metrics, or ratings unless they are explicitly included in the supplied data.`,
