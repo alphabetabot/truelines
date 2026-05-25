@@ -78,7 +78,7 @@ export default function LineCompare() {
             Select a game to compare lines
           </p>
           <p className="text-sm mt-2" style={{ color: 'var(--border)' }}>
-            Or click any game card on the Live Odds tab
+            Or click any game card on the Odds Board tab
           </p>
         </div>
       )}

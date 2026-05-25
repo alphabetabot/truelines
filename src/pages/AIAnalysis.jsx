@@ -119,7 +119,7 @@ export default function AIAnalysis() {
 
       {!authLoading && !user && (
         <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
-          Sign in to run AI analysis. Live odds remain free to browse.
+          Sign in to run AI analysis. Odds browsing remains free.
         </div>
       )}
 

@@ -16,21 +16,26 @@ function formatOdds(odds) {
   return n > 0 ? `+${n}` : `${n}`
 }
 
-export default function PerformanceTracker() {
-  const [expanded, setExpanded] = useState(false)
+export default function PerformanceTracker({ defaultExpanded = false }) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
   const [picks, setPicks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   useEffect(() => {
     async function fetchPicks() {
       try {
         const res = await fetch('/api/performance-picks')
-        if (res.ok) {
-          const data = await res.json()
-          setPicks(data)
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err.error || 'Performance data is unavailable')
         }
+        const data = await res.json()
+        setPicks(data)
+        setError(null)
       } catch (err) {
         console.error('Failed to fetch picks:', err)
+        setError(err.message)
       } finally {
         setLoading(false)
       }
@@ -43,11 +48,12 @@ export default function PerformanceTracker() {
   const losses = picksWithResults.filter(p => p.result === 'L').length
   const totalUnits = picksWithResults.reduce((s, p) => s + (parseFloat(p.units) || 0), 0)
   const winRate = picksWithResults.length > 0 ? Math.round((wins / picksWithResults.length) * 100) + '%' : '—'
-  const isNew = !loading && picksWithResults.length === 0
+  const hasError = !loading && error
+  const isNew = !loading && !error && picksWithResults.length === 0
   const latestDate = picksWithResults[0]?.date
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+    <div id="pick-tracker" className="rounded-2xl overflow-hidden mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
 
       <button
         onClick={() => setExpanded(!expanded)}
@@ -61,8 +67,12 @@ export default function PerformanceTracker() {
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-              style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}>
-              ● Tracked
+              style={{
+                background: hasError ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
+                color: hasError ? '#f87171' : '#22c55e',
+                border: `1px solid ${hasError ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
+              }}>
+              {hasError ? 'Unavailable' : 'Results'}
             </span>
             {expanded
               ? <ChevronUp size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
@@ -73,9 +83,9 @@ export default function PerformanceTracker() {
 
         <div className="grid grid-cols-3 gap-0 px-4 pb-3">
           {[
-            { label: 'Record', record: isNew ? '—' : `${wins}-${losses}`, units: isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
-            { label: 'Win Rate', record: winRate, units: isNew ? 'Results after games' : `${picksWithResults.length} graded` },
-            { label: 'Last Graded', record: formatDate(latestDate), units: 'Auto-graded daily' },
+            { label: 'Record', record: hasError || isNew ? '—' : `${wins}-${losses}`, units: hasError ? 'Temporarily unavailable' : isNew ? 'Awaiting graded picks' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
+            { label: 'Win Rate', record: hasError ? '—' : winRate, units: hasError ? 'Try again later' : isNew ? 'Results after games' : `${picksWithResults.length} graded` },
+            { label: 'Last Graded', record: hasError ? '—' : formatDate(latestDate), units: hasError ? 'Data not loaded' : 'Auto-graded daily' },
           ].map(({ label, record, units }, i) => (
             <div key={label} className="text-center" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
               <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
@@ -90,6 +100,13 @@ export default function PerformanceTracker() {
         <div className="px-4 pt-3 pb-3">
           {loading ? (
             <p className="text-xs text-center py-4" style={{ color: '#94a3b8' }}>Loading results…</p>
+          ) : hasError ? (
+            <div className="text-center py-4">
+              <p className="text-sm font-semibold mb-1" style={{ color: '#dc2626' }}>Performance data unavailable</p>
+              <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>
+                {error}. We could not load graded pick results right now.
+              </p>
+            </div>
           ) : isNew ? (
             <div className="text-center py-4">
               <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>No graded picks yet</p>

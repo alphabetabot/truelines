@@ -1,4 +1,4 @@
-import { formatOdds, oddsToImpliedProb, SPORTSBOOK_LABELS } from '../lib/oddsApi'
+import { formatOdds, SPORTSBOOK_LABELS } from '../lib/oddsApi'
 import { Clock, ChevronRight } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -17,7 +17,7 @@ function OddsBadge({ price, best = false }) {
   )
 }
 
-function TeamRow({ name, ml, spread, total, bestMl, bestSpread }) {
+function TeamRow({ name, ml, spread, bestMl, bestSpread }) {
   return (
     <div className="flex items-center justify-between py-2">
       <span className="font-medium text-sm truncate flex-1 mr-4" style={{ color: 'var(--text-primary)' }}>
@@ -44,9 +44,9 @@ function TeamRow({ name, ml, spread, total, bestMl, bestSpread }) {
 
 export default function OddsCard({ game, onSelect }) {
   const gameTime = new Date(game.commenceTime)
-  const isLive = gameTime < new Date()
-  const timeLabel = isLive
-    ? 'LIVE'
+  const hasStarted = gameTime < new Date()
+  const timeLabel = hasStarted
+    ? 'Started'
     : formatDistanceToNow(gameTime, { addSuffix: true })
 
   // Get best available ML odds
@@ -102,25 +102,17 @@ export default function OddsCard({ game, onSelect }) {
       style={{
         background: 'var(--bg-card)',
         border: '1px solid var(--border)',
-        boxShadow: isLive ? '0 0 0 1px rgba(34,197,94,0.3)' : 'none',
+        boxShadow: 'none',
       }}
       onClick={() => onSelect && onSelect(game)}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          {isLive ? (
-            <span className="flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(34,197,94,0.15)', color: 'var(--green)', border: '1px solid rgba(34,197,94,0.3)' }}>
-              <span className="live-dot w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'var(--green)' }} />
-              LIVE
-            </span>
-          ) : (
-            <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
-              <Clock size={12} />
-              {timeLabel}
-            </span>
-          )}
+          <span className="flex items-center gap-1 text-xs" style={{ color: 'var(--text-secondary)' }}>
+            <Clock size={12} />
+            {timeLabel}
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>

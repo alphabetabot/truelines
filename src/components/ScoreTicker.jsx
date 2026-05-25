@@ -5,7 +5,6 @@ import { getScores } from '../lib/oddsApi'
 function TickerItem({ game }) {
   const gameTime = new Date(game.commence_time)
   const now = new Date()
-  const isLive = !game.completed && gameTime < now
   const isFinal = game.completed
 
   const awayShort = game.away_team.split(' ').slice(-1)[0]
@@ -14,14 +13,17 @@ function TickerItem({ game }) {
   const away = game.scores?.find(s => s.name === game.away_team)
   const awayScore = away?.score ?? null
   const homeScore = home?.score ?? null
+  const hasScore = awayScore != null || homeScore != null
+  const isInProgress = !isFinal && gameTime < now && hasScore
+  const hasStarted = !isFinal && gameTime < now
   const awayWin = isFinal && awayScore > homeScore
   const homeWin = isFinal && homeScore > awayScore
 
   return (
     <div className="flex items-center gap-2 shrink-0 px-3"
       style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: '100%' }}>
-      <span style={{ color: isLive ? '#4ade80' : isFinal ? '#94a3b8' : '#fbbf24', fontSize: 9, fontWeight: 700 }}>
-        {isLive ? '● LIVE' : isFinal ? 'FINAL' : gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+      <span style={{ color: isInProgress ? '#4ade80' : isFinal ? '#94a3b8' : '#fbbf24', fontSize: 9, fontWeight: 700 }}>
+        {isInProgress ? 'IN PLAY' : isFinal ? 'FINAL' : hasStarted ? 'STARTED' : gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
       </span>
       <span className="text-xs font-semibold" style={{ color: awayWin ? '#fff' : 'rgba(255,255,255,0.6)' }}>
         {awayShort}

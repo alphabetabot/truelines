@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
 import { getAffiliateLink } from '../lib/affiliateLinks'
 import { format } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
-import { getTodayProbablePitchers } from '../lib/mlbApi'
 
 const BET_TYPES = [
   { key: 'h2h', label: 'Moneyline' },
@@ -11,23 +10,13 @@ const BET_TYPES = [
   { key: 'totals', label: 'Total' },
 ]
 
-// MLB pitcher data - pulled from a public stats source when available
-// We'll show TBD if not available since The Odds API doesn't include pitcher data
-function PitcherLine({ team }) {
-  return (
-    <span className="text-xs" style={{ color: '#94a3b8' }}>
-      P: TBD
-    </span>
-  )
-}
-
 export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = {} }) {
   const [betType, setBetType] = useState('h2h')
   const [dropdownOpen, setDropdownOpen] = useState(false)
 
   const gameTime = new Date(game.commenceTime)
-  const isLive = gameTime < new Date()
-  const timeLabel = isLive ? 'LIVE' : format(gameTime, 'EEE M/d · h:mm a')
+  const hasStarted = gameTime < new Date()
+  const timeLabel = hasStarted ? 'STARTED' : format(gameTime, 'EEE M/d · h:mm a')
   const selectedLabel = BET_TYPES.find(b => b.key === betType)?.label
 
   // Build per-book data
@@ -84,14 +73,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2" style={{ background: '#1e293b' }}>
         <div className="flex items-center gap-2">
-          {isLive ? (
-            <span className="flex items-center gap-1.5">
-              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
-              <span className="text-xs font-bold" style={{ color: '#4ade80' }}>LIVE</span>
-            </span>
-          ) : (
-            <span className="text-xs font-semibold text-white">{timeLabel}</span>
-          )}
+          <span className="text-xs font-semibold text-white">{timeLabel}</span>
         </div>
         <div className="flex items-center gap-3">
           {/* Bet type dropdown */}

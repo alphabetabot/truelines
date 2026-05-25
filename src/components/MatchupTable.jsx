@@ -18,7 +18,7 @@ function TeamCell({ name, isAway }) {
   )
 }
 
-function OddsCell({ awaySpread, awaySpreadOdds, overPoint, overOdds, awayMl, homeMl, homeSpread, homeSpreadOdds, underPoint, underOdds, bestAwayMl, bestHomeMl, bestAwaySpread, bestHomeSpread }) {
+function OddsCell({ awaySpread, awaySpreadOdds, overPoint, overOdds, bestAwaySpread }) {
   return (
     <td className="px-0 py-0" style={{ borderLeft: '1px solid var(--border-light)', minWidth: 110, verticalAlign: 'top' }}>
       {/* Away row: spread */}
@@ -66,9 +66,9 @@ function MLCell({ awayMl, homeMl, bestAwayMl, bestHomeMl }) {
 
 function MatchupRow({ game, index, onSelect }) {
   const gameTime = new Date(game.commenceTime)
-  const isLive = gameTime < new Date()
-  const timeLabel = isLive ? 'LIVE' : format(gameTime, 'h:mm a')
-  const dateLabel = isLive ? '' : format(gameTime, 'M/d')
+  const hasStarted = gameTime < new Date()
+  const timeLabel = hasStarted ? 'Started' : format(gameTime, 'h:mm a')
+  const dateLabel = hasStarted ? '' : format(gameTime, 'M/d')
 
   // Collect odds per book
   const bookOdds = {}
@@ -116,14 +116,7 @@ function MatchupRow({ game, index, onSelect }) {
         {/* Time header */}
         <div className="flex items-center gap-2 px-3"
           style={{ height: 14, background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--border-light)' }}>
-          {isLive ? (
-            <span className="flex items-center gap-1 font-bold" style={{ color: 'var(--green)', fontSize: 9 }}>
-              <span className="live-dot w-1.5 h-1.5 rounded-full inline-block" style={{ background: 'var(--green)' }} />
-              LIVE
-            </span>
-          ) : (
-            <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>{dateLabel} {timeLabel}</span>
-          )}
+          <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>{dateLabel} {timeLabel}</span>
         </div>
         {/* Away team */}
         <TeamCell name={game.away} isAway={true} />
