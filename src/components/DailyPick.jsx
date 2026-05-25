@@ -1,9 +1,7 @@
 import { useState, useEffect } from 'react'
-import { Zap, Star, ChevronRight } from 'lucide-react'
+import { Zap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const CACHE_KEY = 'vega_daily_pick'
-const CACHE_DATE_KEY = 'vega_daily_pick_date'
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
 export default function DailyPick() {
@@ -12,30 +10,31 @@ export default function DailyPick() {
   const navigate = useNavigate()
 
   useEffect(() => {
+    const controller = new AbortController()
+    let active = true
+
     async function fetchPick() {
-      const today = new Date().toISOString().split('T')[0]
-      const cached = localStorage.getItem(CACHE_KEY)
-      const cachedDate = localStorage.getItem(CACHE_DATE_KEY)
-
-      if (cached && cachedDate === today) {
-        try { setPick(JSON.parse(cached)); setLoading(false); return } catch {}
-      }
-
       try {
-        const res = await fetch('/api/todays-pick')
+        const res = await fetch('/api/todays-pick', { signal: controller.signal })
         if (res.ok) {
           const data = await res.json()
           // Validate odds are real before displaying
           if (data.bet && !data.bet.includes('-10000') && !data.bet.includes('-99999')) {
-            setPick(data)
-            localStorage.setItem(CACHE_KEY, JSON.stringify(data))
-            localStorage.setItem(CACHE_DATE_KEY, today)
+            if (active) setPick(data)
           }
         }
-      } catch {}
-      setLoading(false)
+      } catch (e) {
+        if (e.name !== 'AbortError') console.warn('Daily pick failed:', e)
+      } finally {
+        if (active) setLoading(false)
+      }
     }
+
     fetchPick()
+    return () => {
+      active = false
+      controller.abort()
+    }
   }, [])
 
   if (loading) return (

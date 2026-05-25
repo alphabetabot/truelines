@@ -1,3 +1,4 @@
+/* global process */
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
@@ -5,6 +6,7 @@ const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,sort_order'
 const PICKS_SELECT_FALLBACK = 'id,date,pick,bet,confidence,edge,game,sport,result'
+const CACHE_HEADER = 's-maxage=300, stale-while-revalidate=1800'
 
 async function fetchPicksForDate(date) {
   const headers = {
@@ -32,7 +34,13 @@ async function fetchPicksForDate(date) {
 
 export default async function handler(req, res) {
   if (req.method !== 'GET') {
+    res.setHeader('Cache-Control', 'no-store')
     return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    res.setHeader('Cache-Control', 'no-store')
+    return res.status(500).json({ error: 'Supabase environment variables are not configured' })
   }
 
   const today = new Date().toISOString().split('T')[0]
@@ -47,15 +55,20 @@ export default async function handler(req, res) {
     }
 
     if (listAll) {
+      res.setHeader('Cache-Control', CACHE_HEADER)
       return res.json({ date, picks, count: picks.length })
     }
 
     const top = picks[0]
     if (top?.bet && !top.bet.includes('-10000') && !top.bet.includes('-99999')) {
+      res.setHeader('Cache-Control', CACHE_HEADER)
       return res.json(top)
     }
-  } catch {}
+  } catch (err) {
+    console.error('Failed to fetch today\'s pick:', err)
+  }
 
+  res.setHeader('Cache-Control', 'no-store')
   return res.status(503).json({
     error: 'No picks yet — newsletter generates picks daily at 8 AM PT',
   })
