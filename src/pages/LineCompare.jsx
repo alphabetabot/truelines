@@ -13,7 +13,7 @@ export default function LineCompare() {
   const [sport, setSport] = useState(preSelected?.sport || 'basketball_nba')
   const [selectedGame, setSelectedGame] = useState(preSelected)
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError, error } = useQuery({
     queryKey: ['odds', sport],
     queryFn: () => getOdds(sport),
     staleTime: 30_000,

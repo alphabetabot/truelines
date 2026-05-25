@@ -20,8 +20,8 @@ function TickerItem({ game }) {
   return (
     <div className="flex items-center gap-2 shrink-0 px-3"
       style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: '100%' }}>
-      <span style={{ color: isLive ? '#4ade80' : isFinal ? '#94a3b8' : '#fbbf24', fontSize: 9, fontWeight: 700 }}>
-        {isLive ? '● LIVE' : isFinal ? 'FINAL' : gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+      <span style={{ color: getScoresTickerColor(game), fontSize: 9, fontWeight: 700 }}>
+        {getScoresTickerLabel(game)}
       </span>
       <span className="text-xs font-semibold" style={{ color: awayWin ? '#fff' : 'rgba(255,255,255,0.6)' }}>
         {awayShort}

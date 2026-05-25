@@ -44,10 +44,8 @@ function TeamRow({ name, ml, spread, total, bestMl, bestSpread }) {
 
 export default function OddsCard({ game, onSelect }) {
   const gameTime = new Date(game.commenceTime)
-  const isLive = gameTime < new Date()
-  const timeLabel = isLive
-    ? 'LIVE'
-    : formatDistanceToNow(gameTime, { addSuffix: true })
+  const timeLabel = formatDistanceToNow(gameTime, { addSuffix: true })
+  const scheduledLabel = getOddsGameTimeLabel(game.commenceTime)
 
   // Get best available ML odds
   const allMlOdds = { home: [], away: [] }

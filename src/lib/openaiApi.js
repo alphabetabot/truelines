@@ -94,17 +94,17 @@ function _formatGameForAI(game, extraLines = []) {
 }
 
 export async function analyzeGameGPT(game, pitchers = {}) {
-  const system = `You are a sharp sports betting analyst with expertise in line movement, 
-market inefficiencies, and statistical modeling. Provide concise, data-driven analysis.
+  const system = `You are a sports betting analyst for TrueOddsIQ. Use only the odds and context in the user message.
+Provide concise, data-driven analysis. Do not invent injuries, sharp-money signals, or line-movement history not provided.
 Format with clear sections. No generic gambling disclaimers.`
 
   const messages = [{
     role: 'user',
-    content: `Analyze this game and its betting lines:\n\n${formatGameForAI(game)}\n\nProvide:
-1. **Line Movement Analysis** - What do the current lines suggest about sharp money?
-2. **Key Angles** - Public vs sharp tendencies, situational factors
-3. **Best Value** - Where is the value in the current lines?
-4. **Line Shopping Edge** - Best book for each bet type`,
+    content: `Analyze this game and its betting lines:\n\n${formatGameForAI(game, pitchers)}\n\nProvide:
+1. **Market read** - What do the current lines suggest about value across books?
+2. **Key angles** - Situational factors supported by the provided data
+3. **Best value** - Where is the best price in the snapshot?
+4. **Line shopping** - Best book for each bet type in the data`,
   }]
 
   return callGPT(messages, system, 1200)

@@ -31,17 +31,44 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Analytics and Third Parties</h2>
+          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Analytics (Google Analytics 4)</h2>
+          <p className="mb-2">
+            We use Google Analytics 4 (GA4) to understand aggregate traffic and product usage. GA4 may set
+            cookies or similar identifiers and collect information such as pages viewed, approximate location,
+            device type, and referral source.
+          </p>
+          <p className="mb-2">
+            You can limit analytics tracking through your browser settings, ad-blocking tools, or Google&apos;s
+            opt-out add-on. We do not use GA4 to sell personal information.
+          </p>
           <p>
-            We may use analytics providers, email providers, authentication providers, and AI/odds data
-            providers to run the service. These providers process data only as needed for their services.
+            Analytics data is retained according to our GA4 property settings (typically up to 14 months for
+            standard reports unless configured otherwise).
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Cookies</h2>
+          <p>
+            We use essential cookies for authentication sessions where applicable, and analytics cookies as
+            described above. You can control cookies through your browser settings.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Service Providers</h2>
+          <p>
+            We rely on third-party providers for hosting, authentication (Supabase), email delivery (Resend),
+            odds data (The Odds API), and AI analysis (Anthropic, OpenAI). These providers process data only
+            as needed to deliver their services.
           </p>
         </section>
 
         <section>
           <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Contact</h2>
           <p>
-            Questions about privacy can be sent to <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb' }}>info@trueoddsiq.com</a>.
+            Questions about privacy can be sent to{' '}
+            <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb' }}>info@trueoddsiq.com</a>.
           </p>
         </section>
       </div>

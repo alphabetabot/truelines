@@ -184,7 +184,7 @@ export default function AIPicks() {
               AI Picks
             </h1>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Same picks from the daily newsletter · Updated each morning
+              All 3 newsletter picks (account required) · Top pick preview on homepage
             </p>
           </div>
         </div>
