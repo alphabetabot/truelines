@@ -6,6 +6,30 @@ import { sendNewsletterEmail, unsubscribeUrl } from './newsletter-utils.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
+const BOOKMAKERS = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365'
+const BOOK_LABELS = {
+  draftkings: 'DraftKings',
+  fanduel: 'FanDuel',
+  betmgm: 'BetMGM',
+  williamhill_us: 'Caesars',
+  pinnacle: 'Pinnacle',
+  bet365: 'Bet365',
+}
+
+const BALLPARK_FACTORS = {
+  'Coors Field': 'Extreme hitter-friendly: high altitude and thin air',
+  'Yankee Stadium': 'Slight hitter-friendly: short right-field porch',
+  'Dodger Stadium': 'Slight pitcher-friendly',
+  'Kauffman Stadium': 'Pitcher-friendly: large outfield',
+  'T-Mobile Park': 'Pitcher-friendly: marine layer',
+  'Camden Yards': 'Hitter-friendly: short right-field dimensions',
+  'Wrigley Field': 'Wind-dependent run environment',
+  'American Family Field': 'Neutral retractable-roof environment',
+  'Nationals Park': 'Neutral run environment',
+  'Truist Park': 'Slight hitter-friendly',
+  'Oracle Park': 'Pitcher-friendly: marine layer and large foul territory',
+  'Petco Park': 'Pitcher-friendly: spacious outfield',
+}
 
 async function getMLBStats(teamId, teamName) {
   try {
@@ -30,22 +54,31 @@ async function getMLBStats(teamId, teamName) {
 
 async function getPitcherStats(pitcherId, pitcherName) {
   try {
-    const res = await fetch(`https://statsapi.mlb.com/api/v1/people/${pitcherId}`)
+    const res = await fetch(
+      `https://statsapi.mlb.com/api/v1/people?personIds=${pitcherId}&hydrate=stats(group=pitching,type=season),currentTeam`
+    )
     const data = await res.json()
-    if (data.stats && data.stats.length > 0) {
-      const stats = data.stats[0].stats || {}
+    const person = data.people?.[0]
+    const seasonStats = person?.stats?.find(s =>
+      s.group?.displayName === 'pitching' && s.type?.displayName === 'season'
+    )
+    const stats = seasonStats?.splits?.[0]?.stat
+    if (stats) {
       return {
         era: stats.era ? parseFloat(stats.era).toFixed(2) : 'N/A',
         wins: stats.wins || 0,
         losses: stats.losses || 0,
         ip: stats.inningsPitched || 0,
-        k9: stats.strikeOutsPer9Inn ? parseFloat(stats.strikeOutsPer9Inn).toFixed(1) : 'N/A',
+        k9: stats.strikeoutsPer9Inn ? parseFloat(stats.strikeoutsPer9Inn).toFixed(1) : 'N/A',
         whip: stats.whip ? parseFloat(stats.whip).toFixed(2) : 'N/A',
+        oppAvg: stats.avg || 'N/A',
+        hr9: stats.homeRunsPer9 ? parseFloat(stats.homeRunsPer9).toFixed(1) : 'N/A',
       }
     }
-    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
+    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
   } catch (e) {
-    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A' }
+    console.warn(`Pitcher stats fetch failed for ${pitcherName || pitcherId}:`, e.message)
+    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
   }
 }
 
@@ -77,7 +110,7 @@ async function getTodaysGames() {
   } catch (e) { console.warn('MLB fetch failed') }
 
   try {
-    const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
     const mlbOddsData = await mlbOddsRes.json()
     if (Array.isArray(mlbOddsData)) {
       mlbOddsData.forEach(g => {
@@ -98,7 +131,7 @@ async function getTodaysGames() {
   } catch (e) { console.warn('MLB odds fetch failed') }
 
   try {
-    const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
     const nbaData = await nbaRes.json()
     nbaData?.forEach(g => games.push({ 
       sport: 'NBA', 
@@ -112,7 +145,7 @@ async function getTodaysGames() {
   } catch (e) { console.warn('NBA fetch failed') }
 
   try {
-    const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,totals&oddsFormat=american&bookmakers=draftkings,fanduel,betmgm`)
+    const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
     const nhlData = await nhlRes.json()
     nhlData?.forEach(g => games.push({ 
       sport: 'NHL', 
@@ -126,6 +159,130 @@ async function getTodaysGames() {
   } catch (e) { console.warn('NHL fetch failed') }
 
   return games
+}
+
+function formatOdds(price) {
+  if (price === null || price === undefined || price === 'N/A') return 'N/A'
+  const n = Number(price)
+  if (Number.isNaN(n)) return String(price)
+  return n > 0 ? `+${n}` : `${n}`
+}
+
+function bookName(key) {
+  return BOOK_LABELS[key] || key
+}
+
+function getMarket(bookmaker, key) {
+  return bookmaker?.markets?.find(m => m.key === key)
+}
+
+function bestOutcome(game, marketKey, outcomeName, preferPoint = null) {
+  const outcomes = []
+  for (const book of game.bookmakers || []) {
+    const market = getMarket(book, marketKey)
+    const outcome = market?.outcomes?.find(o =>
+      o.name === outcomeName && (preferPoint == null || Number(o.point) === Number(preferPoint))
+    )
+    if (outcome?.price != null) {
+      outcomes.push({
+        book: bookName(book.key),
+        price: outcome.price,
+        point: outcome.point,
+      })
+    }
+  }
+
+  if (!outcomes.length) return null
+  return outcomes.sort((a, b) => b.price - a.price)[0]
+}
+
+function collectOutcomePoints(game, marketKey, outcomeName) {
+  const points = []
+  for (const book of game.bookmakers || []) {
+    const market = getMarket(book, marketKey)
+    const outcome = market?.outcomes?.find(o => o.name === outcomeName)
+    if (outcome?.point != null) points.push(Number(outcome.point))
+  }
+  return points
+}
+
+function bestSpread(game, teamName) {
+  const candidates = []
+  for (const book of game.bookmakers || []) {
+    const market = getMarket(book, 'spreads')
+    const outcome = market?.outcomes?.find(o => o.name === teamName)
+    if (outcome?.point != null && outcome?.price != null) {
+      candidates.push({ book: bookName(book.key), point: outcome.point, price: outcome.price })
+    }
+  }
+
+  if (!candidates.length) return null
+  return candidates.sort((a, b) => {
+    if (b.point !== a.point) return b.point - a.point
+    return b.price - a.price
+  })[0]
+}
+
+function bestTotal(game, side) {
+  const candidates = []
+  for (const book of game.bookmakers || []) {
+    const market = getMarket(book, 'totals')
+    const outcome = market?.outcomes?.find(o => o.name === side)
+    if (outcome?.point != null && outcome?.price != null) {
+      candidates.push({ book: bookName(book.key), point: outcome.point, price: outcome.price })
+    }
+  }
+
+  if (!candidates.length) return null
+  return candidates.sort((a, b) => {
+    if (side === 'Over' && a.point !== b.point) return a.point - b.point
+    if (side === 'Under' && a.point !== b.point) return b.point - a.point
+    return b.price - a.price
+  })[0]
+}
+
+function oddsRange(game, marketKey, outcomeName) {
+  const prices = []
+  for (const book of game.bookmakers || []) {
+    const outcome = getMarket(book, marketKey)?.outcomes?.find(o => o.name === outcomeName)
+    if (outcome?.price != null) prices.push(outcome.price)
+  }
+  if (prices.length < 2) return null
+  return `${formatOdds(Math.min(...prices))} to ${formatOdds(Math.max(...prices))}`
+}
+
+function ballparkInfo(venue) {
+  if (!venue) return null
+  const match = Object.entries(BALLPARK_FACTORS).find(([name]) =>
+    venue.includes(name) || name.includes(venue)
+  )
+  return match ? match[1] : 'Standard run environment'
+}
+
+function enrichOdds(game) {
+  if (!game.bookmakers?.length) return game
+
+  const awayML = bestOutcome(game, 'h2h', game.away)
+  const homeML = bestOutcome(game, 'h2h', game.home)
+  const awaySpread = bestSpread(game, game.away)
+  const homeSpread = bestSpread(game, game.home)
+  const over = bestTotal(game, 'Over')
+  const under = bestTotal(game, 'Under')
+  const totalPoints = collectOutcomePoints(game, 'totals', 'Over')
+
+  return {
+    ...game,
+    bestOdds: { awayML, homeML, awaySpread, homeSpread, over, under },
+    oddsSummary: [
+      `ML best: ${game.away} ${awayML ? `${formatOdds(awayML.price)} ${awayML.book}` : 'N/A'} (range ${oddsRange(game, 'h2h', game.away) || 'N/A'})`,
+      `${game.home} ${homeML ? `${formatOdds(homeML.price)} ${homeML.book}` : 'N/A'} (range ${oddsRange(game, 'h2h', game.home) || 'N/A'})`,
+      awaySpread ? `${game.away} spread: ${awaySpread.point} (${formatOdds(awaySpread.price)}) ${awaySpread.book}` : null,
+      homeSpread ? `${game.home} spread: ${homeSpread.point} (${formatOdds(homeSpread.price)}) ${homeSpread.book}` : null,
+      over ? `Total: Over ${over.point} (${formatOdds(over.price)}) ${over.book}` : null,
+      under ? `Under ${under.point} (${formatOdds(under.price)}) ${under.book}` : null,
+      totalPoints.length >= 2 ? `Total line range: ${Math.min(...totalPoints)}-${Math.max(...totalPoints)}` : null,
+    ].filter(Boolean).join(' | '),
+  }
 }
 
 async function generatePicks(games) {
@@ -147,7 +304,7 @@ async function generatePicks(games) {
     return true
   })
   
-  const gamesWithStats = await Promise.all(todaysGames.slice(0, 15).map(async g => {
+  const gamesWithStats = await Promise.all(todaysGames.slice(0, 18).map(async g => {
     const stats = {}
     if (g.sport === 'MLB') {
       if (g.awayPitcherId) {
@@ -162,47 +319,18 @@ async function generatePicks(games) {
       if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId, g.home)
     }
     if (g.sport === 'NBA' || g.sport === 'NHL') {
-      stats.note = 'Use Vegas odds and team names below for analysis'
+      stats.note = 'Only team names and market odds are provided for this sport; do not cite records, injuries, goalies, or player availability unless shown in the slate.'
     }
-    return { ...g, stats }
+    return enrichOdds({ ...g, stats })
   }))
-  
-  gamesWithStats.forEach(g => {
-    if (g.bookmakers?.length) {
-      const dk = g.bookmakers.find(b => b.key === 'draftkings')
-      const fd = g.bookmakers.find(b => b.key === 'fanduel')
-      const book = dk || fd
-      
-      if (book) {
-        const h2h = book.markets?.find(m => m.key === 'h2h')
-        if (h2h) {
-          const a = h2h.outcomes?.find(o => o.name === g.away)
-          const h = h2h.outcomes?.find(o => o.name === g.home)
-          if (a && h) {
-            g.dkAwayML = a.price
-            g.dkHomeML = h.price
-          }
-        }
-        const tot = book.markets?.find(m => m.key === 'totals')
-        if (tot) {
-          const ov = tot.outcomes?.find(o => o.name === 'Over')
-          if (ov) g.dkTotal = ov.point
-        }
-      }
-    }
-  })
 
   const slate = gamesWithStats.map(g => {
     let line = `${g.sport}: ${g.away} @ ${g.home}`
     if (g.venue) line += ` | ${g.venue}`
+    if (g.venue) line += ` | Ballpark: ${ballparkInfo(g.venue)}`
     if (g.weather?.temp) line += ` | ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}`
     if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
-    if (g.dkAwayML && g.dkHomeML) {
-      line += ` | ML: ${g.dkAwayML > 0 ? '+' : ''}${g.dkAwayML}/${g.dkHomeML > 0 ? '+' : ''}${g.dkHomeML}`
-    }
-    if (g.dkTotal) {
-      line += ` | O/U: ${g.dkTotal}`
-    }
+    if (g.oddsSummary) line += ` | ${g.oddsSummary}`
     return line
   }).join('\n')
 
@@ -212,10 +340,8 @@ async function generatePicks(games) {
     sport: g.sport,
     away: g.away,
     home: g.home,
-    dkAwayML: g.dkAwayML || 'N/A',
-    dkHomeML: g.dkHomeML || 'N/A',
-    dkAwaySpread: g.dkAwaySpread || 'N/A',
-    dkTotal: g.dkTotal || 'N/A',
+    bestOdds: g.bestOdds,
+    oddsSummary: g.oddsSummary || 'N/A',
   }))
   
   if (gameMap.length === 0) {
@@ -226,10 +352,10 @@ async function generatePicks(games) {
   gamesWithStats.forEach(g => {
     statsContext += `${g.sport}: ${g.away} @ ${g.home}\n`
     if (g.stats?.awayPitcher && g.awayPitcher) {
-      statsContext += `  Away SP ${g.awayPitcher}: ERA ${g.stats.awayPitcher.era} | K/9 ${g.stats.awayPitcher.k9} | WHIP ${g.stats.awayPitcher.whip}\n`
+      statsContext += `  Away SP ${g.awayPitcher}: ${g.stats.awayPitcher.wins}-${g.stats.awayPitcher.losses}, ERA ${g.stats.awayPitcher.era}, K/9 ${g.stats.awayPitcher.k9}, WHIP ${g.stats.awayPitcher.whip}, Opp AVG ${g.stats.awayPitcher.oppAvg}, HR/9 ${g.stats.awayPitcher.hr9}\n`
     }
     if (g.stats?.homePitcher && g.homePitcher) {
-      statsContext += `  Home SP ${g.homePitcher}: ERA ${g.stats.homePitcher.era} | K/9 ${g.stats.homePitcher.k9} | WHIP ${g.stats.homePitcher.whip}\n`
+      statsContext += `  Home SP ${g.homePitcher}: ${g.stats.homePitcher.wins}-${g.stats.homePitcher.losses}, ERA ${g.stats.homePitcher.era}, K/9 ${g.stats.homePitcher.k9}, WHIP ${g.stats.homePitcher.whip}, Opp AVG ${g.stats.homePitcher.oppAvg}, HR/9 ${g.stats.homePitcher.hr9}\n`
     }
     if (g.stats?.awayTeam) {
       statsContext += `  ${g.away}: ${g.stats.awayTeam.wins}W-${g.stats.awayTeam.losses}L (${(g.stats.awayTeam.runDiff >= 0 ? '+' : '')}${g.stats.awayTeam.runDiff} run diff)\n`
@@ -240,9 +366,11 @@ async function generatePicks(games) {
     statsContext += '\n'
   })
 
-  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ML: ${gm.away} ${gm.dkAwayML > 0 ? '+' : ''}${gm.dkAwayML} / ${gm.home} ${gm.dkHomeML > 0 ? '+' : ''}${gm.dkHomeML}`).join('\n')
+  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ${gm.oddsSummary}`).join('\n')
 
-  const prompt = `You are Vega, TrueOddsIQ's elite AI sports betting analyst. Today is ${date}.
+  const systemPrompt = `You are Vega, TrueOddsIQ's sports betting analyst. You must be precise, evidence-based, and honest about missing data. Never invent stats, injuries, line movement, public betting splits, or sharp-money claims.`
+
+  const prompt = `Today is ${date}.
 
 ${statsContext}
 Today's slate (MLB, NBA, NHL):
@@ -251,22 +379,25 @@ ${slate}
 CRITICAL RULES:
 1. ONLY cite stats you know for certain. NEVER make up statistics, estimates, player names, or team records.
 2. For MLB: Cite pitcher ERA, K/9, WHIP, and team win/loss records from the stats provided.
-3. For NBA/NHL: Cite Vegas odds and matchup dynamics. If you don't know a team's record, say "record not provided" instead of guessing.
+3. For NBA/NHL: Cite only Vegas odds and matchup dynamics shown here. If records/injuries/goalies are not provided, say "not provided" or skip that angle.
 4. EVERY pick's Edge explanation MUST reference specific real information.
-5. Use exact numbers. No vague claims ("elite," "strong," "good"). Be specific.
+5. Use exact numbers. Avoid vague claims unless tied to supplied numbers.
 6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.
 7. Only pick games that have actual numerical odds in the reference list.
+8. Cross-book odds ranges are NOT line movement. Do not call them steam, public money, or reverse line movement.
+9. Prefer bets where the best available price is clearly listed with a book. Put that exact best book and price in the Bet line.
 
-MATCHUP REFERENCE (LIVE ODDS):
+MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
 ${gameReference}
 
 Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
 
 CRITICAL: Each pick MUST include:
 1. Full matchup on its own line: "[Away Team] @ [Home Team]"
-2. Your pick with actual odds IF AVAILABLE
+2. Your pick with actual odds and book from MATCHUP REFERENCE
 3. Example matchup line: "Pirates @ Rockies"
 4. If odds show as "N/A", skip that game and move to next
+5. Moneyline picks must end in "ML" (example: "Dodgers ML"). Totals must include the number (example: "Under 8.5"). Spreads must include the number (example: "Yankees -1.5").
 
 Format EXACTLY like this:
 
@@ -302,7 +433,7 @@ FADE OF THE DAY
 **[SPORT]: [Team/Total to avoid]**
 - Why: [reason the public is wrong on this one]
 
-Only pick games with genuine edge. Be specific with stats and reasoning.`
+Only pick games with genuine edge. Be specific with stats and reasoning. Do not add any extra sections after the fade.`
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -314,7 +445,9 @@ Only pick games with genuine edge. Be specific with stats and reasoning.`
       },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 1500,
+        max_tokens: 2200,
+        temperature: 0.1,
+        system: systemPrompt,
         messages: [{ role: 'user', content: prompt }]
       })
     })
