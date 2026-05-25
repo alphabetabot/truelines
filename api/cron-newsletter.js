@@ -2,6 +2,7 @@ import { Resend } from 'resend'
 import { postTweet } from './post-to-x.js'
 import { getSupabase } from './supabase-client.js'
 import { extractPicksFromResponse, storePicks } from './store-picks.js'
+import { sendNewsletterEmail, unsubscribeUrl } from './newsletter-utils.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
@@ -331,7 +332,7 @@ Only pick games with genuine edge. Be specific with stats and reasoning.`
   }
 }
 
-function buildEmail(picksText, date) {
+function buildEmail(picksText, date, unsubscribeHref = 'https://trueoddsiq.com/unsubscribe') {
   const lines = picksText.split('\n').map(line => {
     if (line.includes('@') && line.includes('→')) {
       const [matchup, pick] = line.split('→')
@@ -372,7 +373,7 @@ function buildEmail(picksText, date) {
   </div>
   <div style="background:#f8fafc;border-radius:0 0 16px 16px;padding:14px;text-align:center;border:1px solid #e2e8f0;border-top:none;">
     <p style="margin:0;color:#94a3b8;font-size:11px;">TrueOddsIQ | trueoddsiq.com | Must be 21+ | Gambling problem? <a href="tel:18004264537" style="color:#16a34a;">1-800-GAMBLER</a></p>
-    <p style="margin:4px 0 0;"><a href="https://trueoddsiq.com/unsubscribe" style="color:#94a3b8;font-size:11px;">Unsubscribe</a></p>
+    <p style="margin:4px 0 0;"><a href="${unsubscribeHref}" style="color:#94a3b8;font-size:11px;">Unsubscribe</a></p>
   </div>
 </div></body></html>`
 }
@@ -434,8 +435,6 @@ export default async function handler(req, res) {
       })
     }
     
-    const html = buildEmail(picksText, date)
-
     const { data: subscribers, error } = await getSupabase()
       .from('newsletter_subscribers')
       .select('email')
@@ -448,14 +447,32 @@ export default async function handler(req, res) {
 
     const emails = subscribers.map(s => s.email)
     let sent = 0
-    for (let i = 0; i < emails.length; i += 50) {
-      await resend.emails.send({
-        from: 'TrueOddsIQ Picks <picks@trueoddsiq.com>',
-        to: emails.slice(i, i + 50),
-        subject: `TrueOddsIQ Daily Picks — ${date}`,
-        html,
+    const sendErrors = []
+
+    for (const email of emails) {
+      try {
+        await sendNewsletterEmail({
+          resend,
+          to: email,
+          subject: `TrueOddsIQ Daily Picks — ${date}`,
+          html: buildEmail(picksText, date, unsubscribeUrl(email)),
+          text: `TrueOddsIQ Daily Picks - ${date}\n\nView picks: https://trueoddsiq.com/picks\nUnsubscribe: ${unsubscribeUrl(email)}`,
+        })
+        sent++
+      } catch (sendErr) {
+        console.error(`Newsletter send failed for ${email}:`, sendErr.message)
+        sendErrors.push({ email, error: sendErr.message })
+      }
+    }
+
+    if (sendErrors.length) {
+      return res.status(502).json({
+        error: 'One or more newsletter emails failed to send',
+        sent,
+        failed: sendErrors.length,
+        failures: sendErrors.slice(0, 10),
+        stored: storedPicks.length,
       })
-      sent += Math.min(50, emails.length - i)
     }
 
     const topPickSection = picksText.split('---')[0] || picksText

@@ -10,6 +10,8 @@ const STATIC_PAGES = [
   { loc: 'https://trueoddsiq.com/analysis', changefreq: 'daily', priority: '0.9' },
   { loc: 'https://trueoddsiq.com/picks', changefreq: 'daily', priority: '0.9' },
   { loc: 'https://trueoddsiq.com/disclaimer', changefreq: 'monthly', priority: '0.3' },
+  { loc: 'https://trueoddsiq.com/privacy', changefreq: 'monthly', priority: '0.3' },
+  { loc: 'https://trueoddsiq.com/terms', changefreq: 'monthly', priority: '0.3' },
   { loc: 'https://trueoddsiq.com/blog', changefreq: 'daily', priority: '0.8' },
 ]
 
