@@ -68,14 +68,51 @@ async function getOddsApiScores(sportKey, label) {
 }
 
 function teamLast(name) {
-  return (name || '').split(' ').pop().toLowerCase()
+  return cleanText(name).split(' ').pop().toLowerCase()
 }
 
-function pickNamesTeam(pick, awayTeam, homeTeam) {
+function cleanText(value) {
+  return String(value || '')
+    .replace(/\*\*/g, '')
+    .replace(/^#+\s*/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+function matchupParts(value) {
+  const clean = cleanText(value)
+  if (!clean.includes('@')) return null
+  const parts = clean.split('@').map(p => cleanText(p))
+  if (parts.length < 2 || !parts[0] || !parts[1]) return null
+  return { first: parts[0], second: parts[1] }
+}
+
+function sideForTeamName(teamName, game) {
+  const name = cleanText(teamName).toLowerCase()
+  const away = cleanText(game.away_team).toLowerCase()
+  const home = cleanText(game.home_team).toLowerCase()
+  const nameLast = teamLast(name)
+
+  if (name === away || nameLast === teamLast(away)) return 'away'
+  if (name === home || nameLast === teamLast(home)) return 'home'
+  return null
+}
+
+function pickNamesTeam(pick, game) {
+  const matchup = matchupParts(pick)
+  if (matchup) {
+    const firstSide = sideForTeamName(matchup.first, game)
+    if (firstSide) return firstSide
+  }
+
+  const normalizedPick = cleanText(pick).toLowerCase()
+  const awayTeam = cleanText(game.away_team).toLowerCase()
+  const homeTeam = cleanText(game.home_team).toLowerCase()
   const awayLast = teamLast(awayTeam)
   const homeLast = teamLast(homeTeam)
-  if (pick.includes(awayLast) || pick.includes(awayTeam.toLowerCase())) return 'away'
-  if (pick.includes(homeLast) || pick.includes(homeTeam.toLowerCase())) return 'home'
+
+  if (normalizedPick.includes(awayTeam) || normalizedPick.includes(awayLast)) return 'away'
+  if (normalizedPick.includes(homeTeam) || normalizedPick.includes(homeLast)) return 'home'
   return null
 }
 
@@ -84,7 +121,7 @@ function getResult(pickText, game) {
   const home = game.home_score
   if (away == null || home == null) return null
 
-  const raw = pickText.trim()
+  const raw = cleanText(pickText)
   const isFade = raw.toLowerCase().includes('fade')
   const pick = raw.toLowerCase().replace(/^fade:\s*/i, '')
 
@@ -92,8 +129,8 @@ function getResult(pickText, game) {
   const margin = away - home
 
   // Moneyline
-  if (pick.includes(' ml') || pick.endsWith(' ml') || /\bml\b/.test(pick)) {
-    const side = pickNamesTeam(pick, game.away_team, game.home_team)
+  if (pick.includes(' ml') || pick.endsWith(' ml') || /\bml\b/.test(pick) || /\bmoneyline\b/.test(pick) || matchupParts(pick)) {
+    const side = pickNamesTeam(pick, game)
     if (side === 'away') result = away > home ? 'W' : 'L'
     else if (side === 'home') result = home > away ? 'W' : 'L'
   }
@@ -103,7 +140,7 @@ function getResult(pickText, game) {
     const spreadMatch = pick.match(/([+-]\d+\.?\d*)/)
     if (spreadMatch && !pick.includes('over') && !pick.includes('under')) {
       const line = parseFloat(spreadMatch[1])
-      const side = pickNamesTeam(pick, game.away_team, game.home_team)
+      const side = pickNamesTeam(pick, game)
       if (side === 'away') result = margin + line > 0 ? 'W' : 'L'
       else if (side === 'home') result = -margin + line > 0 ? 'W' : 'L'
     }
@@ -132,7 +169,7 @@ function getResult(pickText, game) {
 function findGame(pickGameStr, games) {
   if (!pickGameStr || !pickGameStr.includes('@')) return null
 
-  const parts = pickGameStr.split('@').map(p => p.trim())
+  const parts = cleanText(pickGameStr).split('@').map(p => cleanText(p))
   if (parts.length < 2) return null
 
   const [awayName, homeName] = parts
