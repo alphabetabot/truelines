@@ -1,3 +1,4 @@
+import { createElement } from 'react'
 import { Brain, BarChart2, Shield, TrendingUp } from 'lucide-react'
 
 export default function About() {
@@ -11,8 +12,8 @@ export default function About() {
         <h2 className="text-white mb-3" style={{ fontSize: '1.1rem' }}>Our Mission</h2>
         <p className="leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14 }}>
           TrueOddsIQ was built out of frustration. Jumping between 6 different sportsbook tabs to find the best line 
-          is a waste of time — and that time costs money. We built one tool that does it all: real-time odds 
-          comparison, AI-powered analysis, and a daily picks newsletter. Free. No bloat. No BS.
+          is a waste of time. We built one research tool for regularly refreshed odds comparison, AI-assisted 
+          matchup analysis, and a daily picks newsletter. Free. Clear. Built for responsible line shopping.
         </p>
       </div>
 
@@ -23,18 +24,18 @@ export default function About() {
           {[
             {
               icon: BarChart2,
-              title: 'Live Odds from 6 Books',
-              desc: 'We pull real-time lines from DraftKings, FanDuel, BetMGM, Caesars, Pinnacle, and Bet365 every 60 seconds via The Odds API. Best available odds are highlighted in green.'
+              title: 'Odds from Major Sportsbooks',
+              desc: 'We request current lines from DraftKings, FanDuel, BetMGM, Caesars, Pinnacle, and Bet365 through The Odds API. Availability can vary by sport, market, and book; when multiple prices are available, the best listed odds are highlighted in green.'
             },
             {
               icon: Brain,
               title: 'AI Analysis Powered by Claude & ChatGPT',
-              desc: 'Select any game and get instant analysis from two independent AI systems. Each considers line movement, pitcher matchups (MLB), weather, venue factors, injuries, and sharp money signals.'
+              desc: 'Select a game and get AI-assisted analysis based on the current odds snapshot and available matchup context. MLB analysis can include probable pitcher and weather/venue data when available; we do not currently ingest injury feeds, betting splits, or historical line movement.'
             },
             {
               icon: TrendingUp,
               title: 'Daily Picks Newsletter',
-              desc: 'Every morning our AI scans the full slate across MLB, NBA, and NHL and surfaces only the bets with genuine edge — no forced picks, no filler. Free with signup.'
+              desc: 'Every morning our picks workflow reviews the available slate and current lines, then publishes a short list of research picks when enough data is available. No pick is guaranteed, and some slates may have fewer opportunities.'
             },
             {
               icon: Shield,
@@ -44,7 +45,7 @@ export default function About() {
           ].map(({ icon: Icon, title, desc }) => (
             <div key={title} className="flex gap-4 p-4 rounded-xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
               <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#f1f5f9' }}>
-                <Icon size={18} style={{ color: '#2563eb' }} />
+                {createElement(Icon, { size: 18, style: { color: '#2563eb' } })}
               </div>
               <div>
                 <p className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>{title}</p>
@@ -63,11 +64,11 @@ export default function About() {
         </p>
         <ul className="space-y-2 mb-3">
           {[
-            'Live odds from all 6 sportsbooks',
-            'Starting pitcher data: ERA, WHIP, K/9, opponent batting average (MLB)',
-            'Ballpark factors: run factor, dimensions, altitude',
-            'Weather conditions: temperature, wind speed and direction',
-            'Sport-specific context: pace, injuries, rest, home/away splits',
+            'Current moneyline, spread, and total prices from available sportsbooks',
+            'Starting pitcher data such as ERA, WHIP, K/9, opponent batting average, and HR/9 when available for MLB',
+            'MLB venue and weather details when available from the schedule feed',
+            'Basic game context such as teams, sport, start time, and home/away matchup',
+            'Line-shopping differences across the books returned by The Odds API',
           ].map(item => (
             <li key={item} className="flex items-start gap-2 text-sm" style={{ color: '#64748b' }}>
               <span style={{ color: '#2563eb', marginTop: 2 }}>•</span>
@@ -76,7 +77,7 @@ export default function About() {
           ))}
         </ul>
         <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>
-          The AI is instructed to think like a sharp bettor — identifying line value, market inefficiencies, and situational edges rather than just picking winners. We use two models intentionally: different architectures sometimes catch different angles.
+          The AI is instructed to compare prices, summarize available context, and explain uncertainty instead of inventing missing inputs. We use two models intentionally because different systems can frame the same odds snapshot in different ways.
         </p>
       </div>
 

@@ -94,16 +94,16 @@ function _formatGameForAI(game, extraLines = []) {
 }
 
 export async function analyzeGameGPT(game, pitchers = {}) {
-  const system = `You are a sharp sports betting analyst with expertise in line movement, 
-market inefficiencies, and statistical modeling. Provide concise, data-driven analysis.
+  const system = `You are a sports betting research analyst. Use only the supplied odds and matchup context.
+Do not claim access to betting splits, sharp money, injuries, or historical line movement unless the user message provides that data. Provide concise, data-driven analysis and note important missing inputs.
 Format with clear sections. No generic gambling disclaimers.`
 
   const messages = [{
     role: 'user',
-    content: `Analyze this game and its betting lines:\n\n${formatGameForAI(game)}\n\nProvide:
-1. **Line Movement Analysis** - What do the current lines suggest about sharp money?
-2. **Key Angles** - Public vs sharp tendencies, situational factors
-3. **Best Value** - Where is the value in the current lines?
+    content: `Analyze this game and its betting lines:\n\n${formatGameForAI(game, pitchers)}\n\nProvide:
+1. **Current Market Snapshot** - Compare the listed prices without inferring historical movement
+2. **Key Angles** - Available matchup context and any notable data gaps
+3. **Best Value** - Where the listed prices create the clearest line-shopping value
 4. **Line Shopping Edge** - Best book for each bet type`,
   }]
 
@@ -111,7 +111,8 @@ Format with clear sections. No generic gambling disclaimers.`
 }
 
 export async function getGPTPick(game) {
-  const system = `You are a professional sports handicapper. Make specific, confident picks with clear reasoning.
+  const system = `You are a sports betting research analyst. Make specific picks only from the supplied odds snapshot and matchup context.
+Do not invent injuries, betting splits, sharp money, or historical line movement.
 Format picks clearly. Be direct and decisive. No hedging. No gambling disclaimers.`
 
   const messages = [{
@@ -127,20 +128,20 @@ Format picks clearly. Be direct and decisive. No hedging. No gambling disclaimer
 }
 
 export async function getDailyPicksGPT(games) {
-  const system = `You are an elite sports betting analyst. Review the slate and identify the TOP 3-5 best bets.
-Focus on line value and market inefficiencies. Be specific. No fluff.`
+  const system = `You are a sports betting research analyst. Review the slate and identify the top research picks supported by current listed prices.
+Focus on line-shopping value and supplied matchup context. Do not claim steam moves, sharp money, betting splits, injuries, or historical line movement unless supplied. Be specific. No fluff.`
 
   const slate = games.slice(0, 15).map(g => formatGameForAI(g)).join('\n\n---\n\n')
 
   const messages = [{
     role: 'user',
-    content: `Today's slate:\n\n${slate}\n\nIdentify TOP 3-5 BEST BETS. For each:
+    content: `Today's slate:\n\n${slate}\n\nIdentify up to 3-5 best research picks. For each:
 **Pick #N: [Team/Side] - [Sport]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [★ rating]
-- Reasoning: [sharp, concise edge]
+- Reasoning: [concise edge based on listed prices and supplied context]
 
-End with **Fade of the Day**.`,
+End with **Fade of the Day** only if the listed prices clearly support one; otherwise say no fade identified from the available data.`,
   }]
 
   return callGPT(messages, system, 1500)
