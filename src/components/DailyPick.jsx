@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
-import { Zap, Star, ChevronRight } from 'lucide-react'
+import { Zap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
-const CACHE_KEY = 'vega_daily_pick'
-const CACHE_DATE_KEY = 'vega_daily_pick_date'
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
+
+function isPlaceholderBet(bet) {
+  return !bet || bet.includes('-10000') || bet.includes('-99999')
+}
 
 export default function DailyPick() {
   const [pick, setPick] = useState(null)
@@ -13,27 +15,33 @@ export default function DailyPick() {
 
   useEffect(() => {
     async function fetchPick() {
-      const today = new Date().toISOString().split('T')[0]
-      const cached = localStorage.getItem(CACHE_KEY)
-      const cachedDate = localStorage.getItem(CACHE_DATE_KEY)
-
-      if (cached && cachedDate === today) {
-        try { setPick(JSON.parse(cached)); setLoading(false); return } catch {}
-      }
-
       try {
         const res = await fetch('/api/todays-pick')
-        if (res.ok) {
-          const data = await res.json()
-          // Validate odds are real before displaying
-          if (data.bet && !data.bet.includes('-10000') && !data.bet.includes('-99999')) {
-            setPick(data)
-            localStorage.setItem(CACHE_KEY, JSON.stringify(data))
-            localStorage.setItem(CACHE_DATE_KEY, today)
+        const text = await res.text()
+
+        if (!res.ok) {
+          let errMsg = ''
+          try {
+            const body = text ? JSON.parse(text) : null
+            errMsg = body?.error || ''
+          } catch {
+            // Response body may not be JSON
           }
+          if (errMsg || text) {
+            console.warn('Daily pick fetch failed:', res.status, errMsg || text.slice(0, 200))
+          }
+          return
         }
-      } catch {}
-      setLoading(false)
+
+        const data = text ? JSON.parse(text) : null
+        if (data?.bet && !isPlaceholderBet(data.bet)) {
+          setPick(data)
+        }
+      } catch (e) {
+        console.warn('Daily pick failed:', e)
+      } finally {
+        setLoading(false)
+      }
     }
     fetchPick()
   }, [])
