@@ -403,13 +403,13 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'Claude refused to generate picks' })
     }
     
-    const picks = extractPicksFromResponse(picksText)
+    const picks = extractPicksFromResponse(picksText).slice(0, 4)
     console.log(`Extracted ${picks.length} picks from Claude response`)
 
-    if (picks.length === 0) {
+    if (picks.length < 3) {
       console.error('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
       return res.status(500).json({
-        error: 'No picks extracted from generated newsletter',
+        error: 'Too few picks extracted from generated newsletter',
         picksPreview: picksText.slice(0, 500),
       })
     }

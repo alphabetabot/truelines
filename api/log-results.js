@@ -218,7 +218,7 @@ export default async function handler(req, res) {
     log.push('START: log-results')
 
     const picksRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/daily_picks?select=*&result=is.null&limit=100&order=date.desc`,
+      `${SUPABASE_URL}/rest/v1/daily_picks?select=*&result=is.null&limit=250&order=date.asc`,
       {
         headers: {
           apikey: SUPABASE_SERVICE_KEY,
@@ -260,7 +260,7 @@ export default async function handler(req, res) {
         continue
       }
 
-      const result = getResult(pick.pick, game)
+      const result = getResult(`${pick.pick || ''} ${pick.bet || ''}`, game)
       if (!result) {
         log.push(`SKIP: ${pick.pick} (can't determine W/L)`)
         continue

@@ -27,10 +27,13 @@ export function extractPicksFromResponse(claudeResponse) {
     const edgeLine = getField(section, ['Edge', 'Why', 'Reasoning'])
 
     if (!rawHeadline) continue
+    if (!isFade && !betLine) continue
 
     const pickLine = isFade ? `FADE: ${rawHeadline}` : rawHeadline
     const matchup = extractMatchup(section)
     const pickSelection = cleanPickHeadline(rawHeadline)
+    if (!isActionablePick(pickSelection, section)) continue
+
     const sport = extractSportFromPick(pickLine)
     const bet = parseBetLine(betLine, isFade)
 
@@ -49,6 +52,15 @@ export function extractPicksFromResponse(claudeResponse) {
   }
 
   return picks
+}
+
+function isActionablePick(pickSelection, section) {
+  const text = `${pickSelection} ${section}`.toLowerCase()
+  if (!pickSelection || pickSelection.length > 120) return false
+  if (/all picks require|verification of live odds|no nba\/nhl|no games|check the site|informational purposes/.test(text)) {
+    return false
+  }
+  return true
 }
 
 function getPickHeadline(section) {
@@ -132,7 +144,7 @@ export async function storePicks(picks, date) {
 
   const dateStr = date.toISOString().split('T')[0]
 
-  const rows = picks.map((pick) => {
+  const rows = picks.map((pick, index) => {
     const oddsNum = parseAmericanOdds(pick.odds)
     const bet = formatBetDisplay(pick)
     const pickText = pick.isFade && !/^FADE:/i.test(pick.pickSelection)
@@ -151,53 +163,103 @@ export async function storePicks(picks, date) {
       edge: pick.edge,
       result: null,
       units: null,
+      sort_order: index,
     }
   })
 
   const supabase = getSupabase()
-
-  // Replace today's picks so cron re-runs don't hit UNIQUE(date, pick)
-  const { error: deleteError } = await supabase.from('daily_picks').delete().eq('date', dateStr)
-  if (deleteError) {
-    console.error('Error clearing existing picks:', deleteError.message)
-    throw deleteError
-  }
+  const existingByPick = await fetchExistingPicksByText(supabase, dateStr)
+  const rowsToStore = rows.map(row => {
+    const existing = existingByPick.get(row.pick)
+    if (existing?.result) {
+      return { ...row, result: existing.result, units: existing.units ?? row.units }
+    }
+    return row
+  })
 
   const { data, error } = await supabase
     .from('daily_picks')
-    .insert(rows)
+    .upsert(rowsToStore, { onConflict: 'date,pick' })
     .select('*')
 
   if (error) {
-    // Fallback: prod may use `bet` without bet_type/odds columns
-    const fallbackRows = picks.map((pick) => ({
+    // Fallback: table may not have the new sort_order column yet.
+    const rowsWithoutSortOrder = rowsToStore.map(({ sort_order, ...row }) => row)
+    const retry = await supabase
+      .from('daily_picks')
+      .upsert(rowsWithoutSortOrder, { onConflict: 'date,pick' })
+      .select('*')
+
+    if (!retry.error) {
+      await deleteStalePicks(supabase, dateStr, rowsToStore.map(row => row.pick))
+      return retry.data || []
+    }
+
+    // Fallback: prod may use `bet` without bet_type/odds/units columns.
+    const fallbackRows = rowsToStore.map(row => ({
       date: dateStr,
-      sport: pick.sport,
-      game: pick.game,
-      pick: pick.isFade && !/^FADE:/i.test(pick.pickSelection) ? `FADE: ${pick.pickSelection}` : pick.pickSelection,
-      bet: formatBetDisplay(pick),
-      confidence: formatConfidence(pick.confidence),
-      edge: pick.edge,
+      sport: row.sport,
+      game: row.game,
+      pick: row.pick,
+      bet: row.bet,
+      confidence: row.confidence,
+      edge: row.edge,
       result: null,
     }))
 
-    const { error: fallbackDeleteError } = await supabase.from('daily_picks').delete().eq('date', dateStr)
-    if (fallbackDeleteError) {
-      console.error('Error clearing existing picks before fallback:', fallbackDeleteError.message)
-      throw fallbackDeleteError
-    }
-
     const { data: fallbackData, error: fallbackError } = await supabase
       .from('daily_picks')
-      .insert(fallbackRows)
+      .upsert(fallbackRows, { onConflict: 'date,pick' })
       .select('*')
 
     if (fallbackError) {
       console.error('Error storing picks:', fallbackError.message)
       throw fallbackError
     }
+
+    await deleteStalePicks(supabase, dateStr, rowsToStore.map(row => row.pick))
     return fallbackData || []
   }
 
+  await deleteStalePicks(supabase, dateStr, rowsToStore.map(row => row.pick))
   return data || []
+}
+
+async function fetchExistingPicksByText(supabase, dateStr) {
+  const { data, error } = await supabase
+    .from('daily_picks')
+    .select('pick,result,units')
+    .eq('date', dateStr)
+
+  if (error) {
+    console.warn('Failed to inspect existing picks:', error.message)
+    return new Map()
+  }
+
+  return new Map((data || []).map(row => [row.pick, row]))
+}
+
+async function deleteStalePicks(supabase, dateStr, activePickTexts) {
+  const active = new Set(activePickTexts)
+  const { data, error } = await supabase
+    .from('daily_picks')
+    .select('id,pick,result')
+    .eq('date', dateStr)
+
+  if (error) {
+    console.warn('Failed to inspect stale picks:', error.message)
+    return
+  }
+
+  if ((data || []).some(row => row.result)) {
+    return
+  }
+
+  const stale = (data || []).filter(row => !active.has(row.pick))
+  for (const row of stale) {
+    const { error: deleteError } = await supabase.from('daily_picks').delete().eq('id', row.id)
+    if (deleteError) {
+      console.warn(`Failed to delete stale pick ${row.id}:`, deleteError.message)
+    }
+  }
 }
