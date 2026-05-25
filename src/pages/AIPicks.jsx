@@ -5,18 +5,19 @@ import { getAIPick } from '../lib/claudeApi'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
-import { Zap, Trophy, Star, RefreshCw } from 'lucide-react'
+import { Zap, Trophy, Star, RefreshCw, Lock } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { getAuthHeaders } from '../lib/authHeaders'
+import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
+const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3', 'Fade']
 
 function StoredPickCard({ pick, index }) {
   const isFade = (pick.pick || '').toLowerCase().includes('fade') || (pick.bet || '').toLowerCase().includes('fade')
-  const labels = ['Top Pick', 'Pick #2', 'Pick #3', 'Fade']
-  const label = labels[index] || `Pick ${index + 1}`
+  const label = PICK_LABELS[index] || `Pick ${index + 1}`
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isFade ? '#fecaca' : 'var(--border)'}` }}>
@@ -54,6 +55,29 @@ function StoredPickCard({ pick, index }) {
   )
 }
 
+function LockedPickCard({ index, onUnlock }) {
+  const label = PICK_LABELS[index] || `Pick ${index + 1}`
+  return (
+    <div className="rounded-xl overflow-hidden relative" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+      <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
+        <span className="text-xs font-bold" style={{ color: 'var(--gold)' }}>{label}</span>
+        <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
+      </div>
+      <div className="p-6 text-center">
+        <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Included with a free account</p>
+        <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Unlock picks #{index + 1}–{DAILY_NEWSLETTER_PICK_COUNT} plus email delivery and the full pick tracker.
+        </p>
+        <button type="button" onClick={onUnlock}
+          className="px-5 py-2.5 rounded-xl font-bold text-sm"
+          style={{ background: '#0f172a', color: '#fff' }}>
+          Create free account
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function PickCard({ game, pitchers = {} }) {
   const [pick, setPick] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -84,17 +108,14 @@ function PickCard({ game, pitchers = {} }) {
             {new Date(game.commenceTime).toLocaleDateString()} · {Object.keys(game.bookmakers || {}).length} books
           </p>
         </div>
-        <button
-          onClick={fetchPick}
-          disabled={loading}
+        <button type="button" onClick={fetchPick} disabled={loading}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
           style={{
             background: loading ? 'var(--bg-card)' : 'linear-gradient(135deg, var(--accent) 0%, #7c3aed 100%)',
             color: loading ? 'var(--text-secondary)' : '#fff',
             border: loading ? '1px solid var(--border)' : 'none',
             cursor: loading ? 'not-allowed' : 'pointer',
-          }}
-        >
+          }}>
           <Zap size={11} />
           {loading ? 'Picking...' : pick ? 'Re-pick' : 'Get Pick'}
         </button>
@@ -121,7 +142,7 @@ export default function AIPicks() {
     queryKey: ['odds', sport],
     queryFn: () => getOdds(sport),
     staleTime: 30_000,
-    enabled: view === 'individual',
+    enabled: view === 'individual' && Boolean(user),
   })
 
   const games = data ? parseOddsForComparison(data) : []
@@ -130,54 +151,58 @@ export default function AIPicks() {
   const { data: pitchers = {} } = useQuery({
     queryKey: ['mlb-pitchers'],
     queryFn: getTodayProbablePitchers,
-    enabled: isMLB && view === 'individual',
+    enabled: isMLB && view === 'individual' && Boolean(user),
     staleTime: 300_000,
     refetchOnMount: true,
   })
 
   useEffect(() => {
+    let cancelled = false
+
     async function loadStoredPicks() {
       setStoredLoading(true)
       setStoredError(null)
       try {
-        const headers = await getAuthHeaders()
-        const res = await fetch('/api/todays-pick?all=1', { headers })
-        if (res.status === 401) {
-          throw new Error("Please sign in again to load today's picks.")
+        if (user) {
+          const headers = await getAuthHeaders()
+          const res = await fetch('/api/todays-pick?all=1', { headers })
+          if (res.status === 401) {
+            throw new Error("Please sign in again to load today's picks.")
+          }
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            throw new Error(err.error || 'Picks not available yet')
+          }
+          const data = await res.json()
+          if (!cancelled) setStoredPicks(data.picks || [])
+        } else {
+          const res = await fetch('/api/todays-pick')
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}))
+            throw new Error(err.error || 'Picks not available yet')
+          }
+          const topPick = await res.json()
+          if (!cancelled) setStoredPicks(topPick?.pick ? [topPick] : [])
         }
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err.error || 'Picks not available yet')
-        }
-        const data = await res.json()
-        setStoredPicks(data.picks || [])
       } catch (e) {
-        setStoredError(e.message)
-        setStoredPicks([])
+        if (!cancelled) {
+          setStoredError(e.message)
+          setStoredPicks([])
+        }
       } finally {
-        setStoredLoading(false)
+        if (!cancelled) setStoredLoading(false)
       }
     }
-    loadStoredPicks()
-  }, [])
 
-  if (!user) {
-    return (
-      <div className="text-center py-20 px-4">
-        <Trophy size={48} className="mx-auto mb-4" style={{ color: '#d97706', opacity: 0.5 }} />
-        <h2 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>Free Account Required</h2>
-        <p className="text-sm mb-6" style={{ color: '#64748b' }}>
-          Sign up free to access daily AI picks, best bets, and the newsletter.
-        </p>
-        <button onClick={() => navigate('/login')}
-          className="px-8 py-3 rounded-xl font-bold text-white text-sm"
-          style={{ background: '#0f172a' }}>
-          Create Free Account
-        </button>
-        <p className="text-xs mt-4" style={{ color: '#94a3b8' }}>Already have an account? <button onClick={() => navigate('/login')} style={{ color: '#2563eb', fontWeight: 600 }}>Sign in</button></p>
-      </div>
-    )
-  }
+    loadStoredPicks()
+    return () => { cancelled = true }
+  }, [user])
+
+  const subtitle = user
+    ? "Your full daily newsletter slate · Updated each morning"
+    : `Today's top pick is free below · Free account unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks`
+
+  const lockedCount = Math.max(0, DAILY_NEWSLETTER_PICK_COUNT - (user ? storedPicks.length : FREE_PUBLIC_PICK_COUNT))
 
   return (
     <div>
@@ -185,41 +210,48 @@ export default function AIPicks() {
         <div className="flex items-center gap-3">
           <Trophy size={24} style={{ color: 'var(--gold)' }} />
           <div>
-            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
-              AI Picks
-            </h1>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              All 3 newsletter picks (account required) · Top pick preview on homepage
-            </p>
+            <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>AI Picks</h1>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{subtitle}</p>
           </div>
         </div>
       </div>
 
+      {!user && (
+        <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
+          style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+          <p className="text-sm" style={{ color: '#92400e' }}>
+            You are viewing today&apos;s free top pick. Premium daily picks will be available with a paid membership later.
+          </p>
+          <button type="button" onClick={() => navigate('/login')}
+            className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"
+            style={{ background: '#0f172a', color: '#fff' }}>
+            Unlock all {DAILY_NEWSLETTER_PICK_COUNT} picks — free
+          </button>
+        </div>
+      )}
+
       <AIDisclaimer />
 
       <div className="flex flex-wrap gap-2 mb-6">
-        <button
-          onClick={() => setView('newsletter')}
+        <button type="button" onClick={() => setView('newsletter')}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all"
           style={{
             background: view === 'newsletter' ? 'var(--gold)' : 'var(--bg-card)',
             color: view === 'newsletter' ? '#000' : 'var(--text-secondary)',
             border: `1px solid ${view === 'newsletter' ? 'var(--gold)' : 'var(--border)'}`,
-          }}
-        >
+          }}>
           <Star size={13} />
-          Today's Picks
+          Today&apos;s Picks
         </button>
-        <button
-          onClick={() => setView('individual')}
+        <button type="button" onClick={() => (user ? setView('individual') : navigate('/login'))}
           className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
           style={{
             background: view === 'individual' ? 'var(--accent)' : 'var(--bg-card)',
             color: view === 'individual' ? '#fff' : 'var(--text-secondary)',
             border: `1px solid ${view === 'individual' ? 'var(--accent)' : 'var(--border)'}`,
-          }}
-        >
-          On-Demand Picks
+            opacity: user ? 1 : 0.85,
+          }}>
+          On-Demand Picks{!user ? ' (account)' : ''}
         </button>
       </div>
 
@@ -228,7 +260,7 @@ export default function AIPicks() {
           {storedLoading && (
             <div className="text-center py-12">
               <RefreshCw size={24} className="mx-auto mb-3 animate-spin" style={{ color: 'var(--gold)' }} />
-              <p style={{ color: 'var(--text-secondary)' }}>Loading today's picks…</p>
+              <p style={{ color: 'var(--text-secondary)' }}>Loading today&apos;s picks…</p>
             </div>
           )}
 
@@ -255,6 +287,13 @@ export default function AIPicks() {
               {storedPicks.map((pick, i) => (
                 <StoredPickCard key={pick.id || i} pick={pick} index={i} />
               ))}
+              {!user && Array.from({ length: lockedCount }).map((_, i) => (
+                <LockedPickCard
+                  key={`locked-${i + FREE_PUBLIC_PICK_COUNT}`}
+                  index={i + FREE_PUBLIC_PICK_COUNT}
+                  onUnlock={() => navigate('/login')}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -262,31 +301,44 @@ export default function AIPicks() {
 
       {view === 'individual' && (
         <div>
-          <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-            Generate a one-off pick for any game (separate from the daily newsletter picks).
-          </p>
-          <SportSelector selected={sport} onChange={setSport} />
-
-          {isLoading && (
-            <div className="grid gap-3 mt-4">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="rounded-xl h-16 shimmer" style={{ border: '1px solid var(--border)' }} />
-              ))}
+          {!user ? (
+            <div className="text-center py-12 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Sign in for on-demand picks</p>
+              <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Generate a custom AI pick for any game on the slate (separate from the daily newsletter picks).
+              </p>
+              <button type="button" onClick={() => navigate('/login')}
+                className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"
+                style={{ background: '#0f172a' }}>
+                Sign in
+              </button>
             </div>
-          )}
-
-          {!isLoading && games.length === 0 && (
-            <div className="text-center py-16">
-              <p style={{ color: 'var(--text-secondary)' }}>No upcoming games available for this sport</p>
-            </div>
-          )}
-
-          {!isLoading && games.length > 0 && (
-            <div className="grid gap-3 mt-4">
-              {games.map(game => (
-                <PickCard key={game.id} game={game} pitchers={pitchers} />
-              ))}
-            </div>
+          ) : (
+            <>
+              <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                Generate a one-off pick for any game (separate from the daily newsletter picks).
+              </p>
+              <SportSelector selected={sport} onChange={setSport} />
+              {isLoading && (
+                <div className="grid gap-3 mt-4">
+                  {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="rounded-xl h-16 shimmer" style={{ border: '1px solid var(--border)' }} />
+                  ))}
+                </div>
+              )}
+              {!isLoading && games.length === 0 && (
+                <div className="text-center py-16">
+                  <p style={{ color: 'var(--text-secondary)' }}>No upcoming games available for this sport</p>
+                </div>
+              )}
+              {!isLoading && games.length > 0 && (
+                <div className="grid gap-3 mt-4">
+                  {games.map(game => (
+                    <PickCard key={game.id} game={game} pitchers={pitchers} />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
