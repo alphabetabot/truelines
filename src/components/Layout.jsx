@@ -2,7 +2,9 @@ import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
+import PageMeta from './PageMeta'
 import { useAuth } from '../lib/AuthContext'
+import { getRouteMeta } from '../lib/routeMeta'
 
 const NAV = [
   { to: '/', label: 'Live Odds', icon: Activity, exact: true },
@@ -41,6 +43,7 @@ export default function Layout({ children }) {
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
+      <PageMeta {...routeMeta} />
 
       {/* ── Top bar: Logo + Install + Live ── */}
       <div style={{ background: '#0f172a' }}>
@@ -71,11 +74,10 @@ export default function Layout({ children }) {
                 Sign In
               </button>
             )}
-            <div className="px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)' }}>
-              <span style={{ color: 'rgba(255,255,255,0.75)', fontSize: 11, fontWeight: 700, letterSpacing: '0.3px' }}>
-                6-BOOK ODDS
-              </span>
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+              style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
+              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
+              <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
             </div>
           </div>
         </div>
