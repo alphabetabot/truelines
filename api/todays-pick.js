@@ -1,3 +1,4 @@
+/* global process */
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
@@ -63,7 +64,9 @@ export default async function handler(req, res) {
       res.setHeader('Cache-Control', CACHE_HEADER)
       return res.json(top)
     }
-  } catch {}
+  } catch (err) {
+    console.error('Failed to fetch today\'s pick:', err)
+  }
 
   res.setHeader('Cache-Control', 'no-store')
   return res.status(503).json({
