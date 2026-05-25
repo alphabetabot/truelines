@@ -3,7 +3,7 @@
 
 import { postTweet } from './post-to-x.js'
 
-const ODDS_API_KEY = process.env.VITE_ODDS_API_KEY
+const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
 async function getNBAGames() {
   try {

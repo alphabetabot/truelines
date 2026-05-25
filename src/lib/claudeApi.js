@@ -1,10 +1,13 @@
 // All Claude calls go through the local backend proxy — API key stays server-side
+import { getAuthHeaders } from './authHeaders'
+
 const PROXY_URL = '/api/claude'
 
 async function callClaude(messages, systemPrompt, maxTokens = 1024) {
+  const authHeaders = await getAuthHeaders()
   const res = await fetch(PROXY_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
       max_tokens: maxTokens,

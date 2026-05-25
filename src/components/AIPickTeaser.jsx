@@ -46,9 +46,6 @@ export default function AIPickTeaser() {
 
       const away = bestGame.teams?.away?.team?.name
       const home = bestGame.teams?.home?.team?.name
-      const awayP = bestGame.teams?.away?.probablePitcher?.fullName
-      const homeP = bestGame.teams?.home?.probablePitcher?.fullName
-      const venue = bestGame.venue?.name
 
       // Use static pick to avoid API costs — updated daily via newsletter
       // TODO: Replace with server-side cached pick
@@ -65,53 +62,6 @@ export default function AIPickTeaser() {
       setPick(staticPick)
       setLoading(false)
       return
-
-      // DISABLED - was calling Claude on every page load (too expensive)
-      // eslint-disable-next-line no-unreachable
-      const claudeRes = await fetch('/api/claude', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-haiku-4-5-20251001',
-          max_tokens: 400,
-          messages: [{
-            role: 'user',
-            content: `Game: ${away} @ ${home} at ${venue}. Pitchers: ${awayP || 'TBD'} vs ${homeP || 'TBD'}.
-
-Give me ONE sharp betting pick in this EXACT format:
-PICK: [Over/Under X.X OR Team ML OR Team -X.X]
-CONFIDENCE: [1-5 stars as ⭐ symbols]
-BULLET1: [Key factor #1, max 12 words]
-BULLET2: [Key factor #2, max 12 words]
-BULLET3: [Key factor #3, max 12 words]
-TEASER: [One punchy hook sentence, max 15 words — leave the deep stats for members]`
-          }]
-        })
-      })
-
-      const claudeData = await claudeRes.json()
-      const text = claudeData.content?.[0]?.text || ''
-
-      const pickMatch = text.match(/PICK:\s*(.+)/i)
-      const confMatch = text.match(/CONFIDENCE:\s*(.+)/i)
-      const b1 = text.match(/BULLET1:\s*(.+)/i)
-      const b2 = text.match(/BULLET2:\s*(.+)/i)
-      const b3 = text.match(/BULLET3:\s*(.+)/i)
-      const teaserMatch = text.match(/TEASER:\s*(.+)/i)
-
-      if (pickMatch) {
-        const teaserPick = {
-          game: `${away} @ ${home}`,
-          pick: pickMatch[1].trim(),
-          confidence: confMatch?.[1]?.trim() || '⭐⭐⭐⭐',
-          bullets: [b1?.[1]?.trim(), b2?.[1]?.trim(), b3?.[1]?.trim()].filter(Boolean),
-          teaser: teaserMatch?.[1]?.trim() || 'Strong edge in this matchup — sign up for full breakdown.',
-          sport: 'MLB',
-        }
-        localStorage.setItem(CACHE_KEY, JSON.stringify(teaserPick))
-        localStorage.setItem(CACHE_DATE_KEY, today)
-        setPick(teaserPick)
-      }
     } catch (e) {
       console.warn('Teaser pick failed:', e)
     } finally {

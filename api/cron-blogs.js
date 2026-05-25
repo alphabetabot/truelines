@@ -4,7 +4,7 @@
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY
-const ODDS_API_KEY = process.env.VITE_ODDS_API_KEY
+const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
 const WEEKLY_TOPICS = [
   'How to bet the MLB run line: strategy guide for 2026',
@@ -171,7 +171,8 @@ Do NOT just repeat the topic title as the H1 — make it more compelling and spe
 
 export default async function handler(req, res) {
   const secret = req.headers['x-newsletter-secret']
-  if (secret !== process.env.NEWSLETTER_SECRET) {
+  const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
+  if (!isVercelCron && secret !== process.env.NEWSLETTER_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 

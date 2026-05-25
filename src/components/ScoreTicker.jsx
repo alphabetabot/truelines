@@ -1,17 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { useRef, useEffect } from 'react'
-import { SPORTSBOOK_LABELS } from '../lib/oddsApi'
-
-const MLB_BASE = 'https://api.the-odds-api.com/v4'
-const API_KEY = import.meta.env.VITE_ODDS_API_KEY
-
-async function fetchScores(sport) {
-  const res = await fetch(
-    `${MLB_BASE}/sports/${sport}/scores?apiKey=${API_KEY}&daysFrom=1`
-  )
-  if (!res.ok) return []
-  return res.json()
-}
+import { getScores } from '../lib/oddsApi'
 
 function TickerItem({ game }) {
   const gameTime = new Date(game.commence_time)
@@ -58,19 +47,19 @@ function TickerItem({ game }) {
 export default function ScoreTicker() {
   const { data: mlb = [] } = useQuery({
     queryKey: ['ticker-mlb'],
-    queryFn: () => fetchScores('baseball_mlb'),
+    queryFn: () => getScores('baseball_mlb', 1),
     staleTime: 60_000,
     refetchInterval: 60_000,
   })
   const { data: nba = [] } = useQuery({
     queryKey: ['ticker-nba'],
-    queryFn: () => fetchScores('basketball_nba'),
+    queryFn: () => getScores('basketball_nba', 1),
     staleTime: 60_000,
     refetchInterval: 60_000,
   })
   const { data: nhl = [] } = useQuery({
     queryKey: ['ticker-nhl'],
-    queryFn: () => fetchScores('icehockey_nhl'),
+    queryFn: () => getScores('icehockey_nhl', 1),
     staleTime: 60_000,
     refetchInterval: 60_000,
   })

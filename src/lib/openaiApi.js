@@ -1,7 +1,10 @@
+import { getAuthHeaders } from './authHeaders'
+
 async function callGPT(messages, systemPrompt, maxTokens = 1024) {
+  const authHeaders = await getAuthHeaders()
   const res = await fetch('/api/openai', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...authHeaders },
     body: JSON.stringify({
       model: 'gpt-4o',
       max_tokens: maxTokens,

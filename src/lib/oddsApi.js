@@ -1,6 +1,3 @@
-const API_KEY = import.meta.env.VITE_ODDS_API_KEY
-const BASE_URL = 'https://api.the-odds-api.com/v4'
-
 export const SPORTS = [
   { key: 'americanfootball_nfl', label: 'NFL', icon: '🏈' },
   { key: 'americanfootball_ncaaf', label: 'NCAAF', icon: '🏈' },
@@ -42,8 +39,9 @@ export const SPORTSBOOK_COLORS = {
 }
 
 async function apiFetch(path, params = {}) {
-  const url = new URL(`${BASE_URL}${path}`)
-  url.searchParams.set('apiKey', API_KEY)
+  const url = new URL('/api/picks-status', window.location.origin)
+  url.searchParams.set('action', 'odds')
+  url.searchParams.set('path', path)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
 
   const res = await fetch(url.toString())
@@ -58,17 +56,17 @@ export async function getSports() {
   return apiFetch('/sports', { all: false })
 }
 
-export async function getOdds(sport, markets = 'h2h,spreads,totals') {
+export async function getOdds(sport, markets = 'h2h,spreads,totals', bookmakers = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365') {
   return apiFetch(`/sports/${sport}/odds`, {
     regions: 'us',
     markets,
     oddsFormat: 'american',
-    bookmakers: 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365',
+    bookmakers,
   })
 }
 
-export async function getScores(sport) {
-  return apiFetch(`/sports/${sport}/scores`, { daysFrom: 7 })
+export async function getScores(sport, daysFrom = 7) {
+  return apiFetch(`/sports/${sport}/scores`, { daysFrom })
 }
 
 // Parse odds data into a structured comparison format

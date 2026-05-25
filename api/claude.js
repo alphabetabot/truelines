@@ -1,7 +1,12 @@
+import { requireSupabaseUser } from './auth-utils.js'
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
+
+  const user = await requireSupabaseUser(req, res)
+  if (!user) return
 
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
