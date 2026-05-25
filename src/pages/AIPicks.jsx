@@ -9,6 +9,7 @@ import { Zap, Trophy, Star, RefreshCw } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { getAuthHeaders } from '../lib/authHeaders'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
 
@@ -135,11 +136,17 @@ export default function AIPicks() {
   })
 
   useEffect(() => {
+    if (!user) {
+      setStoredLoading(false)
+      return
+    }
+
     async function loadStoredPicks() {
       setStoredLoading(true)
       setStoredError(null)
       try {
-        const res = await fetch('/api/todays-pick?all=1')
+        const authHeaders = await getAuthHeaders()
+        const res = await fetch('/api/todays-pick?all=1', { headers: authHeaders })
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Picks not available yet')
@@ -154,7 +161,7 @@ export default function AIPicks() {
       }
     }
     loadStoredPicks()
-  }, [])
+  }, [user])
 
   if (!user) {
     return (
@@ -162,7 +169,7 @@ export default function AIPicks() {
         <Trophy size={48} className="mx-auto mb-4" style={{ color: '#d97706', opacity: 0.5 }} />
         <h2 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>Free Account Required</h2>
         <p className="text-sm mb-6" style={{ color: '#64748b' }}>
-          Sign up free to access daily AI picks, best bets, and the newsletter.
+          Sign up free to unlock the full daily pick list, full analysis, and the newsletter.
         </p>
         <button onClick={() => navigate('/login')}
           className="px-8 py-3 rounded-xl font-bold text-white text-sm"
@@ -184,7 +191,7 @@ export default function AIPicks() {
               AI Picks
             </h1>
             <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-              Same picks from the daily newsletter · Updated each morning
+              Full daily pick list from the newsletter · Updated each morning
             </p>
           </div>
         </div>

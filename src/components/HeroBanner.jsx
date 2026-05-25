@@ -19,7 +19,7 @@ export default function HeroBanner() {
       <div className="flex flex-wrap gap-3 mb-4">
         {[
           '✔ Transparent results tracking',
-          '✔ 3 picks daily from Vega',
+          '✔ Daily picks from Vega',
           '✔ Free newsletter',
         ].map(item => (
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>
