@@ -6,10 +6,17 @@ import { storePicks } from './store-picks.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
 const SELECT_FIELDS = 'id,date,pick,bet,game,sport,result,units,created_at'
 const LEGACY_SELECT_FIELDS = 'id,date,pick,bet,game,sport,result'
 const BACKFILL_DATE = '2026-05-22'
+const ODDS_BASE_URL = 'https://api.the-odds-api.com/v4'
+const ODDS_ALLOWED_PATHS = [
+  /^\/sports$/,
+  /^\/sports\/[a-z0-9_]+\/odds$/,
+  /^\/sports\/[a-z0-9_]+\/scores$/,
+]
 
 const MAY22_PICKS = [
   {
@@ -177,12 +184,45 @@ async function backfillMay22Picks() {
   }
 }
 
+async function proxyOddsRequest(req, res) {
+  if (!ODDS_API_KEY) {
+    return res.status(500).json({ error: 'ODDS_API_KEY is not configured' })
+  }
+
+  const path = String(req.query?.path || '')
+  if (!ODDS_ALLOWED_PATHS.some(pattern => pattern.test(path))) {
+    return res.status(400).json({ error: 'Unsupported odds endpoint' })
+  }
+
+  const upstreamUrl = new URL(`${ODDS_BASE_URL}${path}`)
+  upstreamUrl.searchParams.set('apiKey', ODDS_API_KEY)
+
+  for (const [key, value] of Object.entries(req.query || {})) {
+    if (key === 'action' || key === 'path' || key === 'apiKey') continue
+    if (Array.isArray(value)) {
+      value.forEach(v => upstreamUrl.searchParams.append(key, String(v)))
+    } else if (value != null) {
+      upstreamUrl.searchParams.set(key, String(value))
+    }
+  }
+
+  const upstream = await fetch(upstreamUrl)
+  const text = await upstream.text()
+  res.setHeader('Cache-Control', upstream.ok ? 's-maxage=30, stale-while-revalidate=60' : 'no-store')
+  res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json')
+  return res.status(upstream.status).send(text)
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'GET' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
   res.setHeader('Cache-Control', 'no-store')
+
+  if (req.method === 'GET' && req.query?.action === 'odds') {
+    return proxyOddsRequest(req, res)
+  }
 
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
     return res.status(500).json({ error: 'Supabase environment variables are not configured' })

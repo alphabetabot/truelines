@@ -39,7 +39,8 @@ export const SPORTSBOOK_COLORS = {
 }
 
 async function apiFetch(path, params = {}) {
-  const url = new URL('/api/odds', window.location.origin)
+  const url = new URL('/api/picks-status', window.location.origin)
+  url.searchParams.set('action', 'odds')
   url.searchParams.set('path', path)
   Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
 
