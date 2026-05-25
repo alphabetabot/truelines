@@ -1,5 +1,7 @@
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
+import { requireSupabaseUser } from './auth-utils.js'
+
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
@@ -50,6 +52,11 @@ export default async function handler(req, res) {
   const date = req.query?.date || today
   const listAll = req.query?.all === '1' || req.query?.all === 'true'
 
+  if (listAll) {
+    const user = await requireSupabaseUser(req, res)
+    if (!user) return
+  }
+
   try {
     const picks = await fetchPicksForDate(date)
 
@@ -60,7 +67,7 @@ export default async function handler(req, res) {
     }
 
     if (listAll) {
-      res.setHeader('Cache-Control', PICK_CACHE)
+      res.setHeader('Cache-Control', 'private, no-store')
       return res.json({ date, picks, count: picks.length })
     }
 

@@ -1,5 +1,5 @@
-// Replace these with your real affiliate links when approved
-// Each sportsbook's affiliate program will give you a unique tracking URL
+// Replace placeholder URLs with approved affiliate tracking links before paid marketing.
+// Until then, outbound links go to the sportsbook homepage (disclosed in UI).
 
 export const AFFILIATE_LINKS = {
   draftkings: 'https://www.draftkings.com',       // Replace with your DraftKings affiliate link

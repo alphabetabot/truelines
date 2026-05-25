@@ -5,7 +5,7 @@ export default function HeroBanner() {
   const navigate = useNavigate()
   const { user } = useAuth()
 
-  if (user) return null // Already signed in, no need to show
+  if (user) return null
 
   return (
     <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>
@@ -14,13 +14,14 @@ export default function HeroBanner() {
         <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-        AI-assisted betting research using live odds, matchup context, and transparent result tracking.
+        Today&apos;s top pick is shown below for everyone. Create a free account to unlock all 3 daily newsletter picks,
+        full AI game analysis, and email delivery.
       </p>
       <div className="flex flex-wrap gap-3 mb-4">
         {[
-          '✔ Transparent results tracking',
-          '✔ 3 picks daily from Vega',
-          '✔ Free newsletter',
+          '✔ Top pick preview on homepage',
+          '✔ All 3 picks + tracker with free account',
+          '✔ Live odds from 6 books',
         ].map(item => (
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>
         ))}
@@ -30,7 +31,7 @@ export default function HeroBanner() {
         className="w-full py-3 rounded-xl font-black text-sm"
         style={{ background: '#f59e0b', color: '#0f172a' }}
       >
-        Get Today's Free Pick →
+        Unlock All 3 Picks — Free Account →
       </button>
     </div>
   )

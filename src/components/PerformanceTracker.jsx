@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
@@ -16,21 +16,31 @@ function formatOdds(odds) {
   return n > 0 ? `+${n}` : `${n}`
 }
 
-export default function PerformanceTracker() {
-  const [expanded, setExpanded] = useState(false)
+export default function PerformanceTracker({ defaultExpanded = false, trackerAnchor = false }) {
+  const [expanded, setExpanded] = useState(defaultExpanded)
   const [picks, setPicks] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    setExpanded(defaultExpanded)
+  }, [defaultExpanded])
 
   useEffect(() => {
     async function fetchPicks() {
+      setError(null)
       try {
         const res = await fetch('/api/performance-picks')
-        if (res.ok) {
-          const data = await res.json()
-          setPicks(data)
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}))
+          throw new Error(body.error || `Tracker unavailable (${res.status})`)
         }
+        const data = await res.json()
+        setPicks(Array.isArray(data) ? data : [])
       } catch (err) {
         console.error('Failed to fetch picks:', err)
+        setError(err.message || 'Unable to load pick tracker')
+        setPicks([])
       } finally {
         setLoading(false)
       }
@@ -43,11 +53,16 @@ export default function PerformanceTracker() {
   const losses = picksWithResults.filter(p => p.result === 'L').length
   const totalUnits = picksWithResults.reduce((s, p) => s + (parseFloat(p.units) || 0), 0)
   const winRate = picksWithResults.length > 0 ? Math.round((wins / picksWithResults.length) * 100) + '%' : '—'
-  const isNew = !loading && picksWithResults.length === 0
+  const isNew = !loading && !error && picksWithResults.length === 0
   const latestDate = picksWithResults[0]?.date
+  const unavailable = !loading && error
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+    <div
+      id={trackerAnchor ? 'pick-tracker' : undefined}
+      className="rounded-2xl overflow-hidden mb-6"
+      style={{ background: '#fff', border: '1px solid #e2e8f0' }}
+    >
 
       <button
         onClick={() => setExpanded(!expanded)}
@@ -57,12 +72,16 @@ export default function PerformanceTracker() {
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp size={15} style={{ color: '#f59e0b' }} />
-            <span className="text-sm font-black text-white">Vega's Pick Performance</span>
+            <span className="text-sm font-black text-white">Vega&apos;s Pick Performance</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-              style={{ background: 'rgba(34,197,94,0.15)', color: '#22c55e', border: '1px solid rgba(34,197,94,0.3)' }}>
-              ● Tracked
+              style={{
+                background: unavailable ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
+                color: unavailable ? '#f87171' : '#22c55e',
+                border: `1px solid ${unavailable ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
+              }}>
+              {unavailable ? 'Unavailable' : '● Tracked'}
             </span>
             {expanded
               ? <ChevronUp size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
@@ -73,9 +92,9 @@ export default function PerformanceTracker() {
 
         <div className="grid grid-cols-3 gap-0 px-4 pb-3">
           {[
-            { label: 'Record', record: isNew ? '—' : `${wins}-${losses}`, units: isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
-            { label: 'Win Rate', record: winRate, units: isNew ? 'Results after games' : `${picksWithResults.length} graded` },
-            { label: 'Last Graded', record: formatDate(latestDate), units: 'Auto-graded daily' },
+            { label: 'Record', record: unavailable || isNew ? '—' : `${wins}-${losses}`, units: unavailable ? 'Check back soon' : isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
+            { label: 'Win Rate', record: unavailable || isNew ? '—' : winRate, units: unavailable ? '—' : isNew ? 'Results after games' : `${picksWithResults.length} graded` },
+            { label: 'Last Graded', record: unavailable ? '—' : formatDate(latestDate), units: unavailable ? '—' : 'Auto-graded daily' },
           ].map(({ label, record, units }, i) => (
             <div key={label} className="text-center" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
               <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
@@ -90,6 +109,14 @@ export default function PerformanceTracker() {
         <div className="px-4 pt-3 pb-3">
           {loading ? (
             <p className="text-xs text-center py-4" style={{ color: '#94a3b8' }}>Loading results…</p>
+          ) : unavailable ? (
+            <div className="flex items-start gap-3 py-4">
+              <AlertTriangle size={18} style={{ color: '#dc2626' }} className="shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>Tracker temporarily unavailable</p>
+                <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{error}</p>
+              </div>
+            </div>
           ) : isNew ? (
             <div className="text-center py-4">
               <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>No graded picks yet</p>
@@ -131,7 +158,7 @@ export default function PerformanceTracker() {
             </div>
           )}
           <p className="text-xs text-center mt-3" style={{ color: '#94a3b8' }}>
-            All picks tracked from publication date · Grading runs after final scores are available · Past results don't guarantee future performance
+            All picks tracked from publication date · Grading runs after final scores are available · Past results don&apos;t guarantee future performance
           </p>
         </div>
       )}

@@ -65,10 +65,7 @@ function MLCell({ awayMl, homeMl, bestAwayMl, bestHomeMl }) {
 }
 
 function MatchupRow({ game, index, onSelect }) {
-  const gameTime = new Date(game.commenceTime)
-  const isLive = gameTime < new Date()
-  const timeLabel = isLive ? 'LIVE' : format(gameTime, 'h:mm a')
-  const dateLabel = isLive ? '' : format(gameTime, 'M/d')
+  const timeLabel = getOddsGameTimeLabel(game.commenceTime)
 
   // Collect odds per book
   const bookOdds = {}

@@ -87,7 +87,7 @@ export default function AIAnalysis() {
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Vega AI Analysis</h1>
             <p className="text-sm" style={{ color: '#64748b' }}>
-              Powered by Vega — TrueOddsIQ's AI analyst
+              Two model perspectives using current odds · MLB includes probable pitchers when listed
             </p>
           </div>
         </div>
