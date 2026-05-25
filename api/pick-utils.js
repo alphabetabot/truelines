@@ -40,6 +40,8 @@ export function extractMatchup(section) {
 
 function cleanTeamName(value) {
   return value
+    .replace(/\*\*/g, '')
+    .replace(/^#+\s*/, '')
     .replace(/\s*(?:→|->|\|).*$/, '')
     .replace(/\s{2,}/g, ' ')
     .trim()
@@ -48,6 +50,7 @@ function cleanTeamName(value) {
 /** Strip sport prefix from pick headline */
 export function cleanPickHeadline(headline) {
   return headline
+    .replace(/\*\*/g, '')
     .replace(/^FADE:\s*/i, '')
     .replace(/^(?:MLB|NBA|NHL|NFL)\s*(?:Pick)?:\s*/i, '')
     .trim()

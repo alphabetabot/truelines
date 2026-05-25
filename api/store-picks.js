@@ -21,14 +21,13 @@ export function extractPicksFromResponse(claudeResponse) {
     if (!section) continue
 
     const isFade = /\bFADE\b|❌/i.test(section)
-    const pickMatch = section.match(/\*\*(.+?)\*\*/is) || section.match(/(?:^|\n)\s*(?:Pick|Selection):\s*(.+?)(?:\n|$)/i)
+    const rawHeadline = getPickHeadline(section)
     const betLine = getField(section, ['Bet'])
     const confidenceLine = getField(section, ['Confidence'])
     const edgeLine = getField(section, ['Edge', 'Why', 'Reasoning'])
 
-    if (!pickMatch) continue
+    if (!rawHeadline) continue
 
-    const rawHeadline = pickMatch[1].trim()
     const pickLine = isFade ? `FADE: ${rawHeadline}` : rawHeadline
     const matchup = extractMatchup(section)
     const pickSelection = cleanPickHeadline(rawHeadline)
@@ -50,6 +49,25 @@ export function extractPicksFromResponse(claudeResponse) {
   }
 
   return picks
+}
+
+function getPickHeadline(section) {
+  const boldHeadlines = [...String(section || '').matchAll(/\*\*(.+?)\*\*/gis)]
+    .map(match => match[1].trim())
+    .filter(Boolean)
+
+  const pickLike = boldHeadlines.find(headline =>
+    !headline.includes('@') &&
+    /\b(?:MLB|NBA|NHL|NFL)\b|(?:\bML\b|\bmoneyline\b|\bover\b|\bunder\b|[+-]\d+\.?\d*)/i.test(headline)
+  )
+
+  if (pickLike) return pickLike
+
+  const nonMatchup = boldHeadlines.find(headline => !headline.includes('@'))
+  if (nonMatchup) return nonMatchup
+
+  const fieldMatch = section.match(/(?:^|\n)\s*(?:Pick|Selection):\s*(.+?)(?:\n|$)/i)
+  return fieldMatch?.[1]?.trim() || ''
 }
 
 function splitPickSections(text) {
