@@ -1,6 +1,6 @@
-import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
+import { NavLink, Link, useNavigate } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { createElement, useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import { useAuth } from '../lib/AuthContext'
 
@@ -12,26 +12,30 @@ const NAV = [
   { to: '/blog', label: 'Blog', icon: BookOpen },
 ]
 
+function shouldShowIOSInstall() {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
+  const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
+  return ios && !standalone
+}
+
 export default function Layout({ children }) {
-  const { user, signOut } = useAuth()
+  const { user, loading: authLoading, signOut } = useAuth()
   const navigate = useNavigate()
   const [installPrompt, setInstallPrompt] = useState(null)
-  const [showInstall, setShowInstall] = useState(false)
-  const [isIOS, setIsIOS] = useState(false)
+  const [isIOS] = useState(shouldShowIOSInstall)
+  const [showInstall, setShowInstall] = useState(isIOS)
   const [showIOSHint, setShowIOSHint] = useState(false)
 
   useEffect(() => {
-    window.addEventListener('beforeinstallprompt', e => {
+    function handleBeforeInstallPrompt(e) {
       e.preventDefault()
       setInstallPrompt(e)
       setShowInstall(true)
-    })
-    const ios = /iphone|ipad|ipod/i.test(navigator.userAgent)
-    const standalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches
-    if (ios && !standalone) {
-      setIsIOS(true)
-      setShowInstall(true)
     }
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt)
   }, [])
 
   const handleInstall = async () => {
@@ -58,7 +62,13 @@ export default function Layout({ children }) {
                 <Download size={12} /> Download
               </button>
             )}
-            {user ? (
+            {authLoading ? (
+              <div
+                className="px-3 py-1.5 rounded-lg"
+                style={{ width: 70, height: 28, background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.12)' }}
+                aria-label="Checking sign-in status"
+              />
+            ) : user ? (
               <button onClick={signOut}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold"
                 style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
@@ -93,7 +103,7 @@ export default function Layout({ children }) {
                   color: isActive ? '#0f172a' : 'rgba(255,255,255,0.8)',
                   fontSize: 14,
                 })}>
-                <Icon size={14} />{label}
+                {createElement(Icon, { size: 14 })}{label}
               </NavLink>
             ))}
           </div>
@@ -107,7 +117,7 @@ export default function Layout({ children }) {
                   color: isActive ? '#0f172a' : 'rgba(255,255,255,0.7)',
                   fontSize: 13,
                 })}>
-                <Icon size={13} />{label}
+                {createElement(Icon, { size: 13 })}{label}
               </NavLink>
             ))}
 

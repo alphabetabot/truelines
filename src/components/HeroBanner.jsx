@@ -3,9 +3,9 @@ import { useAuth } from '../lib/AuthContext'
 
 export default function HeroBanner() {
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
 
-  if (user) return null // Already signed in, no need to show
+  if (loading || user) return null // Avoid flashing the logged-out CTA while restoring a session.
 
   return (
     <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>

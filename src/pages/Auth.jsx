@@ -1,10 +1,16 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { TrendingUp, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+import { useAuth } from '../lib/AuthContext'
+
+function authRedirectUrl(path) {
+  return `${window.location.origin}${path}`
+}
 
 export default function Auth({ onAuth = () => {} }) {
   const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [mode, setMode] = useState('login') // 'login' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -12,6 +18,7 @@ export default function Auth({ onAuth = () => {} }) {
   const [newsletter, setNewsletter] = useState(true)
   const [disclaimer, setDisclaimer] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
 
@@ -32,7 +39,7 @@ export default function Auth({ onAuth = () => {} }) {
           email,
           password,
           options: {
-            emailRedirectTo: 'https://trueoddsiq.com/auth/callback',
+            emailRedirectTo: authRedirectUrl('/auth/callback'),
             data: { newsletter_opt_in: newsletter },
           },
         })
@@ -59,6 +66,44 @@ export default function Auth({ onAuth = () => {} }) {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleForgotPassword() {
+    setError(null)
+    setSuccess(null)
+
+    if (!email) {
+      setError('Enter your email first.')
+      return
+    }
+
+    setResetLoading(true)
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: authRedirectUrl('/auth/callback?next=/reset-password'),
+      })
+      if (error) throw error
+      setSuccess('Password reset email sent. Open the link in your email to choose a new password.')
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setResetLoading(false)
+    }
+  }
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#f0f4f8' }}>
+        <div className="text-center">
+          <Loader2 size={28} className="animate-spin mx-auto mb-3" style={{ color: '#2563eb' }} />
+          <p className="text-sm" style={{ color: '#64748b' }}>Checking your session...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (user) {
+    return <Navigate to="/picks" replace />
   }
 
   return (
@@ -182,13 +227,12 @@ export default function Auth({ onAuth = () => {} }) {
 
         {/* Forgot password */}
         {mode === 'login' && (
-          <button onClick={async () => {
-            if (!email) { setError('Enter your email first'); return }
-            await supabase.auth.resetPasswordForEmail(email)
-            setSuccess('Password reset email sent!')
-          }}
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={resetLoading}
             className="w-full text-center mt-3 text-xs" style={{ color: '#2563eb' }}>
-            Forgot password?
+            {resetLoading ? 'Sending reset email...' : 'Forgot password?'}
           </button>
         )}
       </div>
