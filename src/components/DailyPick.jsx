@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Zap, Star, ChevronRight } from 'lucide-react'
+import { Zap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const CACHE_KEY = 'vega_daily_pick'
@@ -18,7 +18,14 @@ export default function DailyPick() {
       const cachedDate = localStorage.getItem(CACHE_DATE_KEY)
 
       if (cached && cachedDate === today) {
-        try { setPick(JSON.parse(cached)); setLoading(false); return } catch {}
+        try {
+          setPick(JSON.parse(cached))
+          setLoading(false)
+          return
+        } catch {
+          localStorage.removeItem(CACHE_KEY)
+          localStorage.removeItem(CACHE_DATE_KEY)
+        }
       }
 
       try {
@@ -32,7 +39,9 @@ export default function DailyPick() {
             localStorage.setItem(CACHE_DATE_KEY, today)
           }
         }
-      } catch {}
+      } catch (e) {
+        console.warn('Daily pick failed:', e)
+      }
       setLoading(false)
     }
     fetchPick()
