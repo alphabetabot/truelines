@@ -1,7 +1,9 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { TrendingUp, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { Eye, EyeOff, Loader2 } from 'lucide-react'
+
+const LEGAL_VERSION = '2026-05'
 
 export default function Auth({ onAuth = () => {} }) {
   const navigate = useNavigate()
@@ -11,6 +13,7 @@ export default function Auth({ onAuth = () => {} }) {
   const [showPassword, setShowPassword] = useState(false)
   const [newsletter, setNewsletter] = useState(true)
   const [disclaimer, setDisclaimer] = useState(false)
+  const [legalAccepted, setLegalAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
@@ -25,6 +28,11 @@ export default function Auth({ onAuth = () => {} }) {
       return
     }
 
+    if (mode === 'signup' && !legalAccepted) {
+      setError('You must accept the Terms of Service and Privacy Policy to create an account.')
+      return
+    }
+
     setLoading(true)
     try {
       if (mode === 'signup') {
@@ -33,7 +41,11 @@ export default function Auth({ onAuth = () => {} }) {
           password,
           options: {
             emailRedirectTo: 'https://trueoddsiq.com/auth/callback',
-            data: { newsletter_opt_in: newsletter },
+            data: {
+              newsletter_opt_in: newsletter,
+              legal_accepted_at: new Date().toISOString(),
+              legal_version: LEGAL_VERSION,
+            },
           },
         })
         if (error) throw error
@@ -141,6 +153,24 @@ export default function Auth({ onAuth = () => {} }) {
                 </span>
               </label>
 
+              {/* Terms and privacy acceptance */}
+              <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl"
+                style={{ background: '#eff6ff', border: '1px solid #bfdbfe' }}>
+                <input type="checkbox" checked={legalAccepted} onChange={e => setLegalAccepted(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 accent-blue-600" />
+                <span className="text-xs leading-relaxed" style={{ color: '#1e3a8a' }}>
+                  I agree to the{' '}
+                  <Link to="/terms" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 700 }}>
+                    Terms of Service
+                  </Link>
+                  {' '}and acknowledge the{' '}
+                  <Link to="/privacy" target="_blank" rel="noopener noreferrer" style={{ color: '#2563eb', fontWeight: 700 }}>
+                    Privacy Policy
+                  </Link>
+                  . <strong>(Required)</strong>
+                </span>
+              </label>
+
               {/* Disclaimer */}
               <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl"
                 style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
@@ -194,9 +224,9 @@ export default function Auth({ onAuth = () => {} }) {
       </div>
 
       <p className="text-xs mt-6 text-center" style={{ color: '#94a3b8' }}>
-        Must be 21+ · For informational use only · <a href="/disclaimer" style={{ color: '#2563eb' }}>Disclaimer</a>
-        {' '}· <a href="/privacy" style={{ color: '#2563eb' }}>Privacy</a>
-        {' '}· <a href="/terms" style={{ color: '#2563eb' }}>Terms</a>
+        Must be 21+ · For informational use only · <Link to="/disclaimer" style={{ color: '#2563eb' }}>Disclaimer</Link>
+        {' '}· <Link to="/privacy" style={{ color: '#2563eb' }}>Privacy</Link>
+        {' '}· <Link to="/terms" style={{ color: '#2563eb' }}>Terms</Link>
       </p>
     </div>
   )
