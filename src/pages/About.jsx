@@ -39,17 +39,19 @@ export default function About() {
               title: 'Transparent & Independent',
               desc: 'We are not a sportsbook. We take no bets. Affiliate links may earn a commission but do not change which lines we highlight. Our goal is a clear view of the market.',
             },
-          ].map(({ icon: Icon, title, desc }) => (
+          ].map(({ icon, title, desc }) => {
+            const FeatureIcon = icon
+            return (
             <div key={title} className="flex gap-4 p-4 rounded-xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
               <div className="shrink-0 w-10 h-10 rounded-lg flex items-center justify-center" style={{ background: '#f1f5f9' }}>
-                <Icon size={18} style={{ color: '#2563eb' }} />
+                <FeatureIcon size={18} style={{ color: '#2563eb' }} />
               </div>
               <div>
                 <p className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>{title}</p>
                 <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>{desc}</p>
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
 

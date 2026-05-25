@@ -9,6 +9,7 @@ import { Zap, Trophy, Star, RefreshCw } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { getAuthHeaders } from '../lib/authHeaders'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
 
@@ -139,7 +140,11 @@ export default function AIPicks() {
       setStoredLoading(true)
       setStoredError(null)
       try {
-        const res = await fetch('/api/todays-pick?all=1')
+        const headers = await getAuthHeaders()
+        const res = await fetch('/api/todays-pick?all=1', { headers })
+        if (res.status === 401) {
+          throw new Error("Please sign in again to load today's picks.")
+        }
         if (!res.ok) {
           const err = await res.json().catch(() => ({}))
           throw new Error(err.error || 'Picks not available yet')

@@ -84,7 +84,7 @@ export async function getTodayProbablePitchers() {
     const result = {}
     const seen = new Set()
 
-    Object.entries(pitcherMap).forEach(([teamName, { name, id, gameId, venueName, weather }]) => {
+    Object.entries(pitcherMap).forEach(([teamName, { name, id, venueName, weather }]) => {
       if (seen.has(id)) {
         result[teamName] = result[Object.keys(result).find(k => result[k].id === id)]
         return

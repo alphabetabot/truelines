@@ -163,7 +163,7 @@ export async function storePicks(picks, date) {
       edge: pick.edge,
       result: null,
       units: null,
-      sort_order: index,
+      _sort_order: index,
     }
   })
 
@@ -183,7 +183,8 @@ export async function storePicks(picks, date) {
     .select('*')
 
   if (error) {
-    // Fallback: table may not have the new sort_order column yet.
+    // Fallback: table may not have the new _sort_order column yet.
+    // eslint-disable-next-line no-unused-vars -- sort_order omitted for legacy schema fallback
     const rowsWithoutSortOrder = rowsToStore.map(({ sort_order, ...row }) => row)
     const retry = await supabase
       .from('daily_picks')

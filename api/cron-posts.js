@@ -19,12 +19,12 @@ async function getEveningGames() {
     const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american&bookmakers=draftkings,fanduel`)
     const nba = await nbaRes.json()
     nba?.forEach(g => games.push({ ...g, sport: 'NBA' }))
-  } catch {}
+  } catch { /* skip */ }
   try {
     const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h&oddsFormat=american&bookmakers=draftkings,fanduel`)
     const nhl = await nhlRes.json()
     nhl?.forEach(g => games.push({ ...g, sport: 'NHL' }))
-  } catch {}
+  } catch { /* skip */ }
   return games.slice(0, 4)
 }
 

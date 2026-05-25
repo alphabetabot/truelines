@@ -10,6 +10,7 @@ import PerformanceTracker from '../components/PerformanceTracker'
 import HeroBanner from '../components/HeroBanner'
 import TodaysEdges from '../components/TodaysEdges'
 import DailyPick from '../components/DailyPick'
+import OddsLoadError from '../components/OddsLoadError'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
@@ -118,14 +119,7 @@ export default function LiveOdds() {
       {activeTab === 'Odds' && (
         <>
           {isError && (
-            <div className="flex items-start gap-3 p-4 rounded-xl mb-4"
-              style={{ background: '#fef2f2', border: '1px solid #fecaca' }}>
-              <AlertTriangle size={16} style={{ color: '#dc2626' }} className="mt-0.5 shrink-0" />
-              <div>
-                <p className="font-semibold text-sm" style={{ color: '#dc2626' }}>Failed to load odds</p>
-                <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>{error?.message}</p>
-              </div>
-            </div>
+            <OddsLoadError message={error?.message} onRetry={() => refetch()} />
           )}
 
           {isLoading && (

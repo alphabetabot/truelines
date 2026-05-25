@@ -39,7 +39,7 @@ async function fetchEdges() {
         }
       }
     })
-  } catch {}
+  } catch { /* ignore parse errors */ }
 
   // Fetch NBA spreads
   try {
@@ -73,7 +73,7 @@ async function fetchEdges() {
         }
       }
     })
-  } catch {}
+  } catch { /* ignore parse errors */ }
 
   return edges.sort((a, b) => parseFloat(b.edge) - parseFloat(a.edge)).slice(0, 5)
 }
