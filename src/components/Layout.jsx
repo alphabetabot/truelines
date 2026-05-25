@@ -1,10 +1,10 @@
-import { NavLink, Link, useNavigate } from 'react-router-dom'
+import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import PageMeta from './PageMeta'
-import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
+import { useAuth } from '../lib/AuthContext'
 
 const NAV = [
   { to: '/', label: 'Live Odds', icon: Activity, exact: true },
@@ -17,6 +17,8 @@ const NAV = [
 export default function Layout({ children }) {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const routeMeta = getRouteMeta(location.pathname)
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstall, setShowInstall] = useState(false)
   const [isIOS, setIsIOS] = useState(false)

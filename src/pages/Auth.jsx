@@ -1,11 +1,16 @@
 import { useState } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link, useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { LEGAL_VERSION } from '../lib/legal'
+import { getSiteOrigin } from '../lib/siteUrl'
+import { getAuthErrorMessage } from '../lib/authErrors'
 
-export default function Auth({ onAuth = () => {} }) {
+export default function Auth() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const resetSuccess = location.state?.resetSuccess
+
   const [mode, setMode] = useState('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -13,8 +18,9 @@ export default function Auth({ onAuth = () => {} }) {
   const [newsletter, setNewsletter] = useState(true)
   const [legalAccepted, setLegalAccepted] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [resetLoading, setResetLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [success, setSuccess] = useState(null)
+  const [success, setSuccess] = useState(resetSuccess ? 'Password updated. Sign in with your new password.' : null)
 
   async function handleSubmit(e) {
     e.preventDefault()
@@ -28,13 +34,15 @@ export default function Auth({ onAuth = () => {} }) {
 
     setLoading(true)
     try {
+      const redirectTo = `${getSiteOrigin()}/auth/callback`
+
       if (mode === 'signup') {
         const acceptedAt = new Date().toISOString()
-        const { data, error } = await supabase.auth.signUp({
+        const { data, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: 'https://trueoddsiq.com/auth/callback',
+            emailRedirectTo: redirectTo,
             data: {
               newsletter_opt_in: newsletter,
               legal_accepted_at: acceptedAt,
@@ -42,7 +50,7 @@ export default function Auth({ onAuth = () => {} }) {
             },
           },
         })
-        if (error) throw error
+        if (signUpError) throw signUpError
 
         if (newsletter && data?.user) {
           await supabase.from('newsletter_subscribers').insert({
@@ -52,21 +60,41 @@ export default function Auth({ onAuth = () => {} }) {
           }).then(() => {})
         }
 
-        setSuccess('Account created! Check your email to confirm your account, then log in.')
+        setSuccess('Account created! Check your email to confirm your account, then sign in.')
         setMode('login')
         setLegalAccepted(false)
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-        if (error) throw error
-        if (data?.user) {
-          onAuth(data.user)
-          navigate('/picks')
-        }
+        const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) throw signInError
+        if (data?.user) navigate('/picks')
       }
-    } catch (e) {
-      setError(e.message)
+    } catch (err) {
+      setError(getAuthErrorMessage(err))
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleForgotPassword() {
+    setError(null)
+    setSuccess(null)
+
+    if (!email.trim()) {
+      setError('Enter your email address first.')
+      return
+    }
+
+    setResetLoading(true)
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${getSiteOrigin()}/auth/reset`,
+      })
+      if (resetError) throw resetError
+      setSuccess('If an account exists for that email, we sent a password reset link. Check your inbox.')
+    } catch (err) {
+      setError(getAuthErrorMessage(err))
+    } finally {
+      setResetLoading(false)
     }
   }
 
@@ -86,7 +114,7 @@ export default function Auth({ onAuth = () => {} }) {
 
         <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: '1px solid #e2e8f0' }}>
           {['login', 'signup'].map(m => (
-            <button key={m} onClick={() => { setMode(m); setError(null); setSuccess(null) }}
+            <button key={m} type="button" onClick={() => { setMode(m); setError(null); setSuccess(null) }}
               className="flex-1 py-2.5 text-sm font-bold transition-all"
               style={{
                 background: mode === m ? '#0f172a' : '#fff',
@@ -106,6 +134,7 @@ export default function Auth({ onAuth = () => {} }) {
               onChange={e => setEmail(e.target.value)}
               placeholder="you@example.com"
               required
+              autoComplete="email"
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
               style={{ border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
             />
@@ -121,6 +150,7 @@ export default function Auth({ onAuth = () => {} }) {
                 placeholder="••••••••"
                 required
                 minLength={6}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none pr-10"
                 style={{ border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
               />
@@ -189,12 +219,14 @@ export default function Auth({ onAuth = () => {} }) {
         </form>
 
         {mode === 'login' && (
-          <button onClick={async () => {
-            if (!email) { setError('Enter your email first'); return }
-            await supabase.auth.resetPasswordForEmail(email)
-            setSuccess('Password reset email sent!')
-          }}
-            className="w-full text-center mt-3 text-xs" style={{ color: '#2563eb' }}>
+          <button
+            type="button"
+            onClick={handleForgotPassword}
+            disabled={resetLoading || loading}
+            className="w-full text-center mt-3 text-xs flex items-center justify-center gap-1.5"
+            style={{ color: resetLoading ? '#94a3b8' : '#2563eb', cursor: resetLoading ? 'not-allowed' : 'pointer' }}
+          >
+            {resetLoading && <Loader2 size={12} className="animate-spin" />}
             Forgot password?
           </button>
         )}
