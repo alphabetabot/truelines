@@ -47,7 +47,7 @@ export default function Layout({ children }) {
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 68 }}>
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', maxWidth: 200, objectFit: 'contain' }} />
+            <img src="/logo.svg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', maxWidth: 200, objectFit: 'contain' }} />
           </div>
 
           <div className="flex items-center gap-3">
