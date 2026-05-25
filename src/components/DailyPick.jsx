@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Zap, Star, ChevronRight } from 'lucide-react'
+import { Zap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const CACHE_KEY = 'vega_daily_pick'
@@ -18,7 +18,14 @@ export default function DailyPick() {
       const cachedDate = localStorage.getItem(CACHE_DATE_KEY)
 
       if (cached && cachedDate === today) {
-        try { setPick(JSON.parse(cached)); setLoading(false); return } catch {}
+        try {
+          setPick(JSON.parse(cached))
+          setLoading(false)
+          return
+        } catch {
+          localStorage.removeItem(CACHE_KEY)
+          localStorage.removeItem(CACHE_DATE_KEY)
+        }
       }
 
       try {
@@ -32,7 +39,9 @@ export default function DailyPick() {
             localStorage.setItem(CACHE_DATE_KEY, today)
           }
         }
-      } catch {}
+      } catch (e) {
+        console.warn('Daily pick failed:', e)
+      }
       setLoading(false)
     }
     fetchPick()
@@ -52,7 +61,7 @@ export default function DailyPick() {
           <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#f59e0b' }}>
             <Zap size={12} style={{ color: '#0f172a' }} />
           </div>
-          <span className="text-xs font-black" style={{ color: '#f59e0b' }}>VEGA'S TOP PICK TODAY</span>
+          <span className="text-xs font-black" style={{ color: '#f59e0b' }}>FREE TOP PICK PREVIEW</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs px-2 py-0.5 rounded-full font-bold"
@@ -88,7 +97,7 @@ export default function DailyPick() {
             className="flex items-center gap-1 text-xs font-bold"
             style={{ color: '#f59e0b' }}
           >
-            See all 3 picks <ChevronRight size={13} />
+            Unlock all picks <ChevronRight size={13} />
           </button>
         </div>
       </div>
@@ -96,7 +105,7 @@ export default function DailyPick() {
       {/* Footer */}
       <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          For informational purposes only · Always bet responsibly · 21+
+          Sign up free for the full daily list and analysis · Always bet responsibly · 21+
         </p>
       </div>
     </div>

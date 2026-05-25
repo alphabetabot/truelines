@@ -14,13 +14,13 @@ export default function HeroBanner() {
         <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-        AI-assisted betting research using live odds, matchup context, and transparent result tracking.
+        Browse current odds for free. Sign up to unlock the full daily pick list, analysis notes, and newsletter.
       </p>
       <div className="flex flex-wrap gap-3 mb-4">
         {[
+          '✔ Free top-pick preview',
+          '✔ Full daily list with signup',
           '✔ Transparent results tracking',
-          '✔ 3 picks daily from Vega',
-          '✔ Free newsletter',
         ].map(item => (
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>
         ))}
@@ -30,7 +30,7 @@ export default function HeroBanner() {
         className="w-full py-3 rounded-xl font-black text-sm"
         style={{ background: '#f59e0b', color: '#0f172a' }}
       >
-        Get Today's Free Pick →
+        Create free account for all picks →
       </button>
     </div>
   )

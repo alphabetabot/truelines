@@ -1,4 +1,7 @@
-// Returns today's top pick or full pick list (?all=1) from Supabase
+/* global process */
+// Returns today's public top pick or authenticated full pick list (?all=1) from Supabase
+
+import { requireSupabaseUser } from './auth-utils.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -39,6 +42,11 @@ export default async function handler(req, res) {
   const date = req.query?.date || today
   const listAll = req.query?.all === '1' || req.query?.all === 'true'
 
+  if (listAll) {
+    const user = await requireSupabaseUser(req, res)
+    if (!user) return
+  }
+
   try {
     const picks = await fetchPicksForDate(date)
 
@@ -54,7 +62,9 @@ export default async function handler(req, res) {
     if (top?.bet && !top.bet.includes('-10000') && !top.bet.includes('-99999')) {
       return res.json(top)
     }
-  } catch {}
+  } catch (err) {
+    console.error('Failed to fetch today\'s pick:', err)
+  }
 
   return res.status(503).json({
     error: 'No picks yet — newsletter generates picks daily at 8 AM PT',
