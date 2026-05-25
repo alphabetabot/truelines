@@ -18,7 +18,7 @@ export default function Unsubscribe() {
       }
 
       try {
-        const res = await fetch('/api/newsletter?action=unsubscribe', {
+        const res = await fetch('/api/picks-status?action=unsubscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, token }),
