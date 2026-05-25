@@ -1,3 +1,4 @@
+/* global process */
 // Dynamic sitemap generator - pulls blog posts from Supabase in real-time
 // Serves as /api/sitemap and should be aliased to /sitemap.xml in vercel.json
 
@@ -9,6 +10,8 @@ const STATIC_PAGES = [
   { loc: 'https://trueoddsiq.com/compare', changefreq: 'hourly', priority: '0.9' },
   { loc: 'https://trueoddsiq.com/analysis', changefreq: 'daily', priority: '0.9' },
   { loc: 'https://trueoddsiq.com/picks', changefreq: 'daily', priority: '0.9' },
+  { loc: 'https://trueoddsiq.com/about', changefreq: 'monthly', priority: '0.5' },
+  { loc: 'https://trueoddsiq.com/fantasy', changefreq: 'monthly', priority: '0.3' },
   { loc: 'https://trueoddsiq.com/disclaimer', changefreq: 'monthly', priority: '0.3' },
   { loc: 'https://trueoddsiq.com/privacy', changefreq: 'monthly', priority: '0.3' },
   { loc: 'https://trueoddsiq.com/terms', changefreq: 'monthly', priority: '0.3' },
