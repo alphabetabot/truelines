@@ -1,25 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
-import { getAffiliateLink } from '../lib/affiliateLinks'
+import { AFFILIATE_DISCLOSURE, getAffiliateLink } from '../lib/affiliateLinks'
 import { format } from 'date-fns'
 import { ChevronDown } from 'lucide-react'
-import { getTodayProbablePitchers } from '../lib/mlbApi'
 
 const BET_TYPES = [
   { key: 'h2h', label: 'Moneyline' },
   { key: 'spreads', label: 'Spread' },
   { key: 'totals', label: 'Total' },
 ]
-
-// MLB pitcher data - pulled from a public stats source when available
-// We'll show TBD if not available since The Odds API doesn't include pitcher data
-function PitcherLine({ team }) {
-  return (
-    <span className="text-xs" style={{ color: '#94a3b8' }}>
-      P: TBD
-    </span>
-  )
-}
 
 export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = {} }) {
   const [betType, setBetType] = useState('h2h')
@@ -172,7 +161,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
 
             return (
               <div key={row.book} className="flex flex-col shrink-0" style={{ width: 104, borderRight: '1px solid #f1f5f9' }}>
-                {/* Book name + Bet Now button */}
+                {/* Book name + outbound sportsbook button */}
                 <div className="flex flex-col items-center justify-center" style={{ height: 44, borderBottom: '1px solid #f1f5f9', background: '#f8fafc', gap: 3 }}>
                   <span className="font-black" style={{ color: SPORTSBOOK_COLORS[row.book] || '#64748b', fontSize: 10, letterSpacing: '-0.2px' }}>
                     {SPORTSBOOK_LABELS[row.book] || row.book}
@@ -180,8 +169,9 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                   <a
                     href={getAffiliateLink(row.book)}
                     target="_blank"
-                    rel="noopener noreferrer"
+                    rel="sponsored noopener noreferrer"
                     onClick={e => e.stopPropagation()}
+                    aria-label={`Open ${SPORTSBOOK_LABELS[row.book] || row.book} sportsbook`}
                     className="flex items-center justify-center rounded"
                     style={{
                       background: SPORTSBOOK_COLORS[row.book] || '#1e293b',
@@ -193,7 +183,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                       textDecoration: 'none',
                     }}
                   >
-                    BET NOW
+                    VISIT
                   </a>
                 </div>
 
@@ -234,6 +224,12 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       <div className="flex items-center justify-center gap-1 py-1"
         style={{ borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
         <span style={{ color: '#94a3b8', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
+      </div>
+
+      <div className="px-3 py-1 text-center" style={{ background: '#fff7ed', borderTop: '1px solid #fed7aa' }}>
+        <span style={{ color: '#9a3412', fontSize: 10, fontWeight: 600 }}>
+          {AFFILIATE_DISCLOSURE}
+        </span>
       </div>
 
       {/* Implied probability bar */}
