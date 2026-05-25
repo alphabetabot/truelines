@@ -3,8 +3,19 @@ import { useNavigate } from 'react-router-dom'
 import { Zap, ChevronRight, Star } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 
-const CACHE_KEY = 'truelines_teaser_pick'
-const CACHE_DATE_KEY = 'truelines_teaser_date'
+function formatConfidence(value) {
+  if (typeof value === 'string' && /[★⭐]/.test(value)) return value
+  const count = Math.min(5, Math.max(1, parseInt(value, 10) || 3))
+  return '★'.repeat(count)
+}
+
+function buildBullets(pick) {
+  return [
+    pick.bet ? `Best available bet: ${pick.bet}` : null,
+    pick.edge || 'Daily newsletter edge refreshed from the server',
+    'Full analysis available with a free account',
+  ].filter(Boolean)
+}
 
 export default function AIPickTeaser() {
   const [pick, setPick] = useState(null)
@@ -13,61 +24,39 @@ export default function AIPickTeaser() {
   const { user } = useAuth()
 
   useEffect(() => {
+    const controller = new AbortController()
+    let active = true
+
+    async function loadTeaserPick() {
+      try {
+        const res = await fetch('/api/todays-pick', { signal: controller.signal })
+        if (!res.ok) return
+
+        const data = await res.json()
+        if (!data?.pick) return
+
+        if (!active) return
+        setPick({
+          game: data.game || 'Today\'s slate',
+          pick: data.pick,
+          confidence: formatConfidence(data.confidence),
+          bullets: buildBullets(data),
+          teaser: 'Sign up free to see Vega\'s full analysis and line value breakdown.',
+          sport: data.sport || 'PICK',
+        })
+      } catch (e) {
+        if (e.name !== 'AbortError') console.warn('Teaser pick failed:', e)
+      } finally {
+        if (active) setLoading(false)
+      }
+    }
+
     loadTeaserPick()
+    return () => {
+      active = false
+      controller.abort()
+    }
   }, [])
-
-  async function loadTeaserPick() {
-    const today = new Date().toDateString()
-    const cached = localStorage.getItem(CACHE_KEY)
-    const cachedDate = localStorage.getItem(CACHE_DATE_KEY)
-
-    // Use cached pick if from today
-    if (cached && cachedDate === today) {
-      setPick(JSON.parse(cached))
-      setLoading(false)
-      return
-    }
-
-    try {
-      // Get today's MLB schedule for the best teaser game
-      const res = await fetch('https://statsapi.mlb.com/api/v1/schedule?sportId=1&hydrate=probablePitcher,venue&date=' + new Date().toISOString().split('T')[0])
-      const data = await res.json()
-      const games = data.dates?.[0]?.games || []
-
-      if (games.length === 0) {
-        setLoading(false)
-        return
-      }
-
-      // Pick the most interesting matchup (both pitchers announced)
-      const bestGame = games.find(g =>
-        g.teams?.away?.probablePitcher && g.teams?.home?.probablePitcher
-      ) || games[0]
-
-      const away = bestGame.teams?.away?.team?.name
-      const home = bestGame.teams?.home?.team?.name
-
-      // Use static pick to avoid API costs — updated daily via newsletter
-      // TODO: Replace with server-side cached pick
-      const staticPick = {
-        game: `${away} @ ${home}`,
-        pick: 'Check AI Picks tab for today\'s best bet',
-        confidence: '⭐⭐⭐⭐',
-        bullets: ['Pitcher matchup analyzed', 'Ballpark & weather factored in', 'Line value confirmed across 6 books'],
-        teaser: 'Sign up free to see Vega\'s full analysis and best bet.',
-        sport: 'MLB',
-      }
-      localStorage.setItem(CACHE_KEY, JSON.stringify(staticPick))
-      localStorage.setItem(CACHE_DATE_KEY, today)
-      setPick(staticPick)
-      setLoading(false)
-      return
-    } catch (e) {
-      console.warn('Teaser pick failed:', e)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   if (loading) {
     return (
@@ -116,7 +105,7 @@ export default function AIPickTeaser() {
 
         {/* Teaser hook */}
         <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          🔒 Full analysis + line value breakdown available to members
+          🔒 {pick.teaser}
         </p>
       </div>
 
