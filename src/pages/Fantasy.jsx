@@ -1,7 +1,11 @@
-import { useState } from 'react'
-import { Trophy, Zap, TrendingUp, Users, RefreshCw, Lock } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { Trophy, Zap, Lock } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { getAffiliateLink } from '../lib/affiliateLinks'
+import { getDfsLineupKey, loadDfsLineup, saveDfsLineup } from '../lib/dfsLineupStorage'
+
+const PREVIEW_MAX_PLAYERS = 8
 
 const SPORTS = [
   { key: 'baseball_mlb', label: 'MLB', emoji: '⚾' },
@@ -13,7 +17,6 @@ const CONTEST_TYPES = [
   { key: 'gpp', label: 'GPP Tournaments', desc: 'High upside — swing big' },
 ]
 
-// Salary data is mocked for now — will integrate with DraftKings API when affiliate approved
 const MOCK_MLB_PLAYERS = [
   { name: 'Aaron Judge', team: 'NYY', pos: 'OF', salary: 6200, projPts: 42.3, value: 6.8, ownership: 28, hotness: 'hot', reason: 'Vs LHP, 8 HR last 15 games, home park' },
   { name: 'Shohei Ohtani', team: 'LAD', pos: 'SP/OF', salary: 10500, projPts: 68.1, value: 6.5, ownership: 45, hotness: 'hot', reason: 'SP tonight, 11.2 K/9, elite matchup vs BAL' },
@@ -58,19 +61,13 @@ function PlayerCard({ player, selected, onToggle, contestType }) {
   const hot = hotColor(player.hotness)
   const isGPP = contestType === 'gpp'
   return (
-    <div
-      onClick={() => onToggle(player)}
-      className="rounded-xl p-4 cursor-pointer transition-all"
-      style={{
-        border: selected ? '2px solid #2563eb' : '1px solid #e2e8f0',
-        background: selected ? '#eff6ff' : '#fff',
-        opacity: isGPP && player.ownership > 30 ? 0.7 : 1,
-      }}
-    >
+    <div onClick={() => onToggle(player)} className="rounded-xl p-4 cursor-pointer transition-all"
+      style={{ border: selected ? '2px solid #2563eb' : '1px solid #e2e8f0', background: selected ? '#eff6ff' : '#fff', opacity: isGPP && player.ownership > 30 ? 0.7 : 1 }}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-bold text-sm" style={{ color: '#0f172a' }}>{player.name}</span>
+            <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: '#f1f5f9', color: '#64748b' }}>Sample</span>
             <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: hot.bg, color: hot.color }}>{hot.label}</span>
           </div>
           <div className="flex items-center gap-2 mb-2">
@@ -92,18 +89,17 @@ function PlayerCard({ player, selected, onToggle, contestType }) {
   )
 }
 
-function LineupBuilder({ players, sport }) {
+function LineupBuilder({ players }) {
   const totalSalary = players.reduce((s, p) => s + p.salary, 0)
   const totalProj = players.reduce((s, p) => s + p.projPts, 0)
-  const salaryCap = sport === 'baseball_mlb' ? 50000 : 50000
+  const salaryCap = 50000
   const remaining = salaryCap - totalSalary
-
   return (
     <div className="rounded-2xl p-4" style={{ background: '#0f172a', color: '#fff' }}>
       <div className="flex items-center gap-2 mb-3">
         <Trophy size={16} style={{ color: '#f59e0b' }} />
         <span className="font-bold text-sm">My Lineup</span>
-        <span className="ml-auto text-xs" style={{ color: '#94a3b8' }}>{players.length} players</span>
+        <span className="ml-auto text-xs" style={{ color: '#94a3b8' }}>{players.length} / {PREVIEW_MAX_PLAYERS}</span>
       </div>
       {players.length === 0 ? (
         <p className="text-xs text-center py-4" style={{ color: '#475569' }}>Tap players below to add them</p>
@@ -123,17 +119,13 @@ function LineupBuilder({ players, sport }) {
       <div className="border-t pt-3" style={{ borderColor: '#1e293b' }}>
         <div className="flex justify-between text-xs mb-1">
           <span style={{ color: '#94a3b8' }}>Salary used</span>
-          <span style={{ color: remaining < 0 ? '#ef4444' : '#22c55e' }}>
-            ${totalSalary.toLocaleString()} / ${salaryCap.toLocaleString()}
-          </span>
+          <span style={{ color: remaining < 0 ? '#ef4444' : '#22c55e' }}>${totalSalary.toLocaleString()} / ${salaryCap.toLocaleString()}</span>
         </div>
         <div className="flex justify-between text-xs">
           <span style={{ color: '#94a3b8' }}>Proj. points</span>
           <span className="font-bold" style={{ color: '#2563eb' }}>{totalProj.toFixed(1)}</span>
         </div>
-        {remaining < 0 && (
-          <p className="text-xs mt-2" style={{ color: '#ef4444' }}>⚠️ Over salary cap by ${Math.abs(remaining).toLocaleString()}</p>
-        )}
+        {remaining < 0 && <p className="text-xs mt-2" style={{ color: '#ef4444' }}>Over salary cap by ${Math.abs(remaining).toLocaleString()}</p>}
       </div>
     </div>
   )
@@ -146,9 +138,10 @@ export default function Fantasy() {
   const [sortBy, setSortBy] = useState('value')
   const { user } = useAuth()
   const navigate = useNavigate()
-
+  const storageKey = useMemo(() => getDfsLineupKey(user?.id, sport, contestType), [user?.id, sport, contestType])
+  useEffect(() => { setLineup(loadDfsLineup(storageKey)) }, [storageKey])
+  useEffect(() => { saveDfsLineup(storageKey, lineup) }, [storageKey, lineup])
   const players = sport === 'baseball_mlb' ? MOCK_MLB_PLAYERS : MOCK_NBA_PLAYERS
-
   const sorted = [...players].sort((a, b) => {
     if (sortBy === 'value') return b.value - a.value
     if (sortBy === 'proj') return b.projPts - a.projPts
@@ -156,160 +149,73 @@ export default function Fantasy() {
     if (sortBy === 'ownership') return a.ownership - b.ownership
     return 0
   })
-
-  // In GPP, boost contrarian players
-  const ranked = contestType === 'gpp'
-    ? [...sorted].sort((a, b) => (a.ownership - b.ownership) * 0.3 + (b.value - a.value) * 0.7)
-    : sorted
-
+  const ranked = contestType === 'gpp' ? [...sorted].sort((a, b) => (a.ownership - b.ownership) * 0.3 + (b.value - a.value) * 0.7) : sorted
   function togglePlayer(player) {
     if (!user) { navigate('/login'); return }
-    setLineup(prev =>
-      prev.find(p => p.name === player.name)
-        ? prev.filter(p => p.name !== player.name)
-        : prev.length < 8 ? [...prev, player] : prev
-    )
+    setLineup(prev => prev.find(p => p.name === player.name) ? prev.filter(p => p.name !== player.name) : prev.length < PREVIEW_MAX_PLAYERS ? [...prev, player] : prev)
   }
-
   return (
     <div>
-      {/* Header */}
       <div className="mb-5">
         <div className="flex items-center gap-2 mb-1">
           <Trophy size={20} style={{ color: '#f59e0b' }} />
           <h1 style={{ color: '#0f172a', margin: 0 }}>Fantasy & DFS Optimizer Preview</h1>
         </div>
-        <p className="text-sm" style={{ color: '#64748b' }}>
-          Sample player-ranking experience while live salary, ownership, and projection feeds are being integrated.
-        </p>
+        <p className="text-sm" style={{ color: '#64748b' }}>Sample player-ranking experience while live salary, ownership, and projection feeds are being integrated.</p>
+        <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>Demo snapshot · Preview capped at {PREVIEW_MAX_PLAYERS} players per lineup</p>
       </div>
-
       <div className="rounded-xl p-3 mb-4" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
-        <p className="text-xs leading-relaxed" style={{ color: '#92400e' }}>
-          Preview mode: this page currently uses sample data and should not be treated as live DFS advice.
-          Live DraftKings/FanDuel salary and projection integrations are not active yet.
-        </p>
+        <p className="text-xs leading-relaxed" style={{ color: '#92400e' }}>Preview mode: sample data only — not live DFS advice. DraftKings/FanDuel integrations are not active yet.</p>
       </div>
-
-      {/* Sport selector */}
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {SPORTS.map(s => (
-          <button
-            key={s.key}
-            onClick={() => { setSport(s.key); setLineup([]) }}
-            className="flex-shrink-0 px-4 py-2 rounded-xl font-semibold text-sm transition-all"
-            style={{
-              background: sport === s.key ? '#0f172a' : '#f1f5f9',
-              color: sport === s.key ? '#fff' : '#64748b',
-            }}
-          >
-            {s.emoji} {s.label}
-          </button>
+          <button key={s.key} type="button" onClick={() => { setSport(s.key); setLineup([]) }} className="flex-shrink-0 px-4 py-2 rounded-xl font-semibold text-sm"
+            style={{ background: sport === s.key ? '#0f172a' : '#f1f5f9', color: sport === s.key ? '#fff' : '#64748b' }}>{s.emoji} {s.label}</button>
         ))}
       </div>
-
-      {/* Contest type */}
       <div className="grid grid-cols-2 gap-3 mb-5">
         {CONTEST_TYPES.map(c => (
-          <button
-            key={c.key}
-            onClick={() => setContestType(c.key)}
-            className="p-3 rounded-xl text-left transition-all"
-            style={{
-              border: contestType === c.key ? '2px solid #2563eb' : '1px solid #e2e8f0',
-              background: contestType === c.key ? '#eff6ff' : '#fff',
-            }}
-          >
+          <button key={c.key} type="button" onClick={() => setContestType(c.key)} className="p-3 rounded-xl text-left"
+            style={{ border: contestType === c.key ? '2px solid #2563eb' : '1px solid #e2e8f0', background: contestType === c.key ? '#eff6ff' : '#fff' }}>
             <div className="font-bold text-sm mb-0.5" style={{ color: '#0f172a' }}>{c.label}</div>
             <div className="text-xs" style={{ color: '#64748b' }}>{c.desc}</div>
           </button>
         ))}
       </div>
-
-      {/* Lineup builder */}
-      <div className="mb-5">
-        <LineupBuilder players={lineup} sport={sport} />
-      </div>
-
-      {/* Vega's picks banner */}
+      <div className="mb-5"><LineupBuilder players={lineup} /></div>
       <div className="rounded-xl p-3 mb-4 flex items-center gap-3" style={{ background: 'linear-gradient(135deg, #1e293b, #0f172a)' }}>
-        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#f59e0b' }}>
-          <Zap size={16} style={{ color: '#fff' }} />
-        </div>
+        <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#f59e0b' }}><Zap size={16} style={{ color: '#fff' }} /></div>
         <div className="flex-1 min-w-0">
           <div className="text-xs font-bold" style={{ color: '#f59e0b' }}>SAMPLE {contestType === 'gpp' ? 'GPP' : 'CASH'} PLAYER RANKINGS</div>
-          <div className="text-xs" style={{ color: '#94a3b8' }}>
-            {contestType === 'cash' ? 'Demo sort by floor & consistency' : 'Demo sort by upside & low ownership'}
-          </div>
+          <div className="text-xs" style={{ color: '#94a3b8' }}>{contestType === 'cash' ? 'Demo sort by floor & consistency' : 'Demo sort by upside & low ownership'}</div>
         </div>
-        {!user && (
-          <div className="flex items-center gap-1 text-xs font-semibold flex-shrink-0" style={{ color: '#f59e0b' }}>
-            <Lock size={12} /> Sign in to save lineup
-          </div>
-        )}
+        {!user ? <div className="flex items-center gap-1 text-xs font-semibold flex-shrink-0" style={{ color: '#f59e0b' }}><Lock size={12} /> Sign in to build a lineup</div>
+          : lineup.length > 0 ? <span className="text-xs flex-shrink-0" style={{ color: '#94a3b8' }}>Saved on this device</span> : null}
       </div>
-
-      {/* Sort controls */}
       <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-1">
         <span className="text-xs flex-shrink-0" style={{ color: '#94a3b8' }}>Sort:</span>
         {['value', 'proj', 'salary', 'ownership'].map(s => (
-          <button
-            key={s}
-            onClick={() => setSortBy(s)}
-            className="flex-shrink-0 px-3 py-1 rounded-lg text-xs font-semibold capitalize transition-all"
-            style={{
-              background: sortBy === s ? '#2563eb' : '#f1f5f9',
-              color: sortBy === s ? '#fff' : '#64748b',
-            }}
-          >
+          <button key={s} type="button" onClick={() => setSortBy(s)} className="flex-shrink-0 px-3 py-1 rounded-lg text-xs font-semibold capitalize"
+            style={{ background: sortBy === s ? '#2563eb' : '#f1f5f9', color: sortBy === s ? '#fff' : '#64748b' }}>
             {s === 'proj' ? 'Proj Pts' : s === 'ownership' ? 'Low Own' : s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
       </div>
-
-      {/* Player list */}
       <div className="space-y-3">
         {ranked.map(player => (
-          <PlayerCard
-            key={player.name}
-            player={player}
-            selected={lineup.some(p => p.name === player.name)}
-            onToggle={togglePlayer}
-            contestType={contestType}
-          />
+          <PlayerCard key={player.name} player={player} selected={lineup.some(p => p.name === player.name)} onToggle={togglePlayer} contestType={contestType} />
         ))}
       </div>
-
-      {/* DFS CTA */}
       <div className="mt-6 rounded-2xl p-5 text-center" style={{ background: 'linear-gradient(135deg, #1e3a5f, #1e293b)' }}>
         <div className="text-2xl mb-2">🏆</div>
         <div className="font-bold mb-1" style={{ color: '#fff' }}>DFS integrations coming soon</div>
-        <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Use official sportsbook and DFS apps to verify salaries, contests, and projections before playing.</p>
+        <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Verify salaries and contests on official apps before playing.</p>
         <div className="flex gap-3 justify-center">
-          <a
-            href="https://www.draftkings.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2.5 rounded-xl font-bold text-sm"
-            style={{ background: '#1a7a4a', color: '#fff', textDecoration: 'none' }}
-          >
-            DraftKings
-          </a>
-          <a
-            href="https://www.fanduel.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-5 py-2.5 rounded-xl font-bold text-sm"
-            style={{ background: '#1d4ed8', color: '#fff', textDecoration: 'none' }}
-          >
-            FanDuel
-          </a>
+          <a href={getAffiliateLink('draftkings')} target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1a7a4a', color: '#fff', textDecoration: 'none' }}>DraftKings</a>
+          <a href={getAffiliateLink('fanduel')} target="_blank" rel="noopener noreferrer" className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1d4ed8', color: '#fff', textDecoration: 'none' }}>FanDuel</a>
         </div>
       </div>
-
-      <p className="text-xs text-center mt-4" style={{ color: '#94a3b8' }}>
-        Preview data is for product demonstration only. Always gamble responsibly.
-      </p>
+      <p className="text-xs text-center mt-4" style={{ color: '#94a3b8' }}>Preview data is for demonstration only. Always gamble responsibly.</p>
     </div>
   )
 }
