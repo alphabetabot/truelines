@@ -5,7 +5,7 @@ import { getAIPick } from '../lib/claudeApi'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
 import AIResponse from '../components/AIResponse'
-import { Zap, Trophy, Star, RefreshCw } from 'lucide-react'
+import { Zap, Trophy, Star, RefreshCw, Loader2 } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
@@ -108,7 +108,7 @@ function PickCard({ game, pitchers = {} }) {
 }
 
 export default function AIPicks() {
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [sport, setSport] = useState('basketball_nba')
   const [view, setView] = useState('newsletter')
@@ -135,9 +135,14 @@ export default function AIPicks() {
   })
 
   useEffect(() => {
+    if (authLoading || !user) return
+    let active = true
+
     async function loadStoredPicks() {
-      setStoredLoading(true)
-      setStoredError(null)
+      if (active) {
+        setStoredLoading(true)
+        setStoredError(null)
+      }
       try {
         const res = await fetch('/api/todays-pick?all=1')
         if (!res.ok) {
@@ -145,16 +150,31 @@ export default function AIPicks() {
           throw new Error(err.error || 'Picks not available yet')
         }
         const data = await res.json()
-        setStoredPicks(data.picks || [])
+        if (active) setStoredPicks(data.picks || [])
       } catch (e) {
-        setStoredError(e.message)
-        setStoredPicks([])
+        if (active) {
+          setStoredError(e.message)
+          setStoredPicks([])
+        }
       } finally {
-        setStoredLoading(false)
+        if (active) setStoredLoading(false)
       }
     }
+
     loadStoredPicks()
-  }, [])
+    return () => {
+      active = false
+    }
+  }, [authLoading, user])
+
+  if (authLoading) {
+    return (
+      <div className="text-center py-20 px-4">
+        <Loader2 size={32} className="mx-auto mb-3 animate-spin" style={{ color: '#d97706' }} />
+        <p className="text-sm" style={{ color: '#64748b' }}>Checking your account...</p>
+      </div>
+    )
+  }
 
   if (!user) {
     return (

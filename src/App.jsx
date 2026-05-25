@@ -15,6 +15,7 @@ import Fantasy from './pages/Fantasy'
 import Unsubscribe from './pages/Unsubscribe'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
+import ResetPassword from './pages/ResetPassword'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -42,6 +43,7 @@ export default function App() {
               <Route path="/blog/:slug" element={<Blog />} />
               <Route path="/login" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/fantasy" element={<Fantasy />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/privacy" element={<Privacy />} />
