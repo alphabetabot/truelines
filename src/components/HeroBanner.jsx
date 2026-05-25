@@ -10,11 +10,11 @@ export default function HeroBanner() {
   return (
     <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>
       <h2 className="font-black mb-1 leading-tight" style={{ color: '#fff', fontSize: '1.25rem' }}>
-        Beat the Books with Data —<br />
-        <span style={{ color: '#f59e0b' }}>Not Guesswork</span>
+        Compare the Market with Data —<br />
+        <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-        AI-powered betting insights using line movement, weather, and market inefficiencies. Built for long-term profit, not hype.
+        AI-assisted betting research using live odds, matchup context, and transparent result tracking.
       </p>
       <div className="flex flex-wrap gap-3 mb-4">
         {[
