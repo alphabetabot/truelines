@@ -3,7 +3,7 @@
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
-const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units'
+const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,sort_order'
 const PICKS_SELECT_FALLBACK = 'id,date,pick,bet,confidence,edge,game,sport,result'
 
 async function fetchPicksForDate(date) {
@@ -13,7 +13,7 @@ async function fetchPicksForDate(date) {
   }
 
   const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${date}&order=created_at.asc&select=${PICKS_SELECT}`,
+    `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${date}&order=sort_order.asc.nullslast,created_at.asc&select=${PICKS_SELECT}`,
     { headers }
   )
 

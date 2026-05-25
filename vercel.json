@@ -5,6 +5,7 @@
   ],
   "crons": [
     { "path": "/api/log-results", "schedule": "30 12 * * *" },
+    { "path": "/api/log-results", "schedule": "30 18 * * *" },
     { "path": "/api/cron-blogs", "schedule": "0 7 * * *" },
     { "path": "/api/cron-blogs?weekly=true", "schedule": "0 8 * * 1" },
     { "path": "/api/cron-posts", "schedule": "0 12 * * *" },
