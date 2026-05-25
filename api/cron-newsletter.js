@@ -285,26 +285,67 @@ function enrichOdds(game) {
   }
 }
 
+function pacificDateKey(date) {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Los_Angeles',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(date)
+}
+
+function gameDate(game) {
+  const value = game.gameTime || game.commence_time
+  return value ? new Date(value) : null
+}
+
+function isGameOnPacificDate(game, targetDateKey) {
+  const date = gameDate(game)
+  if (!date || Number.isNaN(date.getTime())) return true
+  return pacificDateKey(date) === targetDateKey
+}
+
+function balancedSlate(games, maxGames = 24) {
+  const bySport = {
+    NBA: games.filter(g => g.sport === 'NBA'),
+    NHL: games.filter(g => g.sport === 'NHL'),
+    MLB: games.filter(g => g.sport === 'MLB'),
+  }
+
+  const selected = []
+  const seen = new Set()
+  const add = (game) => {
+    const key = `${game.sport}:${game.away}@${game.home}:${game.gameTime || game.commence_time || ''}`
+    if (!seen.has(key)) {
+      seen.add(key)
+      selected.push(game)
+    }
+  }
+
+  // Guarantee playoff sports make the slate when they are playing today.
+  ;['NBA', 'NHL'].forEach(sport => bySport[sport].slice(0, 4).forEach(add))
+
+  const remaining = [...games]
+    .sort((a, b) => (gameDate(a)?.getTime() || 0) - (gameDate(b)?.getTime() || 0))
+
+  for (const game of remaining) {
+    if (selected.length >= maxGames) break
+    add(game)
+  }
+
+  return selected.slice(0, maxGames)
+}
+
 async function generatePicks(games) {
   const now = new Date()
   const date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+  const todayKey = pacificDateKey(now)
   
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0)
-  const tomorrowStart = new Date(todayStart.getTime() + 86400000)
+  const todaysGames = balancedSlate(
+    games.filter(g => isGameOnPacificDate(g, todayKey))
+  )
   
-  const todaysGames = games.filter(g => {
-    if (g.sport === 'MLB' && g.gameTime) {
-      const gTime = new Date(g.gameTime)
-      return gTime >= todayStart && gTime < tomorrowStart
-    }
-    if (g.commence_time) {
-      const gTime = new Date(g.commence_time)
-      return gTime >= todayStart && gTime < tomorrowStart
-    }
-    return true
-  })
-  
-  const gamesWithStats = await Promise.all(todaysGames.slice(0, 18).map(async g => {
+  const gamesWithStats = await Promise.all(todaysGames.map(async g => {
     const stats = {}
     if (g.sport === 'MLB') {
       if (g.awayPitcherId) {
