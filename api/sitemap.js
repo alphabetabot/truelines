@@ -13,6 +13,8 @@ const STATIC_PAGES = [
   { loc: 'https://trueoddsiq.com/privacy', changefreq: 'monthly', priority: '0.3' },
   { loc: 'https://trueoddsiq.com/terms', changefreq: 'monthly', priority: '0.3' },
   { loc: 'https://trueoddsiq.com/blog', changefreq: 'daily', priority: '0.8' },
+  { loc: 'https://trueoddsiq.com/about', changefreq: 'monthly', priority: '0.5' },
+  { loc: 'https://trueoddsiq.com/fantasy', changefreq: 'monthly', priority: '0.2' },
 ]
 
 const STATIC_BLOG_POSTS = [

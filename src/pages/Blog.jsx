@@ -269,6 +269,11 @@ export default function Blog() {
   if (selectedPost) {
     return (
       <div className="py-6 px-4">
+        <PageMeta
+          title={selectedPost.title}
+          description={selectedPost.summary || 'Sports betting research from TrueOddsIQ.'}
+          path={`/blog/${selectedPost.slug}`}
+        />
         <BlogPost post={selectedPost} onBack={() => { setSelectedPost(null); navigate('/blog') }} />
       </div>
     )
