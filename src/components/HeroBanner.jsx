@@ -26,6 +26,9 @@ export default function HeroBanner() {
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>
         ))}
       </div>
+      <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>
+        New picks every morning · Pacific time
+      </p>
       <button
         onClick={() => navigate('/login')}
         className="w-full py-3 rounded-xl font-black text-sm"
