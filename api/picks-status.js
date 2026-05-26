@@ -199,7 +199,7 @@ export default async function handler(req, res) {
         recent: summarizeRows(recentGraded).picks,
       },
       cron: {
-        picksPublish: '0 15 * * * UTC',
+        picksPublish: '0 14 * * * UTC',
         resultGrading: '30 12 * * * UTC',
       },
     })
