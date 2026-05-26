@@ -3,6 +3,7 @@ import { postTweet } from './post-to-x.js'
 import { getSupabase } from './supabase-client.js'
 import { extractPicksFromResponse, storePicks } from './store-picks.js'
 import { sendNewsletterEmail, unsubscribeUrl } from './newsletter-utils.js'
+import { newsletterAlreadySentToday, recordNewsletterSent } from './newsletter-send-guard.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
@@ -555,10 +556,13 @@ function buildEmail(picksText, date, unsubscribeHref = 'https://trueoddsiq.com/u
 export default async function handler(req, res) {
   const secret = req.headers['x-newsletter-secret']
   const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
+  const forceSend = req.query?.force === 'true' || req.body?.force === true
 
   if (!isVercelCron && secret !== process.env.NEWSLETTER_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
+
+  const todayKey = pacificDateKey(new Date())
 
   try {
     const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
@@ -619,6 +623,22 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText, stored: storedPicks.length })
     }
 
+    if (!forceSend) {
+      const sendStatus = await newsletterAlreadySentToday(getSupabase(), todayKey)
+      if (sendStatus.alreadySent) {
+        console.log(`Newsletter already sent for ${todayKey}; skipping duplicate run`)
+        return res.json({
+          sent: 0,
+          skipped: true,
+          reason: 'already_sent_today',
+          date: todayKey,
+          sentAt: sendStatus.sentAt,
+          stored: storedPicks.length,
+          message: 'Newsletter already sent today — duplicate run skipped',
+        })
+      }
+    }
+
     const emails = subscribers.map(s => s.email)
     let sent = 0
     const sendErrors = []
@@ -649,6 +669,8 @@ export default async function handler(req, res) {
       })
     }
 
+    await recordNewsletterSent(getSupabase(), todayKey, sent)
+
     const topPickSection = picksText.split('---')[0] || picksText
     const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
     const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
@@ -677,7 +699,7 @@ export default async function handler(req, res) {
       console.warn('X post failed:', tweetErr.message)
     }
 
-    return res.json({ sent, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
+    return res.json({ sent, date: todayKey, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
   } catch (err) {
     console.error('Newsletter error:', err)
     return res.status(500).json({ error: err.message })
