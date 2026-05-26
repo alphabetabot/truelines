@@ -65,8 +65,12 @@ export async function getOdds(sport, markets = 'h2h,spreads,totals', bookmakers 
   })
 }
 
-export async function getScores(sport, daysFrom = 7) {
-  return apiFetch(`/sports/${sport}/scores`, { daysFrom })
+/** The Odds API scores endpoint only accepts daysFrom 1–3. */
+export const MAX_SCORES_DAYS_FROM = 3
+
+export async function getScores(sport, daysFrom = MAX_SCORES_DAYS_FROM) {
+  const clamped = Math.min(MAX_SCORES_DAYS_FROM, Math.max(1, daysFrom))
+  return apiFetch(`/sports/${sport}/scores`, { daysFrom: clamped })
 }
 
 // Parse odds data into a structured comparison format
