@@ -84,6 +84,6 @@ export default async function handler(req, res) {
 
   res.setHeader('Cache-Control', 'no-store')
   return res.status(503).json({
-    error: 'No picks yet — newsletter generates picks daily at 8 AM PT',
+    error: 'No picks yet — new picks publish every morning (Pacific time)',
   })
 }

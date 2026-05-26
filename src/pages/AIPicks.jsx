@@ -268,7 +268,7 @@ export default function AIPicks() {
             <div className="text-center py-12 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
               <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Picks not ready yet</p>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
-                Newsletter picks publish daily around 8 AM PT. Check back soon.
+                New picks every morning · Pacific time. Check back soon.
               </p>
             </div>
           )}
