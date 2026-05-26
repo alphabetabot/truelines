@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { SPORTS } from '../lib/oddsApi'
 import { format, subDays, isSameDay } from 'date-fns'
-import { getScores } from '../lib/oddsApi'
+import { getScores, MAX_SCORES_DAYS_FROM } from '../lib/oddsApi'
 import OddsLoadError from '../components/OddsLoadError'
 
 const SCOREABLE_SPORTS = SPORTS.filter(s =>
@@ -91,7 +91,10 @@ function DateTab({ date, selected, onClick, label }) {
 
 export default function Scores({ sport }) {
   const today = new Date()
-  const dates = Array.from({ length: 8 }, (_, i) => subDays(today, 7 - i)) // last 7 days + today
+  // API returns at most MAX_SCORES_DAYS_FROM days of completed games (plus today)
+  const dates = Array.from({ length: MAX_SCORES_DAYS_FROM + 1 }, (_, i) =>
+    subDays(today, MAX_SCORES_DAYS_FROM - i)
+  )
   const [selectedLabel, setSelectedLabel] = useState(format(today, 'M/d'))
 
   const selectedDate = dates.find(d => format(d, 'M/d') === selectedLabel) || today
