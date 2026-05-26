@@ -9,11 +9,21 @@ const SCOREABLE_SPORTS = SPORTS.filter(s =>
   !['tennis_atp_french_open', 'mma_mixed_martial_arts'].includes(s.key)
 )
 
+function parseScore(value) {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : null
+}
+
 function ScoreCard({ game }) {
   const home = game.scores?.find(s => s.name === game.home_team)
   const away = game.scores?.find(s => s.name === game.away_team)
   const isCompleted = game.completed
   const gameTime = new Date(game.commence_time)
+  const homeScore = parseScore(home?.score)
+  const awayScore = parseScore(away?.score)
+  const hasResult = isCompleted && homeScore != null && awayScore != null
+  const awayWins = hasResult && awayScore > homeScore
+  const homeWins = hasResult && homeScore > awayScore
 
   return (
     <div className="rounded-xl overflow-hidden mb-2"
@@ -38,30 +48,34 @@ function ScoreCard({ game }) {
         {/* Away */}
         <div className="flex items-center justify-between py-1.5"
           style={{ borderBottom: '1px solid #f1f5f9' }}>
-          <span className="font-semibold text-sm" style={{
+          <span className="text-sm" style={{
             color: '#0f172a',
-            fontWeight: away?.score > home?.score ? 800 : 500
+            fontWeight: awayWins ? 800 : 500,
           }}>
             {game.away_team}
           </span>
-          <span className="font-bold text-lg font-mono" style={{
-            color: away?.score > home?.score ? '#16a34a' : '#0f172a',
-            minWidth: 36, textAlign: 'right'
+          <span className="text-lg font-mono" style={{
+            color: awayWins ? '#16a34a' : '#0f172a',
+            fontWeight: awayWins ? 800 : 500,
+            minWidth: 36,
+            textAlign: 'right',
           }}>
             {isCompleted ? (away?.score ?? '—') : '—'}
           </span>
         </div>
         {/* Home */}
         <div className="flex items-center justify-between py-1.5">
-          <span className="font-semibold text-sm" style={{
+          <span className="text-sm" style={{
             color: '#0f172a',
-            fontWeight: home?.score > away?.score ? 800 : 500
+            fontWeight: homeWins ? 800 : 500,
           }}>
             {game.home_team}
           </span>
-          <span className="font-bold text-lg font-mono" style={{
-            color: home?.score > away?.score ? '#16a34a' : '#0f172a',
-            minWidth: 36, textAlign: 'right'
+          <span className="text-lg font-mono" style={{
+            color: homeWins ? '#16a34a' : '#0f172a',
+            fontWeight: homeWins ? 800 : 500,
+            minWidth: 36,
+            textAlign: 'right',
           }}>
             {isCompleted ? (home?.score ?? '—') : '—'}
           </span>
@@ -91,10 +105,7 @@ function DateTab({ date, selected, onClick, label }) {
 
 export default function Scores({ sport }) {
   const today = new Date()
-  // API returns at most MAX_SCORES_DAYS_FROM days of completed games (plus today)
-  const dates = Array.from({ length: MAX_SCORES_DAYS_FROM + 1 }, (_, i) =>
-    subDays(today, MAX_SCORES_DAYS_FROM - i)
-  )
+  const dates = Array.from({ length: 8 }, (_, i) => subDays(today, 7 - i)) // last 7 days + today
   const [selectedLabel, setSelectedLabel] = useState(format(today, 'M/d'))
 
   const selectedDate = dates.find(d => format(d, 'M/d') === selectedLabel) || today
