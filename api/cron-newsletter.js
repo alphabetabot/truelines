@@ -437,7 +437,7 @@ CRITICAL RULES:
 MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
 ${gameReference}
 
-Give exactly 3 picks plus 1 fade. Always lead with your single best bet clearly marked.
+Give exactly 3 picks to BET (not fades or passes). Always lead with your single best bet clearly marked.
 
 CRITICAL: Each pick MUST include:
 1. Full matchup on its own line: "[Away Team] @ [Home Team]"
@@ -445,6 +445,7 @@ CRITICAL: Each pick MUST include:
 3. Example matchup line: "Pirates @ Rockies"
 4. If odds show as "N/A", skip that game and move to next
 5. Moneyline picks must end in "ML" (example: "Dodgers ML"). Totals must include the number (example: "Under 8.5"). Spreads must include the number (example: "Yankees -1.5").
+6. Every pick is an actionable bet to place — never list a "fade", "avoid", or "pass" section.
 
 Format EXACTLY like this:
 
@@ -473,14 +474,7 @@ PICK #3
 - Confidence: [rating out of 5]
 - Edge: [2-3 sentences of specific analysis]
 
----
-
-FADE OF THE DAY
-[Away Team] @ [Home Team]
-**[SPORT]: [Team/Total to avoid]**
-- Why: [reason the public is wrong on this one]
-
-Only pick games with genuine edge. Be specific with stats and reasoning. Do not add any extra sections after the fade.`
+Only pick games with genuine edge. Be specific with stats and reasoning. Output exactly 3 picks — no fourth section.`
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -523,7 +517,7 @@ function buildEmail(picksText, date, unsubscribeHref = 'https://trueoddsiq.com/u
     }
     if (line.startsWith('**') && line.endsWith('**')) {
       const t = line.slice(2, -2)
-      const color = t.includes('Fade') ? '#ef4444' : '#f59e0b'
+      const color = '#f59e0b'
       return `<p style="font-weight:900;font-size:16px;color:${color};margin:20px 0 6px;">${t}</p>`
     }
     if (line.startsWith('- ')) {
@@ -633,7 +627,9 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'Claude refused to generate picks' })
     }
     
-    const picks = extractPicksFromResponse(picksText).slice(0, 4)
+    const picks = extractPicksFromResponse(picksText)
+      .filter(p => !p.isFade)
+      .slice(0, 3)
     console.log(`Extracted ${picks.length} picks from Claude response`)
 
     if (picks.length < 3) {

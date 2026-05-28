@@ -64,6 +64,13 @@ export function formatBetDisplay({ betType, odds, bestBook, isFade }) {
   return parts.join(' · ') || 'N/A'
 }
 
+export function isFadePick(pick) {
+  const betType = String(pick?.bet_type || pick?.betType || '').trim()
+  if (/^fade$/i.test(betType)) return true
+  const text = `${pick?.pick || ''} ${pick?.bet || ''} ${betType}`
+  return /\bfade\b/i.test(text) || /^FADE:/i.test(pick?.pick || '')
+}
+
 export function extractSportFromPick(pickLine) {
   const clean = pickLine.replace(/^FADE:\s*/i, '')
   if (clean.toUpperCase().startsWith('MLB')) return 'MLB'

@@ -1,6 +1,7 @@
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
 import { requireSupabaseUser } from './auth-utils.js'
+import { isFadePick } from './pick-utils.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -66,12 +67,14 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to fetch picks' })
     }
 
+    const actionable = picks.filter(p => !isFadePick(p))
+
     if (listAll) {
       res.setHeader('Cache-Control', 'private, no-store')
-      return res.json({ date, picks, count: picks.length })
+      return res.json({ date, picks: actionable, count: actionable.length })
     }
 
-    const top = picks[0]
+    const top = actionable[0]
     if (top?.bet && !isPlaceholderBet(top.bet)) {
       res.setHeader('Cache-Control', PICK_CACHE)
       return res.json(top)

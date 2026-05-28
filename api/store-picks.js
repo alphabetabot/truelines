@@ -20,22 +20,22 @@ export function extractPicksFromResponse(claudeResponse) {
   for (const section of sections) {
     if (!section) continue
 
-    const isFade = /\bFADE\b|❌/i.test(section)
+    if (/\bFADE\b|❌/i.test(section)) continue
+
     const rawHeadline = getPickHeadline(section)
     const betLine = getField(section, ['Bet'])
     const confidenceLine = getField(section, ['Confidence'])
     const edgeLine = getField(section, ['Edge', 'Why', 'Reasoning'])
 
-    if (!rawHeadline) continue
-    if (!isFade && !betLine) continue
+    if (!rawHeadline || !betLine) continue
 
-    const pickLine = isFade ? `FADE: ${rawHeadline}` : rawHeadline
+    const pickLine = rawHeadline
     const matchup = extractMatchup(section)
     const pickSelection = cleanPickHeadline(rawHeadline)
     if (!isActionablePick(pickSelection, section)) continue
 
     const sport = extractSportFromPick(pickLine)
-    const bet = parseBetLine(betLine, isFade)
+    const bet = parseBetLine(betLine, false)
 
     picks.push({
       pickLine,
@@ -47,7 +47,7 @@ export function extractPicksFromResponse(claudeResponse) {
       bestBook: bet.bestBook,
       confidence: parseConfidence(confidenceLine),
       edge: edgeLine,
-      isFade,
+      isFade: false,
     })
   }
 
