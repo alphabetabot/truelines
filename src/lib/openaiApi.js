@@ -134,13 +134,11 @@ Focus on line value and market inefficiencies. Be specific. No fluff.`
 
   const messages = [{
     role: 'user',
-    content: `Today's slate:\n\n${slate}\n\nIdentify TOP 3-5 BEST BETS. For each:
+    content: `Today's slate:\n\n${slate}\n\nIdentify exactly 3 BEST BETS to place (actionable wagers only — no fades, avoids, or passes). For each:
 **Pick #N: [Team/Side] - [Sport]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [★ rating]
-- Reasoning: [sharp, concise edge]
-
-End with **Fade of the Day**.`,
+- Reasoning: [sharp, concise edge]`,
   }]
 
   return callGPT(messages, system, 1500)

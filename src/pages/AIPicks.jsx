@@ -13,22 +13,32 @@ import { getAuthHeaders } from '../lib/authHeaders'
 import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
-const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3', 'Fade']
+const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
+
+function isFadePick(pick) {
+  const betType = String(pick?.bet_type || pick?.betType || '').trim()
+  if (/^fade$/i.test(betType)) return true
+  const text = `${pick.pick || ''} ${pick.bet || ''} ${betType}`
+  return /\bfade\b/i.test(text) || /^FADE:/i.test(pick.pick || '')
+}
+
+function actionablePicks(picks) {
+  return (picks || []).filter(p => !isFadePick(p)).slice(0, DAILY_NEWSLETTER_PICK_COUNT)
+}
 
 function StoredPickCard({ pick, index }) {
-  const isFade = (pick.pick || '').toLowerCase().includes('fade') || (pick.bet || '').toLowerCase().includes('fade')
   const label = PICK_LABELS[index] || `Pick ${index + 1}`
 
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: `1px solid ${isFade ? '#fecaca' : 'var(--border)'}` }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
       <div className="flex items-center justify-between px-4 py-3"
-        style={{ background: isFade ? '#fef2f2' : 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
+        style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-2">
           <span className="text-xs px-2 py-0.5 rounded font-bold"
             style={{ background: (sportColor[pick.sport] || '#64748b') + '20', color: sportColor[pick.sport] || '#64748b' }}>
             {pick.sport}
           </span>
-          <span className="text-xs font-bold" style={{ color: isFade ? '#dc2626' : 'var(--gold)' }}>{label}</span>
+          <span className="text-xs font-bold" style={{ color: 'var(--gold)' }}>{label}</span>
         </div>
         <span className="text-xs tracking-widest" style={{ color: 'var(--gold)' }}>{pick.confidence}</span>
       </div>
@@ -174,7 +184,7 @@ export default function AIPicks() {
             throw new Error(err.error || 'Picks not available yet')
           }
           const data = await res.json()
-          if (!cancelled) setStoredPicks(data.picks || [])
+          if (!cancelled) setStoredPicks(actionablePicks(data.picks))
         } else {
           const res = await fetch('/api/todays-pick')
           if (!res.ok) {
@@ -182,7 +192,10 @@ export default function AIPicks() {
             throw new Error(err.error || 'Picks not available yet')
           }
           const topPick = await res.json()
-          if (!cancelled) setStoredPicks(topPick?.pick ? [topPick] : [])
+          if (!cancelled) {
+            const picks = topPick?.pick ? [topPick] : []
+            setStoredPicks(actionablePicks(picks))
+          }
         }
       } catch (e) {
         if (!cancelled) {

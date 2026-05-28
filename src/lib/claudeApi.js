@@ -100,14 +100,12 @@ Be specific with picks, books, and reasoning. No fluff.`
   const messages = [
     {
       role: 'user',
-      content: `Here is today's betting slate:\n\n${slate}\n\nIdentify the TOP 3-5 BEST BETS of the day. 
+      content: `Here is today's betting slate:\n\n${slate}\n\nIdentify exactly 3 BEST BETS to place (actionable wagers only — no fades, avoids, or passes).
 For each pick provide:
 **Pick #N: [Team/Side] - [Sport]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [★ rating]
-- Reasoning: [sharp, concise edge]
-
-End with a brief **Fade of the Day** (most public bet to avoid).`,
+- Reasoning: [sharp, concise edge]`,
     },
   ]
 
