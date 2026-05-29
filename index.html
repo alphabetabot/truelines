@@ -14,14 +14,21 @@
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="CFg68p8E4qqM9e7Hfr0XwOVm7RISw_AOotLXgnbK3qQ" />
 
-    <!-- Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W6K2P39FPD"></script>
+    <!-- Google Analytics (Consent Mode — updated after user choice in app) -->
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
+      gtag('consent', 'default', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500
+      });
       gtag('js', new Date());
-      gtag('config', 'G-W6K2P39FPD');
+      gtag('config', 'G-W6K2P39FPD', { anonymize_ip: true });
     </script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-W6K2P39FPD"></script>
 
     <!-- Primary SEO -->
     <title>TrueOddsIQ — Live Sports Betting Odds Comparison & AI Picks</title>

@@ -50,8 +50,9 @@ export default function Privacy() {
         <section>
           <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Cookies</h2>
           <p>
-            We use essential cookies for authentication sessions where applicable, and analytics cookies as
-            described above. You can control cookies through your browser settings.
+            We use essential cookies for authentication sessions where applicable. Analytics cookies (Google
+            Analytics) load only if you choose <strong>Accept analytics</strong> in our cookie banner. You can
+            change your choice anytime via <strong>Cookie preferences</strong> in the site footer.
           </p>
         </section>
 

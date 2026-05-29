@@ -3,6 +3,7 @@ import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import PageMeta from './PageMeta'
+import CookieConsent, { openCookiePreferences } from './CookieConsent'
 import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
 
@@ -154,7 +155,9 @@ export default function Layout({ children }) {
         {children}
       </main>
 
-      <footer className="py-4 px-4" style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
+      <CookieConsent />
+
+      <footer className="py-4 px-4 pb-20 sm:pb-4" style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
         <div className="max-w-5xl mx-auto flex flex-col gap-2">
           <div className="text-center" style={{ color: '#94a3b8', fontSize: 11 }}>
             TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
@@ -169,6 +172,14 @@ export default function Layout({ children }) {
             <Link to="/privacy" style={{ color: '#2563eb', fontWeight: 600 }}>Privacy</Link>
             {' '}·{' '}
             <Link to="/terms" style={{ color: '#2563eb', fontWeight: 600 }}>Terms</Link>
+            {' '}·{' '}
+            <button
+              type="button"
+              onClick={openCookiePreferences}
+              style={{ color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11 }}
+            >
+              Cookie preferences
+            </button>
             {' '}·{' '}
             <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb', fontWeight: 600 }}>Contact Us</a>
           </div>

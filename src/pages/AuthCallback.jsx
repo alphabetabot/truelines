@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { trackEvent } from '../lib/analytics'
 
 export default function AuthCallback() {
   const navigate = useNavigate()
@@ -25,6 +26,7 @@ export default function AuthCallback() {
             active: true,
           }, { onConflict: 'email', ignoreDuplicates: true })
         }
+        trackEvent('login', { method: 'email', source: 'email_confirm' })
         navigate('/picks', { replace: true })
       } else {
         navigate('/login', { replace: true })

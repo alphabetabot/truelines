@@ -1,11 +1,33 @@
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 
-export default function HeroBanner() {
+export default function HeroBanner({ campaignMode = false }) {
   const navigate = useNavigate()
   const { user } = useAuth()
 
   if (user) return null
+
+  if (campaignMode) {
+    return (
+      <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>
+        <h2 className="font-black mb-2 leading-tight" style={{ color: '#fff', fontSize: '1.35rem' }}>
+          Today&apos;s free pick + live odds from <span style={{ color: '#f59e0b' }}>6 books</span>
+        </h2>
+        <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
+          See the top AI pick below, then compare lines across DraftKings, FanDuel, BetMGM, and more.
+          Free account unlocks all 3 daily picks and email delivery.
+        </p>
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="w-full py-3 rounded-xl font-black text-sm"
+          style={{ background: '#f59e0b', color: '#0f172a' }}
+        >
+          Get all 3 picks — free account →
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="rounded-2xl p-5 mb-5" style={{ background: 'linear-gradient(135deg, #0f172a, #1e293b)', border: '1px solid #334155' }}>
@@ -30,6 +52,7 @@ export default function HeroBanner() {
         New picks every morning · Pacific time
       </p>
       <button
+        type="button"
         onClick={() => navigate('/login')}
         className="w-full py-3 rounded-xl font-black text-sm"
         style={{ background: '#f59e0b', color: '#0f172a' }}
