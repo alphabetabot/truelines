@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
-import { getAffiliateLink } from '../lib/affiliateLinks'
+import { getAffiliateLink, getAffiliateLinkRel, trackAffiliateClick, hasAnyTrackedAffiliateLinks } from '../lib/affiliateLinks'
 import { ChevronDown } from 'lucide-react'
 import { getOddsGameTimeLabel } from '../lib/gameStatus'
-import { AFFILIATE_DISCLOSURE_INLINE } from '../lib/affiliateDisclosure'
+import { getAffiliateDisclosureInline } from '../lib/affiliateDisclosure'
 
 const BET_TYPES = [
   { key: 'h2h', label: 'Moneyline' },
@@ -161,9 +161,12 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                   <a
                     href={getAffiliateLink(row.book)}
                     target="_blank"
-                    rel="noopener noreferrer sponsored"
-                    title={AFFILIATE_DISCLOSURE_INLINE}
-                    onClick={e => e.stopPropagation()}
+                    rel={getAffiliateLinkRel(row.book)}
+                    title={getAffiliateDisclosureInline(row.book)}
+                    onClick={e => {
+                      e.stopPropagation()
+                      trackAffiliateClick(row.book, 'matchup_card')
+                    }}
                     className="flex items-center justify-center rounded"
                     style={{
                       background: SPORTSBOOK_COLORS[row.book] || '#1e293b',
@@ -216,7 +219,11 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       <div className="flex flex-col items-center gap-0.5 py-1.5"
         style={{ borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
         <span style={{ color: '#94a3b8', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
-        <span style={{ color: '#94a3b8', fontSize: 10 }}>{AFFILIATE_DISCLOSURE_INLINE}</span>
+        <span style={{ color: '#94a3b8', fontSize: 10 }}>
+          {hasAnyTrackedAffiliateLinks()
+            ? 'Some OPEN links are affiliate links — verify lines on the book before betting.'
+            : 'OPEN links go to sportsbook sites (non-affiliate). Verify lines before betting.'}
+        </span>
       </div>
 
       {/* Implied probability bar */}

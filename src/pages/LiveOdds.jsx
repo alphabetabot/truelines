@@ -12,6 +12,7 @@ import TodaysEdges from '../components/TodaysEdges'
 import DailyPick from '../components/DailyPick'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
+import { isCampaignLanding } from '../lib/campaign'
 
 const TABS = ['Odds', 'Scores']
 
@@ -22,6 +23,7 @@ export default function LiveOdds() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  const campaignLanding = isCampaignLanding(location.search)
   const showTracker =
     new URLSearchParams(location.search).get('tracker') === '1' ||
     location.hash === '#pick-tracker'
@@ -60,7 +62,7 @@ export default function LiveOdds() {
 
   return (
     <div>
-      <HeroBanner />
+      <HeroBanner campaignMode={campaignLanding} />
       <DailyPick />
 
       {/* Core: live odds & scores */}
@@ -166,13 +168,19 @@ export default function LiveOdds() {
         </>
       )}
 
-      <section className="mt-10 pt-6" style={{ borderTop: '1px solid #e2e8f0' }}>
-        <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94a3b8' }}>
-          More tools
-        </p>
-        <TodaysEdges />
-        <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
-      </section>
+      {(!campaignLanding || showTracker) && (
+        <section className="mt-10 pt-6" style={{ borderTop: '1px solid #e2e8f0' }}>
+          {!campaignLanding && (
+            <>
+              <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94a3b8' }}>
+                More tools
+              </p>
+              <TodaysEdges />
+            </>
+          )}
+          <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
+        </section>
+      )}
     </div>
   )
 }

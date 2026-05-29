@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { TrendingUp, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { trackEvent } from '../lib/analytics'
 
 export default function Auth({ onAuth = () => {} }) {
   const navigate = useNavigate()
@@ -47,12 +48,17 @@ export default function Auth({ onAuth = () => {} }) {
           }).then(() => {}) // ignore errors (duplicate etc)
         }
 
+        trackEvent('sign_up', { method: 'email', newsletter_opt_in: newsletter })
         setSuccess('Account created! Check your email to confirm your account, then log in.')
         setMode('login')
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password })
         if (error) throw error
-        if (data?.user) { onAuth(data.user); navigate('/picks') }
+        if (data?.user) {
+          trackEvent('login', { method: 'email' })
+          onAuth(data.user)
+          navigate('/picks')
+        }
       }
     } catch (e) {
       setError(e.message)
