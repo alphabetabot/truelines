@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useLocation } from 'react-router-dom'
+import SocialProofBar from '../components/SocialProofBar'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
@@ -27,6 +28,12 @@ export default function LiveOdds() {
   const showTracker =
     new URLSearchParams(location.search).get('tracker') === '1' ||
     location.hash === '#pick-tracker'
+
+  useEffect(() => {
+    if (campaignLanding) {
+      navigate(`/welcome${location.search}${location.hash}`, { replace: true })
+    }
+  }, [campaignLanding, location.search, location.hash, navigate])
 
   useEffect(() => {
     if (!showTracker) return
@@ -62,7 +69,8 @@ export default function LiveOdds() {
 
   return (
     <div>
-      <HeroBanner campaignMode={campaignLanding} />
+      <HeroBanner />
+      <SocialProofBar compact />
       <DailyPick />
 
       {/* Core: live odds & scores */}
@@ -168,19 +176,13 @@ export default function LiveOdds() {
         </>
       )}
 
-      {(!campaignLanding || showTracker) && (
-        <section className="mt-10 pt-6" style={{ borderTop: '1px solid #e2e8f0' }}>
-          {!campaignLanding && (
-            <>
-              <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94a3b8' }}>
-                More tools
-              </p>
-              <TodaysEdges />
-            </>
-          )}
-          <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
-        </section>
-      )}
+      <section className="mt-10 pt-6" style={{ borderTop: '1px solid #e2e8f0' }}>
+        <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94a3b8' }}>
+          More tools
+        </p>
+        <TodaysEdges />
+        <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
+      </section>
     </div>
   )
 }
