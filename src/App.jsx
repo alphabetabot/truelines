@@ -20,6 +20,7 @@ import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
 import Welcome from './pages/Welcome'
 import Premium from './pages/Premium'
+import { SeoLandingRoutes } from './seo/seoRoutes'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +39,7 @@ export default function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<Home />} />
+              {SeoLandingRoutes()}
               <Route path="/odds" element={<LiveOdds />} />
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/premium" element={<Premium />} />

@@ -1,3 +1,5 @@
+import { SEO_ROUTE_META } from '../seo/seoContent.js'
+
 const SITE_URL = 'https://trueoddsiq.com'
 
 export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`
@@ -79,6 +81,9 @@ export const ROUTE_META = {
 }
 
 export function getRouteMeta(pathname) {
+  if (SEO_ROUTE_META[pathname]) {
+    return { ...SEO_ROUTE_META[pathname], path: pathname }
+  }
   if (ROUTE_META[pathname]) {
     return { ...ROUTE_META[pathname], path: pathname }
   }
