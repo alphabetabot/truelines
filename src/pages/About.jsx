@@ -37,7 +37,7 @@ export default function About() {
             {
               icon: Shield,
               title: 'Transparent & Independent',
-              desc: 'We are not a sportsbook. We take no bets. Affiliate links may earn a commission but do not change which lines we highlight. Our goal is a clear view of the market.',
+              desc: 'We are not a sportsbook. We take no bets. Sportsbook VISIT links go to each book\'s website for line shopping — we are not on an affiliate program today. Our goal is a clear view of the market.',
             },
           ].map(({ icon, title, desc }) => {
             const FeatureIcon = icon

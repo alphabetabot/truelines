@@ -54,12 +54,13 @@ export default function Disclaimer() {
         </p>
       </section>
 
-      {/* Affiliate Links */}
+      {/* Sportsbook links */}
       <section className="mb-8 p-5 rounded-2xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
-        <h2 className="mb-3" style={{ color: '#0f172a', fontSize: '1.1rem' }}>Affiliate Disclosure</h2>
+        <h2 className="mb-3" style={{ color: '#0f172a', fontSize: '1.1rem' }}>Sportsbook Links</h2>
         <p className="text-sm leading-relaxed mb-2" style={{ color: '#475569' }}>
-          TrueOddsIQ may earn a commission when you use outbound sportsbook links on this site (including
-          &quot;Open&quot; buttons on odds cards). Commissions do not change which lines we highlight as best available.
+          VISIT buttons on odds cards link to each sportsbook&apos;s public website so you can verify lines.
+          TrueOddsIQ is not a sportsbook and does not earn affiliate commission on these links at this time.
+          Highlighted &quot;best&quot; lines are based on displayed odds only.
         </p>
         <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>
           You must be 21+ and in a legal jurisdiction to wager. Always verify current lines on the sportsbook before betting.

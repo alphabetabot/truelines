@@ -1,9 +1,9 @@
 import { useState } from 'react'
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
-import { getAffiliateLink, getAffiliateLinkRel, trackAffiliateClick, hasAnyTrackedAffiliateLinks } from '../lib/affiliateLinks'
+import { getSportsbookLink, getSportsbookLinkRel, trackSportsbookClick } from '../lib/affiliateLinks'
 import { ChevronDown } from 'lucide-react'
 import { getOddsGameTimeLabel } from '../lib/gameStatus'
-import { getAffiliateDisclosureInline } from '../lib/affiliateDisclosure'
+import { getAffiliateDisclosureInline, SPORTSBOOK_LINK_FOOTER_NOTE } from '../lib/affiliateDisclosure'
 
 const BET_TYPES = [
   { key: 'h2h', label: 'Moneyline' },
@@ -159,13 +159,13 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                     {SPORTSBOOK_LABELS[row.book] || row.book}
                   </span>
                   <a
-                    href={getAffiliateLink(row.book)}
+                    href={getSportsbookLink(row.book)}
                     target="_blank"
-                    rel={getAffiliateLinkRel(row.book)}
-                    title={getAffiliateDisclosureInline(row.book)}
+                    rel={getSportsbookLinkRel()}
+                    title={getAffiliateDisclosureInline()}
                     onClick={e => {
                       e.stopPropagation()
-                      trackAffiliateClick(row.book, 'matchup_card')
+                      trackSportsbookClick(row.book, 'matchup_card')
                     }}
                     className="flex items-center justify-center rounded"
                     style={{
@@ -178,7 +178,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                       textDecoration: 'none',
                     }}
                   >
-                    OPEN
+                    VISIT
                   </a>
                 </div>
 
@@ -219,11 +219,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       <div className="flex flex-col items-center gap-0.5 py-1.5"
         style={{ borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
         <span style={{ color: '#94a3b8', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
-        <span style={{ color: '#94a3b8', fontSize: 10 }}>
-          {hasAnyTrackedAffiliateLinks()
-            ? 'Some OPEN links are affiliate links — verify lines on the book before betting.'
-            : 'OPEN links go to sportsbook sites (non-affiliate). Verify lines before betting.'}
-        </span>
+        <span style={{ color: '#94a3b8', fontSize: 10 }}>{SPORTSBOOK_LINK_FOOTER_NOTE}</span>
       </div>
 
       {/* Implied probability bar */}

@@ -17,6 +17,8 @@ import Unsubscribe from './pages/Unsubscribe'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
+import Welcome from './pages/Welcome'
+import Premium from './pages/Premium'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -35,6 +37,8 @@ export default function App() {
           <Layout>
             <Routes>
               <Route path="/" element={<LiveOdds />} />
+              <Route path="/welcome" element={<Welcome />} />
+              <Route path="/premium" element={<Premium />} />
               <Route path="/compare" element={<LineCompare />} />
               <Route path="/analysis" element={<AIAnalysis />} />
               <Route path="/picks" element={<AIPicks />} />

@@ -12,6 +12,7 @@ import { useNavigate } from 'react-router-dom'
 import { getAuthHeaders } from '../lib/authHeaders'
 import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 import { briefEdgeSummary } from '../lib/pickText'
+import PremiumTeaser from '../components/PremiumTeaser'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
@@ -322,6 +323,12 @@ export default function AIPicks() {
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {view === 'newsletter' && (
+        <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
+          <PremiumTeaser />
         </div>
       )}
 

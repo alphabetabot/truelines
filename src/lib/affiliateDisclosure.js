@@ -1,18 +1,16 @@
-import { isTrackedAffiliateLink, hasAnyTrackedAffiliateLinks } from './affiliateLinks'
+export const SPORTSBOOK_LINK_DISCLOSURE =
+  'Opens the sportsbook website. TrueOddsIQ is not affiliated with this book — always verify current lines before betting.'
 
+export const SPORTSBOOK_LINK_FOOTER_NOTE =
+  'VISIT links open each sportsbook\'s website. We do not earn commission on these links today.'
+
+/** @deprecated */
 export const AFFILIATE_DISCLOSURE_SHORT =
-  '21+ · External sportsbook link. We may earn a commission on some books when affiliate tracking is enabled.'
+  '21+ · External sportsbook link. Verify lines on the book before betting.'
 
-export function getAffiliateDisclosureInline(bookKey) {
-  if (bookKey && isTrackedAffiliateLink(bookKey)) {
-    return 'Affiliate link — commission possible. Verify lines on the book before betting.'
-  }
-  if (hasAnyTrackedAffiliateLinks()) {
-    return 'Opens sportsbook site. Verify lines before betting. (This book is not an affiliate link.)'
-  }
-  return 'Opens sportsbook site. Verify lines on the book before betting. (Non-affiliate link.)'
+export function getAffiliateDisclosureInline() {
+  return SPORTSBOOK_LINK_DISCLOSURE
 }
 
-/** @deprecated Use getAffiliateDisclosureInline(bookKey) for per-book copy */
-export const AFFILIATE_DISCLOSURE_INLINE =
-  'Opens sportsbook site. Verify lines on the book before betting.'
+/** @deprecated */
+export const AFFILIATE_DISCLOSURE_INLINE = SPORTSBOOK_LINK_DISCLOSURE

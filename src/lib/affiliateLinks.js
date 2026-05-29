@@ -1,9 +1,9 @@
-// Set VITE_AFFILIATE_* in Vercel when approved programs go live.
-// Until then, links open sportsbook homepages without sponsored/commission labeling.
+// Outbound links to sportsbook websites (not affiliate — we do not earn commission today).
+// If a book approves you later, set VITE_AFFILIATE_* in Vercel to override the URL only.
 
 import { trackEvent } from './analytics.js'
 
-const DEFAULT_LINKS = {
+const SPORTSBOOK_URLS = {
   draftkings: 'https://www.draftkings.com',
   fanduel: 'https://www.fanduel.com',
   betmgm: 'https://www.betmgm.com',
@@ -21,37 +21,46 @@ const ENV_BY_BOOK = {
   bet365: 'VITE_AFFILIATE_BET365',
 }
 
-function envAffiliateUrl(bookKey) {
+function envOverrideUrl(bookKey) {
   const envName = ENV_BY_BOOK[bookKey]
   if (!envName) return ''
   const value = import.meta.env[envName]
   return typeof value === 'string' ? value.trim() : ''
 }
 
-export function isTrackedAffiliateLink(bookKey) {
-  return Boolean(envAffiliateUrl(bookKey))
+/** @deprecated Use getSportsbookLink — kept for existing imports */
+export function getAffiliateLink(bookKey) {
+  return getSportsbookLink(bookKey)
+}
+
+export function getSportsbookLink(bookKey) {
+  const override = envOverrideUrl(bookKey)
+  if (override) return override
+  return SPORTSBOOK_URLS[bookKey] || '#'
+}
+
+export function getSportsbookLinkRel() {
+  return 'noopener noreferrer'
+}
+
+/** @deprecated */
+export function getAffiliateLinkRel() {
+  return getSportsbookLinkRel()
+}
+
+export function isTrackedAffiliateLink() {
+  return false
 }
 
 export function hasAnyTrackedAffiliateLinks() {
-  return Object.keys(ENV_BY_BOOK).some(isTrackedAffiliateLink)
+  return false
 }
 
-export function getAffiliateLink(bookKey) {
-  const tracked = envAffiliateUrl(bookKey)
-  if (tracked) return tracked
-  return DEFAULT_LINKS[bookKey] || '#'
+export function trackSportsbookClick(bookKey, context = 'unknown') {
+  trackEvent('sportsbook_click', { book: bookKey, context })
 }
 
-export function getAffiliateLinkRel(bookKey) {
-  return isTrackedAffiliateLink(bookKey)
-    ? 'noopener noreferrer sponsored'
-    : 'noopener noreferrer'
-}
-
-export function trackAffiliateClick(bookKey, context = 'unknown') {
-  trackEvent('affiliate_click', {
-    book: bookKey,
-    context,
-    tracked: isTrackedAffiliateLink(bookKey),
-  })
+/** @deprecated */
+export function trackAffiliateClick(bookKey, context) {
+  trackSportsbookClick(bookKey, context)
 }

@@ -9,6 +9,16 @@ export const ROUTE_META = {
     description:
       'Compare current odds from six major sportsbooks, preview today\'s top AI pick, and unlock full daily picks with a free account.',
   },
+  '/welcome': {
+    title: 'Welcome — Free Pick Preview & Live Odds',
+    description:
+      'See today\'s top AI pick, compare odds across six sportsbooks, and create a free account for all three daily picks.',
+  },
+  '/premium': {
+    title: 'Premium Analysis (Coming Soon)',
+    description:
+      'Deep injury, weather, and stats breakdowns per pick — launching after our free picks and track record foundation.',
+  },
   '/compare': {
     title: 'Line Comparison Across Sportsbooks',
     description: 'Side-by-side moneyline, spread, and total lines from DraftKings, FanDuel, BetMGM, Caesars, Pinnacle, and Bet365.',

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { Trophy, Zap, Lock } from 'lucide-react'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
-import { getAffiliateLink, getAffiliateLinkRel, trackAffiliateClick } from '../lib/affiliateLinks'
+import { getSportsbookLink, getSportsbookLinkRel, trackSportsbookClick } from '../lib/affiliateLinks'
 import { getDfsLineupKey, loadDfsLineup, saveDfsLineup } from '../lib/dfsLineupStorage'
 
 const PREVIEW_MAX_PLAYERS = 8
@@ -211,8 +211,8 @@ export default function Fantasy() {
         <div className="font-bold mb-1" style={{ color: '#fff' }}>DFS integrations coming soon</div>
         <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Verify salaries and contests on official apps before playing.</p>
         <div className="flex gap-3 justify-center">
-          <a href={getAffiliateLink('draftkings')} target="_blank" rel={getAffiliateLinkRel('draftkings')} onClick={() => trackAffiliateClick('draftkings', 'fantasy')} className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1a7a4a', color: '#fff', textDecoration: 'none' }}>DraftKings</a>
-          <a href={getAffiliateLink('fanduel')} target="_blank" rel={getAffiliateLinkRel('fanduel')} onClick={() => trackAffiliateClick('fanduel', 'fantasy')} className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1d4ed8', color: '#fff', textDecoration: 'none' }}>FanDuel</a>
+          <a href={getSportsbookLink('draftkings')} target="_blank" rel={getSportsbookLinkRel()} onClick={() => trackSportsbookClick('draftkings', 'fantasy')} className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1a7a4a', color: '#fff', textDecoration: 'none' }}>DraftKings</a>
+          <a href={getSportsbookLink('fanduel')} target="_blank" rel={getSportsbookLinkRel()} onClick={() => trackSportsbookClick('fanduel', 'fantasy')} className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1d4ed8', color: '#fff', textDecoration: 'none' }}>FanDuel</a>
         </div>
       </div>
       <p className="text-xs text-center mt-4" style={{ color: '#94a3b8' }}>Preview data is for demonstration only. Always gamble responsibly.</p>
