@@ -1,6 +1,6 @@
 const SITE_URL = 'https://trueoddsiq.com'
 
-export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.png`
+export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`
 
 /** Static route metadata for CSR pages. Blog posts override in Blog.jsx. */
 export const ROUTE_META = {
@@ -44,6 +44,11 @@ export const ROUTE_META = {
   '/login': {
     title: 'Sign In or Create Account',
     description: 'Free account for all daily picks, AI analysis, and optional newsletter delivery.',
+    noindex: true,
+  },
+  '/auth/reset': {
+    title: 'Reset Password',
+    description: 'Set a new password for your TrueOddsIQ account.',
     noindex: true,
   },
   '/fantasy': {

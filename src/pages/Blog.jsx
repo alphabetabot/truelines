@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Calendar, ChevronRight, Tag, Loader } from 'lucide-react'
 import { supabase } from '../lib/supabase'
+import PageMeta from '../components/PageMeta'
 
 // Static evergreen posts always shown
 const STATIC_POSTS = [

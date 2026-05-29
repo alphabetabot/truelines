@@ -2,7 +2,9 @@ import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
+import PageMeta from './PageMeta'
 import { useAuth } from '../lib/AuthContext'
+import { getRouteMeta } from '../lib/routeMeta'
 
 const NAV = [
   { to: '/', label: 'Live Odds', icon: Activity, exact: true },
@@ -12,9 +14,23 @@ const NAV = [
   { to: '/blog', label: 'Blog', icon: BookOpen },
 ]
 
+function RouteSEO() {
+  const { pathname } = useLocation()
+  const meta = getRouteMeta(pathname)
+  return (
+    <PageMeta
+      title={meta.title}
+      description={meta.description}
+      path={meta.path || pathname}
+      noindex={meta.noindex}
+    />
+  )
+}
+
 export default function Layout({ children }) {
   const { user, signOut } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [installPrompt, setInstallPrompt] = useState(null)
   const [showInstall, setShowInstall] = useState(false)
   const [isIOS, setIsIOS] = useState(false)
@@ -39,15 +55,18 @@ export default function Layout({ children }) {
     if (installPrompt) { await installPrompt.prompt(); setShowInstall(false) }
   }
 
+  const hideRouteSEO = location.pathname.startsWith('/blog/') && location.pathname.length > '/blog/'.length
+
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
+      {!hideRouteSEO && <RouteSEO />}
 
       {/* ── Top bar: Logo + Install + Live ── */}
       <div style={{ background: '#0f172a' }}>
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 68 }}>
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 48, width: 'auto', maxWidth: 220, objectFit: 'contain' }} />
+            <img src="/logo.svg" alt="TrueOddsIQ" style={{ height: 48, width: 'auto', maxWidth: 220, objectFit: 'contain' }} />
           </div>
 
           <div className="flex items-center gap-3">

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import { getTodayProbablePitchers } from '../lib/mlbApi'
 import SportSelector from '../components/SportSelector'
@@ -10,7 +10,7 @@ import PerformanceTracker from '../components/PerformanceTracker'
 import HeroBanner from '../components/HeroBanner'
 import TodaysEdges from '../components/TodaysEdges'
 import DailyPick from '../components/DailyPick'
-import { RefreshCw, Search, AlertTriangle, Trophy } from 'lucide-react'
+import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
 const TABS = ['Odds', 'Scores']
@@ -20,6 +20,19 @@ export default function LiveOdds() {
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('Odds')
   const navigate = useNavigate()
+  const location = useLocation()
+
+  const showTracker =
+    new URLSearchParams(location.search).get('tracker') === '1' ||
+    location.hash === '#pick-tracker'
+
+  useEffect(() => {
+    if (!showTracker) return
+    const timer = window.setTimeout(() => {
+      document.getElementById('pick-tracker')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 300)
+    return () => window.clearTimeout(timer)
+  }, [showTracker])
 
   const { data, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ['odds', sport],
@@ -47,8 +60,11 @@ export default function LiveOdds() {
 
   return (
     <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
+      <HeroBanner />
+      <DailyPick />
+
+      {/* Core: live odds & scores */}
+      <div className="flex items-center justify-between mb-4 mt-2">
         <div>
           <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>
             {sportLabel} {activeTab}
@@ -82,37 +98,8 @@ export default function LiveOdds() {
         )}
       </div>
 
-      <HeroBanner />
-      <DailyPick />
-      <TodaysEdges />
-      <PerformanceTracker />
-
-      {/* Fantasy Sports Preview Banner */}
-      <div
-        role="button"
-        tabIndex={0}
-        onClick={() => navigate('/fantasy')}
-        onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); navigate('/fantasy') } }}
-        className="rounded-2xl p-4 mb-4 cursor-pointer flex items-center gap-3"
-        style={{
-          background: 'linear-gradient(135deg, #334155, #0f172a)',
-          border: '1px solid #475569',
-        }}
-      >
-        <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0" style={{ background: '#f59e0b' }}>
-          <Trophy size={20} style={{ color: '#0f172a' }} />
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-xs font-black mb-0.5" style={{ color: '#f59e0b' }}>DFS OPTIMIZER PREVIEW</div>
-          <div className="text-xs" style={{ color: '#e2e8f0' }}>Sample research tool while live DFS data integration is in progress</div>
-        </div>
-        <span className="text-xs font-bold px-2 py-1 rounded-full" style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b' }}>Beta</span>
-        <div className="font-bold text-lg flex-shrink-0" style={{ color: '#f59e0b' }}>›</div>
-      </div>
-
       <SportSelector selected={sport} onChange={s => { setSport(s); setSearch(''); setActiveTab('Odds') }} />
 
-      {/* Odds / Scores tabs */}
       <div className="flex gap-2 mb-5">
         {TABS.map(tab => (
           <button
@@ -132,10 +119,8 @@ export default function LiveOdds() {
         ))}
       </div>
 
-      {/* Scores view */}
       {activeTab === 'Scores' && <Scores sport={sport} />}
 
-      {/* Odds view */}
       {activeTab === 'Odds' && (
         <>
           {isError && (
@@ -180,6 +165,14 @@ export default function LiveOdds() {
           )}
         </>
       )}
+
+      <section className="mt-10 pt-6" style={{ borderTop: '1px solid #e2e8f0' }}>
+        <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#94a3b8' }}>
+          More tools
+        </p>
+        <TodaysEdges />
+        <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
+      </section>
     </div>
   )
 }

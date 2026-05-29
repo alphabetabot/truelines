@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Zap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
+import { briefEdgeSummary } from '../lib/pickText'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
@@ -54,6 +55,8 @@ export default function DailyPick() {
 
   if (!pick) return null
 
+  const edgeDisplay = user ? pick.edge : briefEdgeSummary(pick.edge)
+
   return (
     <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '2px solid #f59e0b', background: '#0f172a' }}>
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: 'rgba(245,158,11,0.15)', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
@@ -86,9 +89,16 @@ export default function DailyPick() {
               : '★'.repeat(Math.min(5, Math.max(1, parseInt(pick.confidence, 10) || 3)))}
           </span>
         </div>
-        <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
-          💡 {pick.edge}
-        </p>
+        {edgeDisplay && (
+          <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+            💡 {edgeDisplay}
+          </p>
+        )}
+        {!user && pick.edge && edgeDisplay !== pick.edge && (
+          <p className="text-xs mb-3" style={{ color: 'rgba(245,158,11,0.85)' }}>
+            Free account unlocks full write-up for all 3 picks · Premium later adds injury, weather &amp; stat deep dives
+          </p>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}>
             {pick.bet}
@@ -107,7 +117,7 @@ export default function DailyPick() {
         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
           {user
             ? 'For informational purposes only · Always bet responsibly · 21+'
-            : 'Public preview of today\'s #1 pick · Free account unlocks all 3 newsletter picks · 21+'}
+            : 'Public preview — brief edge only · Free account = all 3 picks · 21+'}
         </p>
       </div>
     </div>
