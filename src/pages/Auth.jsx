@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { TrendingUp, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { trackEvent } from '../lib/analytics'
+import LogoLink from '../components/LogoLink'
 
 export default function Auth({ onAuth = () => {} }) {
   const navigate = useNavigate()
@@ -73,7 +74,7 @@ export default function Auth({ onAuth = () => {} }) {
 
       {/* Logo */}
       <div className="mb-8 text-center">
-        <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 48, width: 'auto', maxWidth: 280, margin: '0 auto 12px', objectFit: 'contain' }} />
+        <LogoLink height={48} maxWidth={280} style={{ margin: '0 auto 12px', justifyContent: 'center' }} />
         <p className="text-sm" style={{ color: '#64748b' }}>
           {mode === 'login'
             ? 'Sign in for all daily picks, tracker, and analysis'
