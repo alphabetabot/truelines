@@ -67,7 +67,12 @@ export default function Layout({ children }) {
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 68 }}>
           {/* Logo */}
           <div className="flex items-center">
-            <img src="/logo.svg" alt="TrueOddsIQ" style={{ height: 48, width: 'auto', maxWidth: 220, objectFit: 'contain' }} />
+            <img
+              src="/logo.jpg"
+              alt="TrueOddsIQ"
+              onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo.svg' }}
+              style={{ height: 48, width: 'auto', maxWidth: 220, objectFit: 'contain' }}
+            />
           </div>
 
           <div className="flex items-center gap-3">
