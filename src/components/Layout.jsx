@@ -7,6 +7,8 @@ import CookieConsent, { openCookiePreferences } from './CookieConsent'
 import LogoLink from './LogoLink'
 import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
+import SeoNavBar from '../seo/components/SeoNavBar'
+import SeoFooterNav from '../seo/components/SeoFooterNav'
 
 const NAV = [
   { to: '/odds', label: 'Live Odds', icon: Activity, exact: true },
@@ -133,6 +135,8 @@ export default function Layout({ children }) {
         </div>
       </div>
 
+      <SeoNavBar />
+
       {/* ── Score ticker ── */}
       <ScoreTicker />
 
@@ -157,6 +161,7 @@ export default function Layout({ children }) {
 
       <footer className="py-4 px-4 pb-20 sm:pb-4" style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
         <div className="max-w-5xl mx-auto flex flex-col gap-2">
+          <SeoFooterNav />
           <div className="text-center" style={{ color: '#94a3b8', fontSize: 11 }}>
             TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
           </div>
