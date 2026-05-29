@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Eye, EyeOff, Loader2 } from 'lucide-react'
 import { getAuthErrorMessage } from '../lib/authErrors'
+import LogoLink from '../components/LogoLink'
 
 export default function AuthReset() {
   const navigate = useNavigate()
@@ -95,7 +96,7 @@ export default function AuthReset() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
       style={{ background: '#f0f4f8' }}>
       <div className="mb-8 text-center">
-        <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', margin: '0 auto 12px', objectFit: 'contain' }} />
+        <LogoLink height={60} maxWidth={280} style={{ margin: '0 auto 12px', justifyContent: 'center' }} />
         <p className="text-sm" style={{ color: '#64748b' }}>Choose a new password for your account</p>
       </div>
 

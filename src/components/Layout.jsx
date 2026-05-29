@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import PageMeta from './PageMeta'
 import CookieConsent, { openCookiePreferences } from './CookieConsent'
+import LogoLink from './LogoLink'
 import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
 
@@ -65,15 +66,7 @@ export default function Layout({ children }) {
       {/* ── Top bar: Logo + Install + Live ── */}
       <div style={{ background: '#0f172a' }}>
         <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 68 }}>
-          {/* Logo */}
-          <div className="flex items-center">
-            <img
-              src="/logo.jpg"
-              alt="TrueOddsIQ"
-              onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo.svg' }}
-              style={{ height: 48, width: 'auto', maxWidth: 220, objectFit: 'contain' }}
-            />
-          </div>
+          <LogoLink />
 
           <div className="flex items-center gap-3">
             {showInstall && (
