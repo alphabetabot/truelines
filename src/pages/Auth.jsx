@@ -73,7 +73,7 @@ export default function Auth({ onAuth = () => {} }) {
 
       {/* Logo */}
       <div className="mb-8 text-center">
-        <img src="/logo.svg" alt="TrueOddsIQ" style={{ height: 48, width: 'auto', maxWidth: 280, margin: '0 auto 12px', objectFit: 'contain' }} />
+        <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 48, width: 'auto', maxWidth: 280, margin: '0 auto 12px', objectFit: 'contain' }} />
         <p className="text-sm" style={{ color: '#64748b' }}>
           {mode === 'login'
             ? 'Sign in for all daily picks, tracker, and analysis'

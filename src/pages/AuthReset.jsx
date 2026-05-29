@@ -95,7 +95,7 @@ export default function AuthReset() {
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
       style={{ background: '#f0f4f8' }}>
       <div className="mb-8 text-center">
-        <img src="/logo.svg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', margin: '0 auto 12px' }} />
+        <img src="/logo.jpg" alt="TrueOddsIQ" style={{ height: 60, width: 'auto', margin: '0 auto 12px', objectFit: 'contain' }} />
         <p className="text-sm" style={{ color: '#64748b' }}>Choose a new password for your account</p>
       </div>
 
