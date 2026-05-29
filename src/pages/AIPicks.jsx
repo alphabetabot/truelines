@@ -11,6 +11,7 @@ import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { getAuthHeaders } from '../lib/authHeaders'
 import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
+import { briefEdgeSummary } from '../lib/pickText'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
@@ -26,8 +27,9 @@ function actionablePicks(picks) {
   return (picks || []).filter(p => !isFadePick(p)).slice(0, DAILY_NEWSLETTER_PICK_COUNT)
 }
 
-function StoredPickCard({ pick, index }) {
+function StoredPickCard({ pick, index, isPublicPreview = false }) {
   const label = PICK_LABELS[index] || `Pick ${index + 1}`
+  const edgeText = isPublicPreview ? briefEdgeSummary(pick.edge) : pick.edge
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
@@ -48,8 +50,13 @@ function StoredPickCard({ pick, index }) {
         {pick.bet && (
           <p className="text-sm font-semibold mb-2" style={{ color: 'var(--gold)' }}>{pick.bet}</p>
         )}
-        {pick.edge && (
-          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{pick.edge}</p>
+        {edgeText && (
+          <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{edgeText}</p>
+        )}
+        {isPublicPreview && pick.edge && edgeText !== pick.edge && (
+          <p className="text-xs mt-2" style={{ color: 'var(--gold)' }}>
+            Sign in for the full edge on all picks. Premium (coming) adds injury, weather, and advanced stat breakdowns.
+          </p>
         )}
         {pick.result && (
           <span className="inline-block mt-2 text-xs font-bold px-2 py-0.5 rounded-full"
@@ -212,8 +219,8 @@ export default function AIPicks() {
   }, [user])
 
   const subtitle = user
-    ? "Your full daily newsletter slate · Updated each morning"
-    : `Today's top pick is free below · Free account unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks`
+    ? "Your full daily newsletter slate · Updated each morning (Pacific)"
+    : `Today's top pick with a brief summary below · Free account unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups`
 
   const lockedCount = Math.max(0, DAILY_NEWSLETTER_PICK_COUNT - (user ? storedPicks.length : FREE_PUBLIC_PICK_COUNT))
 
@@ -233,7 +240,8 @@ export default function AIPicks() {
         <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
           style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
           <p className="text-sm" style={{ color: '#92400e' }}>
-            You are viewing today&apos;s free top pick. Premium daily picks will be available with a paid membership later.
+            Today&apos;s top pick with a short summary below. Free account = all {DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups.
+            Premium (coming) adds deep injury, weather, and stat analysis per game.
           </p>
           <button type="button" onClick={() => navigate('/login')}
             className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"
@@ -298,7 +306,12 @@ export default function AIPicks() {
           {!storedLoading && storedPicks.length > 0 && (
             <div className="grid gap-3">
               {storedPicks.map((pick, i) => (
-                <StoredPickCard key={pick.id || i} pick={pick} index={i} />
+                <StoredPickCard
+                  key={pick.id || i}
+                  pick={pick}
+                  index={i}
+                  isPublicPreview={!user && i === 0}
+                />
               ))}
               {!user && Array.from({ length: lockedCount }).map((_, i) => (
                 <LockedPickCard

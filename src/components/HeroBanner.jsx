@@ -14,13 +14,13 @@ export default function HeroBanner() {
         <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-        Today&apos;s top pick is shown below for everyone. Create a free account to unlock all 3 daily newsletter picks,
-        full AI game analysis, and email delivery.
+        Everyone gets today&apos;s top pick with a short summary below. A free account unlocks all 3 daily picks,
+        email delivery, and the performance tracker. Premium (coming later) adds deep breakdowns — injuries, weather, stats, and more.
       </p>
       <div className="flex flex-wrap gap-3 mb-4">
         {[
-          '✔ Top pick preview on homepage',
-          '✔ All 3 picks + tracker with free account',
+          '✔ 1 pick preview + brief edge (free)',
+          '✔ All 3 picks + tracker (free account)',
           '✔ Live odds from 6 books',
         ].map(item => (
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>

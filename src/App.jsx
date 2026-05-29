@@ -16,6 +16,7 @@ import Fantasy from './pages/Fantasy'
 import Unsubscribe from './pages/Unsubscribe'
 import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
+import NotFound from './pages/NotFound'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,10 +44,12 @@ export default function App() {
               <Route path="/blog/:slug" element={<Blog />} />
               <Route path="/login" element={<Auth />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset" element={<AuthReset />} />
               <Route path="/fantasy" element={<Fantasy />} />
               <Route path="/unsubscribe" element={<Unsubscribe />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Layout>
         </BrowserRouter>

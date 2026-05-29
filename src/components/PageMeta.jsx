@@ -52,7 +52,7 @@ export default function PageMeta({
     setMetaByProperty('og:title', ogTitle)
     setMetaByProperty('og:description', description)
     setMetaByProperty('og:image', image)
-    setMetaByProperty('og:image:type', 'image/png')
+    setMetaByProperty('og:image:type', image.endsWith('.svg') ? 'image/svg+xml' : 'image/png')
     setMetaByProperty('og:image:width', '1200')
     setMetaByProperty('og:image:height', '630')
     setMetaByProperty('og:site_name', 'TrueOddsIQ')
