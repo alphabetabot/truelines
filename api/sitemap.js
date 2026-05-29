@@ -5,7 +5,8 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 const STATIC_PAGES = [
-  { loc: 'https://trueoddsiq.com/', changefreq: 'hourly', priority: '1.0' },
+  { loc: 'https://trueoddsiq.com/', changefreq: 'daily', priority: '1.0' },
+  { loc: 'https://trueoddsiq.com/odds', changefreq: 'hourly', priority: '0.95' },
   { loc: 'https://trueoddsiq.com/compare', changefreq: 'hourly', priority: '0.9' },
   { loc: 'https://trueoddsiq.com/analysis', changefreq: 'daily', priority: '0.9' },
   { loc: 'https://trueoddsiq.com/picks', changefreq: 'daily', priority: '0.9' },

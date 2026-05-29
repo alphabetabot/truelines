@@ -5,9 +5,14 @@ export const DEFAULT_OG_IMAGE = `${SITE_URL}/og-image.svg`
 /** Static route metadata for CSR pages. Blog posts override in Blog.jsx. */
 export const ROUTE_META = {
   '/': {
-    title: 'Live Sports Betting Odds Comparison & AI Picks',
+    title: 'Free Pick Preview & Live Odds Comparison',
     description:
-      'Compare current odds from six major sportsbooks, preview today\'s top AI pick, and unlock full daily picks with a free account.',
+      'See today\'s top AI pick, compare odds across six sportsbooks, and create a free account for all three daily picks.',
+  },
+  '/odds': {
+    title: 'Live Sports Betting Odds Comparison',
+    description:
+      'Compare current odds from six major sportsbooks in real time. MLB, NBA, and NHL with live scores.',
   },
   '/welcome': {
     title: 'Welcome — Free Pick Preview & Live Odds',

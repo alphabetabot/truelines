@@ -9,7 +9,7 @@ import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
 
 const NAV = [
-  { to: '/', label: 'Live Odds', icon: Activity, exact: true },
+  { to: '/odds', label: 'Live Odds', icon: Activity, exact: true },
   { to: '/compare', label: 'Line Compare', icon: BarChart2 },
   { to: '/analysis', label: 'AI Analysis', icon: Brain },
   { to: '/picks', label: 'AI Picks', icon: Zap },

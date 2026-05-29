@@ -21,7 +21,7 @@ export default function Welcome() {
 
   function ctaOdds() {
     trackEvent('welcome_cta', { action: 'browse_odds' })
-    navigate('/')
+    navigate('/odds')
   }
 
   return (

@@ -9,7 +9,7 @@ export default function NotFound() {
         That URL does not exist on TrueOddsIQ. Head back to live odds, AI picks, or our blog.
       </p>
       <div className="flex flex-wrap justify-center gap-3">
-        <Link to="/" className="px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#0f172a' }}>
+        <Link to="/odds" className="px-5 py-2.5 rounded-xl text-sm font-bold text-white" style={{ background: '#0f172a' }}>
           Live Odds
         </Link>
         <Link to="/picks" className="px-5 py-2.5 rounded-xl text-sm font-bold" style={{ background: '#f59e0b', color: '#0f172a' }}>
