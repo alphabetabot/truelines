@@ -13,8 +13,6 @@ import TodaysEdges from '../components/TodaysEdges'
 import DailyPick from '../components/DailyPick'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
-import { isCampaignLanding } from '../lib/campaign'
-
 const TABS = ['Odds', 'Scores']
 
 export default function LiveOdds() {
@@ -24,16 +22,9 @@ export default function LiveOdds() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const campaignLanding = isCampaignLanding(location.search)
   const showTracker =
     new URLSearchParams(location.search).get('tracker') === '1' ||
     location.hash === '#pick-tracker'
-
-  useEffect(() => {
-    if (campaignLanding) {
-      navigate(`/welcome${location.search}${location.hash}`, { replace: true })
-    }
-  }, [campaignLanding, location.search, location.hash, navigate])
 
   useEffect(() => {
     if (!showTracker) return

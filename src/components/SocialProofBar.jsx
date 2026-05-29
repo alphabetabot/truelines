@@ -33,7 +33,7 @@ export default function SocialProofBar({ compact = false }) {
           </div>
         </div>
         <Link
-          to="/?tracker=1#pick-tracker"
+          to="/odds?tracker=1#pick-tracker"
           className="text-xs font-bold shrink-0"
           style={{ color: '#15803d' }}
         >

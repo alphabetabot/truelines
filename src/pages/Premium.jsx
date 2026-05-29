@@ -27,7 +27,7 @@ export default function Premium() {
       <p className="text-center text-sm mt-8">
         <Link to="/welcome" style={{ color: '#2563eb', fontWeight: 600 }}>← Back to welcome</Link>
         {' · '}
-        <Link to="/" style={{ color: '#2563eb', fontWeight: 600 }}>Live odds</Link>
+        <Link to="/odds" style={{ color: '#2563eb', fontWeight: 600 }}>Live odds</Link>
       </p>
     </div>
   )
