@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useQueries } from '@tanstack/react-query'
 import { useRef, useEffect, useMemo } from 'react'
 import { getScores } from '../lib/oddsApi'
 import {
@@ -7,8 +7,9 @@ import {
   getGameStatus,
   sortTickerGames,
 } from '../lib/scoreUtils'
+import { fetchLiveStatusMapForSport, lookupLiveStatus } from '../lib/liveGameStatus'
 
-function TickerItem({ game }) {
+function TickerItem({ game, liveStatusMap }) {
   const now = new Date()
   const { isFinal, isLive, isUpcoming, gameTime } = getGameStatus(game, now)
   const { homeScore, awayScore, hasScores } = getGameScores(game)
@@ -18,8 +19,9 @@ function TickerItem({ game }) {
   const awayWin = isFinal && hasScores && awayScore > homeScore
   const homeWin = isFinal && hasScores && homeScore > awayScore
 
+  const liveDetail = isLive ? lookupLiveStatus(game, liveStatusMap) : null
   let statusLabel
-  if (isLive) statusLabel = '● LIVE'
+  if (isLive) statusLabel = liveDetail ? `● ${liveDetail}` : '● LIVE'
   else if (isFinal) statusLabel = 'FINAL'
   else statusLabel = gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 
@@ -90,6 +92,24 @@ export default function ScoreTicker({ embedded = false }) {
     refetchInterval: SCORES_POLL_MS,
   })
 
+  const liveStatusQueries = useQueries({
+    queries: TICKER_SPORTS.map(({ key }) => ({
+      queryKey: ['live-game-status', key],
+      queryFn: () => fetchLiveStatusMapForSport(key),
+      staleTime: SCORES_POLL_MS,
+      refetchInterval: SCORES_POLL_MS,
+    })),
+  })
+
+  const mlbLiveMap = liveStatusQueries[0]?.data
+  const nbaLiveMap = liveStatusQueries[1]?.data
+  const nhlLiveMap = liveStatusQueries[2]?.data
+  const liveStatusMap = useMemo(() => ({
+    ...(mlbLiveMap || {}),
+    ...(nbaLiveMap || {}),
+    ...(nhlLiveMap || {}),
+  }), [mlbLiveMap, nbaLiveMap, nhlLiveMap])
+
   const allGames = useMemo(() => {
     const raw = [
       ...(mlb.data || []),
@@ -144,7 +164,7 @@ export default function ScoreTicker({ embedded = false }) {
       ) : (
         <div ref={trackRef} className="flex items-center h-full" style={{ willChange: needsMarquee ? 'transform' : 'auto' }}>
           {displayGames.map((game, i) => (
-            <TickerItem key={`${game.id}-${i}`} game={game} />
+            <TickerItem key={`${game.id}-${i}`} game={game} liveStatusMap={liveStatusMap} />
           ))}
         </div>
       )}
