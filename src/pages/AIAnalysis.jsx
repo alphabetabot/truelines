@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useLocation } from 'react-router-dom'
 import { getOdds, parseOddsForComparison } from '../lib/oddsApi'
 import { analyzeGame } from '../lib/claudeApi'
 import { analyzeGameGPT } from '../lib/openaiApi'
@@ -13,12 +14,18 @@ import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { useSportSelection } from '../hooks/useSportSelection'
 import { trackAnalysisOpen } from '../lib/analytics'
+import RecentlyViewedGames from '../components/RecentlyViewedGames'
+import GamePrevNextNav from '../components/GamePrevNextNav'
+import { addRecentGame } from '../lib/recentGames'
+import { sortGamesByTime } from '../lib/gameNavigation'
 
 export default function AIAnalysis() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
+  const preSelected = location.state?.game || null
   const [sport, setSport] = useSportSelection('analysis')
-  const [selectedGame, setSelectedGame] = useState(null)
+  const [selectedGame, setSelectedGame] = useState(preSelected)
   const [claudeData, setClaudeData] = useState(null)
   const [claudeLoading, setClaudeLoading] = useState(false)
   const [claudeError, setClaudeError] = useState(null)
@@ -39,16 +46,34 @@ export default function AIAnalysis() {
     refetchOnMount: true,
   })
 
-  const games = data ? parseOddsForComparison(data) : []
+  const games = sortGamesByTime(data ? parseOddsForComparison(data) : [])
 
-  function handleGameSelect(gameId) {
-    const g = games.find(x => x.id === gameId)
+  useEffect(() => {
+    if (!preSelected?.sport) return
+    setSport(preSelected.sport, 'deep_link')
+    addRecentGame(preSelected, preSelected.sport)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    if (!preSelected?.id || games.length === 0) return
+    const match = games.find(g => g.id === preSelected.id)
+    if (match) setSelectedGame(match)
+  }, [games, preSelected?.id])
+
+  function selectGame(g, source = 'dropdown') {
     setSelectedGame(g || null)
     setClaudeData(null); setClaudeError(null)
     setGptData(null); setGptError(null)
     if (g) {
-      trackAnalysisOpen({ sportKey: sport, gameId: g.id, provider: 'game_select' })
+      addRecentGame(g, sport)
+      trackAnalysisOpen({ sportKey: sport, gameId: g.id, provider: source })
     }
+  }
+
+  function handleGameSelect(gameId) {
+    const g = games.find(x => x.id === gameId)
+    selectGame(g || null, 'game_select')
   }
 
   async function runClaude() {
@@ -107,9 +132,22 @@ export default function AIAnalysis() {
         <OddsLoadError message={error?.message} onRetry={() => refetch()} />
       )}
 
-      <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null); setClaudeData(null); setGptData(null) }} />
+      <SportSelector selected={sport} onChange={s => { setSport(s); selectGame(null) }} />
 
-      {/* Game selector */}
+      <RecentlyViewedGames
+        page="analysis"
+        sportKey={sport}
+        onSelect={g => selectGame(g, 'recent')}
+      />
+
+      <GamePrevNextNav
+        games={games}
+        selectedGame={selectedGame}
+        sportKey={sport}
+        page="analysis"
+        onSelect={g => selectGame(g, 'prev_next')}
+      />
+
       <div className="mb-5">
         <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b' }}>SELECT GAME</label>
         <div className="relative">

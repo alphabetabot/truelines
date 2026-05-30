@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
@@ -10,6 +10,9 @@ import PerformanceTracker from '../components/PerformanceTracker'
 import TodaysEdges from '../components/TodaysEdges'
 import DailyPickTeaser from '../components/DailyPickTeaser'
 import OddsGuestStrip from '../components/OddsGuestStrip'
+import StickyOddsToolbar from '../components/StickyOddsToolbar'
+import RecentlyViewedGames from '../components/RecentlyViewedGames'
+import { addRecentGame } from '../lib/recentGames'
 import { useSportSelection } from '../hooks/useSportSelection'
 import { trackMatchupCardClick, trackMoreToolsEngagement, trackScoresTabOpen } from '../lib/analytics'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
@@ -22,6 +25,9 @@ export default function LiveOdds() {
   const [sport, setSport] = useSportSelection('odds')
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('Odds')
+  const [stickyVisible, setStickyVisible] = useState(false)
+  const stickAnchorRef = useRef(null)
+  const tabsRef = useRef(null)
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -36,6 +42,17 @@ export default function LiveOdds() {
     }, 300)
     return () => window.clearTimeout(timer)
   }, [showTracker])
+
+  useEffect(() => {
+    const onScroll = () => {
+      const el = stickAnchorRef.current
+      if (!el) return
+      setStickyVisible(el.getBoundingClientRect().top < 8)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   const { data, isLoading, isError, error, refetch, isFetching, dataUpdatedAt } = useQuery({
     queryKey: ['odds', sport],
@@ -66,24 +83,43 @@ export default function LiveOdds() {
     if (tab === 'Scores') trackScoresTabOpen(sport, 'odds')
   }
 
-  function handleSportChange(nextSport) {
-    setSport(nextSport)
+  function handleSportChange(nextSport, source = 'manual') {
+    setSport(nextSport, source)
     setSearch('')
     setActiveTab('Odds')
   }
 
   function openCompare(game) {
     trackMatchupCardClick({ sportKey: sport, gameId: game.id, action: 'compare' })
+    addRecentGame(game, sport)
     navigate('/compare', { state: { game } })
   }
 
+  function handleStickyTab(tab) {
+    setActiveTab(tab)
+    if (tab === 'Scores') trackScoresTabOpen(sport, 'odds_sticky')
+    tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
   return (
-    <div>
+    <div style={{ paddingTop: stickyVisible ? 40 : 0 }}>
+      <StickyOddsToolbar
+        visible={stickyVisible}
+        sport={sport}
+        activeTab={activeTab}
+        onSportChange={handleSportChange}
+        onTabChange={handleStickyTab}
+      />
+
       <OddsGuestStrip />
 
-      <SportSelector selected={sport} onChange={handleSportChange} />
+      <SportSelector selected={sport} onChange={s => handleSportChange(s, 'selector')} />
 
-      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+      <div ref={stickAnchorRef} aria-hidden className="h-0" />
+
+      <RecentlyViewedGames page="odds" sportKey={sport} />
+
+      <div ref={tabsRef} className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex gap-2">
           {TABS.map(tab => (
             <button

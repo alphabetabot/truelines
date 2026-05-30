@@ -15,7 +15,9 @@ import { briefEdgeSummary } from '../lib/pickText'
 import PremiumTeaser from '../components/PremiumTeaser'
 import PerformanceTracker from '../components/PerformanceTracker'
 import DailyPick from '../components/DailyPick'
+import PickPerformanceHero from '../components/PickPerformanceHero'
 import { useSportSelection } from '../hooks/useSportSelection'
+import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
 import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
@@ -228,6 +230,7 @@ export default function AIPicks() {
     : `Today's top pick with a brief summary below · Free account unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups`
 
   const lockedCount = Math.max(0, DAILY_NEWSLETTER_PICK_COUNT - (user ? storedPicks.length : FREE_PUBLIC_PICK_COUNT))
+  const performance = usePickPerformanceData()
 
   return (
     <div>
@@ -262,6 +265,12 @@ export default function AIPicks() {
       )}
 
       <AIDisclaimer />
+
+      <PickPerformanceHero
+        picks={performance.picks}
+        loading={performance.loading}
+        error={performance.error}
+      />
 
       <div className="flex flex-wrap gap-2 mb-6">
         <button type="button" onClick={() => setView('newsletter')}
@@ -342,7 +351,11 @@ export default function AIPicks() {
       {view === 'newsletter' && (
         <>
           <div className="mt-8">
-            <PerformanceTracker />
+            <PerformanceTracker
+              picks={performance.picks}
+              loading={performance.loading}
+              error={performance.error}
+            />
           </div>
           <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
             <PremiumTeaser />

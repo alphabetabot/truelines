@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
+import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
+import { aggregatePickPerformance } from '../lib/pickPerformance'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
@@ -16,43 +18,26 @@ function formatOdds(odds) {
   return n > 0 ? `+${n}` : `${n}`
 }
 
-export default function PerformanceTracker({ defaultExpanded = false, trackerAnchor = false, onEngage }) {
+function PerformanceTrackerBody({
+  defaultExpanded = false,
+  trackerAnchor = false,
+  onEngage,
+  picks,
+  loading,
+  error,
+}) {
   const [expanded, setExpanded] = useState(defaultExpanded)
-  const [picks, setPicks] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     setExpanded(defaultExpanded)
   }, [defaultExpanded])
 
-  useEffect(() => {
-    async function fetchPicks() {
-      setError(null)
-      try {
-        const res = await fetch('/api/performance-picks')
-        if (!res.ok) {
-          const body = await res.json().catch(() => ({}))
-          throw new Error(body.error || `Tracker unavailable (${res.status})`)
-        }
-        const data = await res.json()
-        setPicks(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error('Failed to fetch picks:', err)
-        setError(err.message || 'Unable to load pick tracker')
-        setPicks([])
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchPicks()
-  }, [])
-
   const picksWithResults = picks.filter(p => p.result && p.result !== '')
-  const wins = picksWithResults.filter(p => p.result === 'W').length
-  const losses = picksWithResults.filter(p => p.result === 'L').length
-  const totalUnits = picksWithResults.reduce((s, p) => s + (parseFloat(p.units) || 0), 0)
-  const winRate = picksWithResults.length > 0 ? Math.round((wins / picksWithResults.length) * 100) + '%' : '—'
+  const season = aggregatePickPerformance(picksWithResults)
+  const wins = season.wins
+  const losses = season.losses
+  const totalUnits = season.totalUnits
+  const winRate = season.decided > 0 ? `${season.winRate}%` : '—'
   const isNew = !loading && !error && picksWithResults.length === 0
   const latestDate = picksWithResults[0]?.date
   const unavailable = !loading && error
@@ -97,7 +82,7 @@ export default function PerformanceTracker({ defaultExpanded = false, trackerAnc
 
         <div className="grid grid-cols-3 gap-0 px-4 pb-3">
           {[
-            { label: 'Record', record: unavailable || isNew ? '—' : `${wins}-${losses}`, units: unavailable ? 'Check back soon' : isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
+            { label: 'Record', record: unavailable || isNew ? '—' : season.pushes > 0 ? `${wins}-${losses}-${season.pushes}` : `${wins}-${losses}`, units: unavailable ? 'Check back soon' : isNew ? 'Tracking live' : `${totalUnits > 0 ? '+' : ''}${totalUnits.toFixed(2)}u` },
             { label: 'Win Rate', record: unavailable || isNew ? '—' : winRate, units: unavailable ? '—' : isNew ? 'Results after games' : `${picksWithResults.length} graded` },
             { label: 'Last Graded', record: unavailable ? '—' : formatDate(latestDate), units: unavailable ? '—' : 'Auto-graded daily' },
           ].map(({ label, record, units }, i) => (
@@ -171,4 +156,30 @@ export default function PerformanceTracker({ defaultExpanded = false, trackerAnc
       )}
     </div>
   )
+}
+
+function PerformanceTrackerWithFetch(props) {
+  const data = usePickPerformanceData()
+  return (
+    <PerformanceTrackerBody
+      {...props}
+      picks={data.picks}
+      loading={data.loading}
+      error={data.error}
+    />
+  )
+}
+
+export default function PerformanceTracker(props) {
+  if (props.picks !== undefined) {
+    return (
+      <PerformanceTrackerBody
+        {...props}
+        picks={props.picks}
+        loading={props.loading}
+        error={props.error}
+      />
+    )
+  }
+  return <PerformanceTrackerWithFetch {...props} />
 }

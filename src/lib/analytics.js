@@ -73,4 +73,21 @@ export function trackMoreToolsEngagement(tool) {
   trackEvent('more_tools_engagement', { tool })
 }
 
+/** Phase 3.5 — wayfinding & retention */
+export function trackPickPerformanceView(period) {
+  trackEvent('pick_performance_view', { period })
+}
+
+export function trackStickySportBarShown() {
+  trackEvent('sticky_sport_bar_shown', {})
+}
+
+export function trackRecentGameClick(page, sportKey, gameId) {
+  trackEvent('recent_game_click', { page, sport_key: sportKey, game_id: gameId })
+}
+
+export function trackGameNavPrevNext(page, direction, sportKey, gameId) {
+  trackEvent('game_nav_prev_next', { page, direction, sport_key: sportKey, game_id: gameId })
+}
+
 export { GA_MEASUREMENT_ID }
