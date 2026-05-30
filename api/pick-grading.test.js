@@ -3,9 +3,12 @@
  */
 import {
   findGameForPick,
+  findGameForPickWithDateFallback,
   gradePickResult,
+  resolvePickGrade,
   stripAmericanOddsFromText,
 } from './pick-utils.js'
+import { addDays } from './grading-scores.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
@@ -67,5 +70,34 @@ assert(
   stripAmericanOddsFromText('Marlins ML +103').includes('Marlins'),
   'strip odds keeps team text'
 )
+
+const tzGames = [
+  {
+    game_date: '2026-05-30',
+    away_team: 'Miami Marlins',
+    home_team: 'New York Mets',
+    away_score: 7,
+    home_score: 9,
+    sport: 'MLB',
+  },
+]
+const fallback = findGameForPickWithDateFallback(pickGame, tzGames, '2026-05-29', addDays)
+assert(fallback?.game_date === '2026-05-30', '±1 day fallback when slate date differs')
+
+const resolved = resolvePickGrade(
+  {
+    pick: 'Miami Marlins ML',
+    bet: 'ML · +103',
+    bet_type: 'ML',
+    game: pickGame,
+    date: '2026-05-29',
+    sport: 'MLB',
+    result: 'W',
+    odds: 103,
+  },
+  marlinsMetsSeries,
+  { addDaysFn: addDays, resolveOdds: p => p.odds }
+)
+assert(resolved.result === 'L', 'resolvePickGrade should correct stored W to L')
 
 console.log('pick-grading.test.js: all assertions passed')

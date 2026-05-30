@@ -70,7 +70,7 @@ Invalid sport slug → 404. Logo (`LogoLink`) → `/`.
 
 **Dedup:** `api/newsletter-send-guard.js` — Pacific date key, atomic claim on `newsletter_daily_sends` before Claude/email.
 
-**Grading:** `api/log-results.js` matches final scores to `pick.date` (avoids wrong results in a multi-game series). To fix already-graded rows after a bugfix, call `/api/log-results?regrade=true` with `Authorization: Bearer $CRON_SECRET`.
+**Grading:** `api/log-results.js` matches scores to each pick’s `date` (not an earlier game in the same series). Every cron run re-verifies graded picks in the last ~45 days; MLB scores load for the full window. Manual full pass: `GET /api/log-results?regrade=true` with `Authorization: Bearer $CRON_SECRET`.
 
 **SQL (run in Supabase if missing):**
 
