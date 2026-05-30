@@ -13,6 +13,10 @@ import { getAuthHeaders } from '../lib/authHeaders'
 import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 import { briefEdgeSummary } from '../lib/pickText'
 import PremiumTeaser from '../components/PremiumTeaser'
+import PerformanceTracker from '../components/PerformanceTracker'
+import DailyPick from '../components/DailyPick'
+import { useSportSelection } from '../hooks/useSportSelection'
+import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
@@ -150,7 +154,7 @@ function PickCard({ game, pitchers = {} }) {
 export default function AIPicks() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [sport, setSport] = useState('basketball_nba')
+  const [sport, setSport] = useSportSelection('picks')
   const [view, setView] = useState('newsletter')
   const [storedPicks, setStoredPicks] = useState([])
   const [storedLoading, setStoredLoading] = useState(true)
@@ -232,7 +236,12 @@ export default function AIPicks() {
           <Trophy size={24} style={{ color: 'var(--gold)' }} />
           <div>
             <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>AI Picks</h1>
-            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>{subtitle}</p>
+            <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
+              {subtitle}
+            </p>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>
+              Primary home for daily recommendations, confidence, and rationale.
+            </p>
           </div>
         </div>
       </div>
@@ -279,6 +288,10 @@ export default function AIPicks() {
 
       {view === 'newsletter' && (
         <div>
+          <DailyPick />
+          <PremiumFeatureSlot feature="premiumAIPicks" />
+          <PremiumFeatureSlot feature="historicalPickPerformance" />
+
           {storedLoading && (
             <div className="text-center py-12">
               <RefreshCw size={24} className="mx-auto mb-3 animate-spin" style={{ color: 'var(--gold)' }} />
@@ -327,9 +340,14 @@ export default function AIPicks() {
       )}
 
       {view === 'newsletter' && (
-        <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
-          <PremiumTeaser />
-        </div>
+        <>
+          <div className="mt-8">
+            <PerformanceTracker />
+          </div>
+          <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
+            <PremiumTeaser />
+          </div>
+        </>
       )}
 
       {view === 'individual' && (

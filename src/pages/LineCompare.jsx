@@ -1,6 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
+import { useSportSelection } from '../hooks/useSportSelection'
+import { trackCompareInteraction } from '../lib/analytics'
 import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
 import SportSelector from '../components/SportSelector'
 import LineCompareTable from '../components/LineCompareTable'
@@ -11,8 +13,16 @@ export default function LineCompare() {
   const location = useLocation()
   const preSelected = location.state?.game || null
 
-  const [sport, setSport] = useState(preSelected?.sport || 'basketball_nba')
+  const [sport, setSport] = useSportSelection('compare')
   const [selectedGame, setSelectedGame] = useState(preSelected)
+
+  useEffect(() => {
+    if (!preSelected?.sport) return
+    setSport(preSelected.sport, 'deep_link')
+    setSelectedGame(preSelected)
+    // Apply navigation state once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['odds', sport],
@@ -29,7 +39,7 @@ export default function LineCompare() {
           Line Comparison
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--text-secondary)' }}>
-          Compare odds across all major sportsbooks · Green = best available
+          Fast line shopping — compare all books side by side. Green = best available price.
         </p>
       </div>
 
@@ -50,6 +60,9 @@ export default function LineCompare() {
             onChange={e => {
               const g = games.find(x => x.id === e.target.value)
               setSelectedGame(g || null)
+              if (g) {
+                trackCompareInteraction('game_select', { sport_key: sport, game_id: g.id })
+              }
             }}
             className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
             style={{

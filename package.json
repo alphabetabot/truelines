@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "test:grading": "node api/pick-grading.test.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
+    "test:default-sport": "node src/lib/defaultSport.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
