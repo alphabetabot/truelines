@@ -83,3 +83,190 @@ export function extractSportFromPick(pickLine) {
   if (clean.toLowerCase().includes('football')) return 'NFL'
   return 'Mixed'
 }
+
+// ── Pick grading (log-results) ─────────────────────────────────────────────
+
+export function cleanGradingText(value) {
+  return String(value || '')
+    .replace(/\*\*/g, '')
+    .replace(/^#+\s*/, '')
+    .replace(/\s{2,}/g, ' ')
+    .trim()
+}
+
+export function teamNameLast(name) {
+  return cleanGradingText(name).split(' ').pop().toLowerCase()
+}
+
+/** Remove American odds (+103, -150) so they are not mistaken for spread lines. */
+export function stripAmericanOddsFromText(text) {
+  return cleanGradingText(text).replace(/\b[+-]\d{3,5}\b/g, ' ')
+}
+
+export function matchupPartsFromText(value) {
+  const clean = cleanGradingText(value)
+  if (!clean.includes('@')) return null
+  const parts = clean.split('@').map(p => cleanGradingText(p))
+  if (parts.length < 2 || !parts[0] || !parts[1]) return null
+  return { awayLabel: parts[0], homeLabel: parts[1] }
+}
+
+function sideForTeamName(teamName, game) {
+  const name = cleanGradingText(teamName).toLowerCase()
+  const away = cleanGradingText(game.away_team).toLowerCase()
+  const home = cleanGradingText(game.home_team).toLowerCase()
+  const nameLast = teamNameLast(name)
+
+  if (name === away || nameLast === teamNameLast(away)) return 'away'
+  if (name === home || nameLast === teamNameLast(home)) return 'home'
+  return null
+}
+
+export function teamsMatchGame(pickGameStr, game) {
+  const parts = matchupPartsFromText(pickGameStr)
+  if (!parts) return false
+
+  const awayLast = teamNameLast(parts.awayLabel)
+  const homeLast = teamNameLast(parts.homeLabel)
+  const gameAwayLast = teamNameLast(game.away_team)
+  const gameHomeLast = teamNameLast(game.home_team)
+
+  return (
+    (awayLast === gameAwayLast && homeLast === gameHomeLast) ||
+    (awayLast === gameHomeLast && homeLast === gameAwayLast)
+  )
+}
+
+/** Prefer the final game on pick.date — avoids grading against an earlier game in a series. */
+export function findGameForPick(pickGameStr, games, pickDate) {
+  if (!pickGameStr || !pickGameStr.includes('@')) return null
+
+  const teamMatches = games.filter(g => teamsMatchGame(pickGameStr, g))
+  if (teamMatches.length === 0) return null
+
+  if (pickDate) {
+    const onDate = teamMatches.filter(g => g.game_date === pickDate)
+    if (onDate.length === 1) return onDate[0]
+    if (onDate.length > 1) {
+      const parts = matchupPartsFromText(pickGameStr)
+      const exact = onDate.find(g => {
+        if (!parts) return false
+        return (
+          teamNameLast(parts.awayLabel) === teamNameLast(g.away_team) &&
+          teamNameLast(parts.homeLabel) === teamNameLast(g.home_team)
+        )
+      })
+      return exact || onDate[0]
+    }
+    return null
+  }
+
+  if (teamMatches.length === 1) return teamMatches[0]
+  return null
+}
+
+export function pickNamesTeam(pickText, game, pickGameStr) {
+  const matchup = matchupPartsFromText(pickGameStr || pickText)
+  if (matchup) {
+    const awaySide = sideForTeamName(matchup.awayLabel, game)
+    const homeSide = sideForTeamName(matchup.homeLabel, game)
+    const normalizedPick = cleanGradingText(pickText).toLowerCase()
+
+    if (
+      normalizedPick.includes(cleanGradingText(matchup.awayLabel).toLowerCase()) ||
+      normalizedPick.includes(teamNameLast(matchup.awayLabel))
+    ) {
+      if (awaySide) return awaySide
+    }
+    if (
+      normalizedPick.includes(cleanGradingText(matchup.homeLabel).toLowerCase()) ||
+      normalizedPick.includes(teamNameLast(matchup.homeLabel))
+    ) {
+      if (homeSide) return homeSide
+    }
+  }
+
+  const normalizedPick = cleanGradingText(pickText).toLowerCase()
+  const awayTeam = cleanGradingText(game.away_team).toLowerCase()
+  const homeTeam = cleanGradingText(game.home_team).toLowerCase()
+
+  if (normalizedPick.includes(awayTeam) || normalizedPick.includes(teamNameLast(awayTeam))) return 'away'
+  if (normalizedPick.includes(homeTeam) || normalizedPick.includes(teamNameLast(homeTeam))) return 'home'
+  return null
+}
+
+function isMoneylineBet(pickText, betType) {
+  const type = String(betType || '').toLowerCase()
+  if (/\bml\b|moneyline/.test(type)) return true
+  const pick = pickText.toLowerCase()
+  return (
+    pick.includes(' ml') ||
+    pick.endsWith(' ml') ||
+    /\bml\b/.test(pick) ||
+    /\bmoneyline\b/.test(pick) ||
+    Boolean(matchupPartsFromText(pickText))
+  )
+}
+
+/**
+ * Grade a pick against a final game score.
+ * @returns {'W'|'L'|null}
+ */
+export function gradePickResult({ pickText, betType, pickGame, game }) {
+  const away = game.away_score
+  const home = game.home_score
+  if (away == null || home == null) return null
+
+  const raw = cleanGradingText(pickText)
+  const isFade = raw.toLowerCase().includes('fade')
+  const pick = raw.toLowerCase().replace(/^fade:\s*/i, '')
+  const spreadSource = stripAmericanOddsFromText(pick)
+
+  let result = null
+  const margin = away - home
+
+  if (isMoneylineBet(pick, betType)) {
+    const side = pickNamesTeam(pick, game, pickGame)
+    if (side === 'away') result = away > home ? 'W' : 'L'
+    else if (side === 'home') result = home > away ? 'W' : 'L'
+  }
+
+  if (!result) {
+    const spreadMatch = spreadSource.match(/([+-]\d+\.?\d*)/)
+    if (spreadMatch && !pick.includes('over') && !pick.includes('under')) {
+      const line = parseFloat(spreadMatch[1])
+      if (Math.abs(line) < 50) {
+        const side = pickNamesTeam(pick, game, pickGame)
+        if (side === 'away') result = margin + line > 0 ? 'W' : 'L'
+        else if (side === 'home') result = -margin + line > 0 ? 'W' : 'L'
+      }
+    }
+  }
+
+  const total = away + home
+  const overMatch = pick.match(/over\s+(\d+\.?\d*)/)
+  if (overMatch) {
+    const line = parseFloat(overMatch[1])
+    result = total > line ? 'W' : 'L'
+  }
+  const underMatch = pick.match(/under\s+(\d+\.?\d*)/)
+  if (underMatch) {
+    const line = parseFloat(underMatch[1])
+    result = total < line ? 'W' : 'L'
+  }
+
+  // Team-only headline (e.g. "Miami Marlins +103") — do not treat odds as spread
+  if (!result) {
+    const side = pickNamesTeam(pick, game, pickGame)
+    if (side) {
+      if (side === 'away') result = away > home ? 'W' : 'L'
+      else if (side === 'home') result = home > away ? 'W' : 'L'
+    }
+  }
+
+  if (isFade && result) {
+    result = result === 'W' ? 'L' : 'W'
+  }
+
+  return result
+}

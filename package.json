@@ -9,6 +9,7 @@
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
+    "test:grading": "node api/pick-grading.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
