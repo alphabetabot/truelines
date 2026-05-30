@@ -139,8 +139,8 @@ export default function Layout({ children }) {
 
       {!appWorkspace && <SeoNavBar />}
 
-      {/* ── Score ticker ── */}
-      <ScoreTicker />
+      {/* ── Score ticker (hidden on app workspace — marquee duplicate reads as a bug) ── */}
+      {!appWorkspace && <ScoreTicker />}
 
       {/* ── iOS install hint ── */}
       {showIOSHint && (

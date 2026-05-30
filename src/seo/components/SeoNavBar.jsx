@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { SEO_NAV_HUBS, SEO_NAV_ODDS, SEO_NAV_PICKS } from '../seoNavLinks'
+import { SEO_NAV_HUBS, SEO_NAV_ODDS } from '../seoNavLinks'
 
 const linkClass = ({ isActive }) =>
   `flex items-center px-2.5 py-1 rounded-md font-semibold whitespace-nowrap transition-all shrink-0 ${
@@ -40,10 +40,6 @@ export default function SeoNavBar() {
           <Divider />
           {SEO_NAV_ODDS.map(item => (
             <NavItem key={item.to} to={item.to} label={item.label.replace(' Odds', '')} />
-          ))}
-          <Divider />
-          {SEO_NAV_PICKS.map(item => (
-            <NavItem key={item.to} to={item.to} label={item.label.replace(' Picks', '')} />
           ))}
         </div>
       </div>
