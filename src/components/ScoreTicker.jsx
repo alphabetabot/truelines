@@ -70,7 +70,7 @@ const TICKER_SPORTS = [
 
 const SCORES_POLL_MS = 30_000
 
-export default function ScoreTicker() {
+export default function ScoreTicker({ embedded = false }) {
   const mlb = useQuery({
     queryKey: ['ticker-mlb'],
     queryFn: () => getScores('baseball_mlb', 1),
@@ -102,9 +102,20 @@ export default function ScoreTicker() {
   const trackRef = useRef(null)
   const rafRef = useRef(null)
 
+  const loading = mlb.isLoading || nba.isLoading || nhl.isLoading
+  const needsMarquee = allGames.length > 4
+
+  const displayGames = useMemo(() => {
+    if (allGames.length === 0) return []
+    return needsMarquee ? [...allGames, ...allGames] : allGames
+  }, [allGames, needsMarquee])
+
   useEffect(() => {
     const track = trackRef.current
-    if (!track || allGames.length === 0) return
+    if (!track || displayGames.length === 0 || !needsMarquee) {
+      if (track) track.style.transform = 'translateX(0)'
+      return
+    }
     let pos = 0
     const animate = () => {
       pos += 0.4
@@ -114,25 +125,25 @@ export default function ScoreTicker() {
     }
     rafRef.current = requestAnimationFrame(animate)
     return () => cancelAnimationFrame(rafRef.current)
-  }, [allGames.length])
+  }, [displayGames.length, needsMarquee])
 
-  const doubled = allGames.length > 0 ? [...allGames, ...allGames] : []
-  const loading = mlb.isLoading || nba.isLoading || nhl.isLoading
+  const shellStyle = embedded
+    ? { height: 28, overflow: 'hidden' }
+    : { background: '#0f172a', borderBottom: '2px solid #1e293b', height: 28, overflow: 'hidden' }
 
   return (
-    <div style={{ background: '#0f172a', borderBottom: '2px solid #1e293b', height: 28, overflow: 'hidden' }}
-      className="flex items-center">
-      {loading && doubled.length === 0 ? (
+    <div style={shellStyle} className="flex items-center">
+      {loading && displayGames.length === 0 ? (
         <div className="flex items-center gap-2 px-4">
           <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>Loading scores...</span>
         </div>
-      ) : doubled.length === 0 ? (
+      ) : displayGames.length === 0 ? (
         <div className="flex items-center gap-2 px-4">
           <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>No games on today&apos;s slate</span>
         </div>
       ) : (
-        <div ref={trackRef} className="flex items-center h-full" style={{ willChange: 'transform' }}>
-          {doubled.map((game, i) => (
+        <div ref={trackRef} className="flex items-center h-full" style={{ willChange: needsMarquee ? 'transform' : 'auto' }}>
+          {displayGames.map((game, i) => (
             <TickerItem key={`${game.id}-${i}`} game={game} />
           ))}
         </div>
