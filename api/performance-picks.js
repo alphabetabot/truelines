@@ -52,6 +52,7 @@ export default async function handler(req, res) {
         displayOdds: parseAmericanOdds(p.bet),
         units: computeUnits({ ...p, odds: parseAmericanOdds(p.bet) }),
       }))
+      res.setHeader('Cache-Control', 'no-store, max-age=0')
       return res.json(formatted)
     }
 
@@ -64,6 +65,7 @@ export default async function handler(req, res) {
       units: computeUnits(p),
     }))
 
+    res.setHeader('Cache-Control', 'no-store, max-age=0')
     return res.json(formatted)
   } catch (err) {
     console.error('Error fetching picks:', err)

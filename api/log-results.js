@@ -1,6 +1,6 @@
 // Grade pending picks, verify recent graded picks (integrity pass), store W/L + units
 
-import { requireCronAuth } from './auth-utils.js'
+import { requireJobAuth } from './auth-utils.js'
 import { parseAmericanOdds, profitUnits, resolvePickGrade } from './pick-utils.js'
 import { addDays, fetchFinalGamesForPicks } from './grading-scores.js'
 
@@ -126,7 +126,7 @@ async function processPickBatch(picks, games, log, { verifyOnly }) {
 }
 
 export default async function handler(req, res) {
-  if (!requireCronAuth(req, res)) return
+  if (!requireJobAuth(req, res)) return
 
   const regradeOnly = isRegradeOnlyRequest(req)
   const log = []

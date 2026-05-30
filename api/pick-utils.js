@@ -184,7 +184,8 @@ export function findGameForPickWithDateFallback(pickGameStr, games, pickDate, ad
  * @returns {{ result, units, game, previous, changed, skipReason? }}
  */
 export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
-  if (!pick.game || !pick.game.includes('@')) {
+  const pickGame = cleanGradingText(pick.game)
+  if (!pickGame || !pickGame.includes('@')) {
     return { skipReason: 'no matchup in game field' }
   }
 
@@ -193,7 +194,7 @@ export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
     : games
 
   const pool = sportGames.length ? sportGames : games
-  const game = findGameForPickWithDateFallback(pick.game, pool, pick.date, addDaysFn)
+  const game = findGameForPickWithDateFallback(pickGame, pool, pick.date, addDaysFn)
 
   if (!game) {
     return { skipReason: `no final score for ${pick.game} on ${pick.date}` }
@@ -203,7 +204,8 @@ export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
   const result = gradePickResult({
     pickText,
     betType: pick.bet_type,
-    pickGame: pick.game,
+    betText: pick.bet,
+    pickGame,
     game,
   })
 
@@ -248,8 +250,8 @@ export function pickNamesTeam(pickText, game, pickGameStr) {
   return null
 }
 
-function isMoneylineBet(pickText, betType) {
-  const type = String(betType || '').toLowerCase()
+function isMoneylineBet(pickText, betType, betText) {
+  const type = `${betType || ''} ${betText || ''}`.toLowerCase()
   if (/\bml\b|moneyline/.test(type)) return true
   const pick = pickText.toLowerCase()
   return (
@@ -265,7 +267,7 @@ function isMoneylineBet(pickText, betType) {
  * Grade a pick against a final game score.
  * @returns {'W'|'L'|null}
  */
-export function gradePickResult({ pickText, betType, pickGame, game }) {
+export function gradePickResult({ pickText, betType, betText, pickGame, game }) {
   const away = game.away_score
   const home = game.home_score
   if (away == null || home == null) return null
@@ -278,7 +280,7 @@ export function gradePickResult({ pickText, betType, pickGame, game }) {
   let result = null
   const margin = away - home
 
-  if (isMoneylineBet(pick, betType)) {
+  if (isMoneylineBet(pick, betType, betText)) {
     const side = pickNamesTeam(pick, game, pickGame)
     if (side === 'away') result = away > home ? 'W' : 'L'
     else if (side === 'home') result = home > away ? 'W' : 'L'

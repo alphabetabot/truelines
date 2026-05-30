@@ -70,7 +70,7 @@ Invalid sport slug → 404. Logo (`LogoLink`) → `/`.
 
 **Dedup:** `api/newsletter-send-guard.js` — Pacific date key, atomic claim on `newsletter_daily_sends` before Claude/email.
 
-**Grading:** `api/log-results.js` matches scores to each pick’s `date` (not an earlier game in the same series). Every cron run re-verifies graded picks in the last ~45 days; MLB scores load for the full window. Manual full pass: `GET /api/log-results?regrade=true` with `Authorization: Bearer $CRON_SECRET`.
+**Grading:** `api/log-results.js` matches scores to each pick’s `date` (not an earlier game in the same series). Every cron run re-verifies graded picks in the last ~45 days. Manual pass (use **www**): `curl https://www.trueoddsiq.com/api/log-results -H "Authorization: Bearer $CRON_SECRET"`. One-time SQL fix: `api/fix-tracker-grades.sql`. Set Vercel primary domain to `www.trueoddsiq.com` so crons don’t hit the apex redirect.
 
 **SQL (run in Supabase if missing):**
 
