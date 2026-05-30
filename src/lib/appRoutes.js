@@ -8,9 +8,9 @@ export function isAppWorkspaceRoute(pathname) {
   return APP_WORKSPACE_PATHS.has(pathname)
 }
 
-/** /odds has its own Scores tab — no global ticker. */
+/** Full ticker hidden only where collapsible ticker is used. */
 export function hideGlobalScoreTicker(pathname) {
-  return pathname === '/odds' || isAppWorkspaceRoute(pathname)
+  return showCollapsibleScoreTicker(pathname)
 }
 
 export function showCollapsibleScoreTicker(pathname) {
