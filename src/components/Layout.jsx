@@ -9,6 +9,7 @@ import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
 import SeoNavBar from '../seo/components/SeoNavBar'
 import SeoFooterNav from '../seo/components/SeoFooterNav'
+import { isAppWorkspaceRoute } from '../lib/appRoutes'
 
 const NAV = [
   { to: '/odds', label: 'Live Odds', icon: Activity, exact: true },
@@ -60,6 +61,7 @@ export default function Layout({ children }) {
   }
 
   const hideRouteSEO = location.pathname.startsWith('/blog/') && location.pathname.length > '/blog/'.length
+  const appWorkspace = isAppWorkspaceRoute(location.pathname)
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
@@ -135,7 +137,7 @@ export default function Layout({ children }) {
         </div>
       </div>
 
-      <SeoNavBar />
+      {!appWorkspace && <SeoNavBar />}
 
       {/* ── Score ticker ── */}
       <ScoreTicker />
@@ -153,7 +155,10 @@ export default function Layout({ children }) {
       )}
 
       {/* ── Main content ── */}
-      <main className="flex-1 max-w-5xl mx-auto w-full px-4 py-5" style={{ paddingLeft: 16, paddingRight: 16 }}>
+      <main
+        className={`flex-1 max-w-5xl mx-auto w-full px-4 ${appWorkspace ? 'py-2 sm:py-3' : 'py-5'}`}
+        style={{ paddingLeft: 16, paddingRight: 16 }}
+      >
         {children}
       </main>
 

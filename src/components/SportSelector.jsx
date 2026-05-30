@@ -2,7 +2,7 @@ import { SPORTS } from '../lib/oddsApi'
 
 export default function SportSelector({ selected, onChange }) {
   return (
-    <div className="flex items-center gap-1.5 mb-5 overflow-x-auto pb-1" style={{ paddingLeft: 2, paddingRight: 2 }}>
+    <div className="flex items-center gap-1.5 mb-3 overflow-x-auto pb-1" style={{ paddingLeft: 2, paddingRight: 2 }}>
       {SPORTS.map(sport => (
         <button
           key={sport.key}
