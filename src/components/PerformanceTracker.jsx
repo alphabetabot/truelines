@@ -16,7 +16,7 @@ function formatOdds(odds) {
   return n > 0 ? `+${n}` : `${n}`
 }
 
-export default function PerformanceTracker({ defaultExpanded = false, trackerAnchor = false }) {
+export default function PerformanceTracker({ defaultExpanded = false, trackerAnchor = false, onEngage }) {
   const [expanded, setExpanded] = useState(defaultExpanded)
   const [picks, setPicks] = useState([])
   const [loading, setLoading] = useState(true)
@@ -65,7 +65,12 @@ export default function PerformanceTracker({ defaultExpanded = false, trackerAnc
     >
 
       <button
-        onClick={() => setExpanded(!expanded)}
+        type="button"
+        onClick={() => {
+          const next = !expanded
+          setExpanded(next)
+          if (next && onEngage) onEngage()
+        }}
         className="w-full text-left"
         style={{ background: '#0f172a' }}
       >

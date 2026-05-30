@@ -8,15 +8,18 @@ import MatchupCard from '../components/MatchupCard'
 import Scores from './Scores'
 import PerformanceTracker from '../components/PerformanceTracker'
 import TodaysEdges from '../components/TodaysEdges'
-import DailyPick from '../components/DailyPick'
+import DailyPickTeaser from '../components/DailyPickTeaser'
 import OddsGuestStrip from '../components/OddsGuestStrip'
+import { useSportSelection } from '../hooks/useSportSelection'
+import { trackMatchupCardClick, trackMoreToolsEngagement, trackScoresTabOpen } from '../lib/analytics'
 import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
 const TABS = ['Odds', 'Scores']
+const COMPACT_SHIMMER_HEIGHT = 176
 
 export default function LiveOdds() {
-  const [sport, setSport] = useState('basketball_nba')
+  const [sport, setSport] = useSportSelection('odds')
   const [search, setSearch] = useState('')
   const [activeTab, setActiveTab] = useState('Odds')
   const navigate = useNavigate()
@@ -58,18 +61,27 @@ export default function LiveOdds() {
     staleTime: 300_000,
   })
 
+  function handleTabChange(tab) {
+    setActiveTab(tab)
+    if (tab === 'Scores') trackScoresTabOpen(sport, 'odds')
+  }
+
+  function handleSportChange(nextSport) {
+    setSport(nextSport)
+    setSearch('')
+    setActiveTab('Odds')
+  }
+
+  function openCompare(game) {
+    trackMatchupCardClick({ sportKey: sport, gameId: game.id, action: 'compare' })
+    navigate('/compare', { state: { game } })
+  }
+
   return (
     <div>
       <OddsGuestStrip />
 
-      <SportSelector
-        selected={sport}
-        onChange={s => {
-          setSport(s)
-          setSearch('')
-          setActiveTab('Odds')
-        }}
-      />
+      <SportSelector selected={sport} onChange={handleSportChange} />
 
       <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex gap-2">
@@ -77,7 +89,7 @@ export default function LiveOdds() {
             <button
               key={tab}
               type="button"
-              onClick={() => setActiveTab(tab)}
+              onClick={() => handleTabChange(tab)}
               className="px-4 py-1.5 rounded-xl text-sm transition-all"
               style={{
                 background: activeTab === tab ? '#0f172a' : '#ffffff',
@@ -161,12 +173,12 @@ export default function LiveOdds() {
           )}
 
           {isLoading && (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div
                   key={i}
                   className="shimmer rounded-2xl"
-                  style={{ height: 200, border: '1px solid #e2e8f0' }}
+                  style={{ height: COMPACT_SHIMMER_HEIGHT, border: '1px solid #e2e8f0' }}
                 />
               ))}
             </div>
@@ -189,23 +201,29 @@ export default function LiveOdds() {
                     game={game}
                     isMLB={isMLB}
                     pitchers={pitchers}
-                    onSelect={g => navigate('/compare', { state: { game: g } })}
+                    compact
+                    onSelect={openCompare}
                   />
                 ))
               )}
+
+              <DailyPickTeaser />
             </>
           )}
         </>
       )}
 
       {activeTab === 'Odds' && (
-        <section className="mt-8 pt-5" style={{ borderTop: '1px solid #e2e8f0' }}>
+        <section className="mt-6 pt-5" style={{ borderTop: '1px solid #e2e8f0' }}>
           <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#94a3b8' }}>
             More tools
           </p>
-          <DailyPick />
           <TodaysEdges />
-          <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
+          <PerformanceTracker
+            defaultExpanded={showTracker}
+            trackerAnchor={showTracker}
+            onEngage={() => trackMoreToolsEngagement('pick_tracker')}
+          />
         </section>
       )}
     </div>

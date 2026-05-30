@@ -1,6 +1,8 @@
+import { useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { TrendingUp, TrendingDown, Minus } from 'lucide-react'
+import { TrendingUp } from 'lucide-react'
 import { getOdds } from '../lib/oddsApi'
+import { trackMoreToolsEngagement } from '../lib/analytics'
 
 async function fetchEdges() {
   const edges = []
@@ -34,7 +36,7 @@ async function fetchEdges() {
             low: min,
             high: max,
             edge: spread.toFixed(1),
-            lean: spread >= 1.0 ? 'sharp' : 'soft',
+            lean: spread >= 1.0 ? 'wide' : 'moderate',
           })
         }
       }
@@ -68,7 +70,7 @@ async function fetchEdges() {
             low: min,
             high: max,
             edge: spread.toFixed(1),
-            lean: spread >= 2.0 ? 'sharp' : 'soft',
+            lean: spread >= 2.0 ? 'wide' : 'moderate',
           })
         }
       }
@@ -81,6 +83,10 @@ async function fetchEdges() {
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
 export default function TodaysEdges() {
+  useEffect(() => {
+    trackMoreToolsEngagement('best_available_value')
+  }, [])
+
   const { data: edges = [], isLoading } = useQuery({
     queryKey: ['edges'],
     queryFn: fetchEdges,
@@ -96,10 +102,10 @@ export default function TodaysEdges() {
       <div className="px-4 py-3 flex items-center justify-between" style={{ background: '#0f172a' }}>
         <div className="flex items-center gap-2">
           <TrendingUp size={15} style={{ color: '#f59e0b' }} />
-          <span className="text-sm font-black text-white">Today's Edges</span>
+          <span className="text-sm font-black text-white">Best Available Value</span>
         </div>
         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
-          Line discrepancies across books
+          Line gaps across books — not sharp/public splits
         </span>
       </div>
 
@@ -119,8 +125,8 @@ export default function TodaysEdges() {
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="text-right">
                 <p className="text-xs font-black" style={{ color: '#0f172a' }}>Avg {edge.line}</p>
-                <p className="text-xs font-bold" style={{ color: edge.lean === 'sharp' ? '#ef4444' : '#f59e0b' }}>
-                  {edge.lean === 'sharp' ? '🔴 Sharp' : '🟡 Soft'} +{edge.edge}
+                <p className="text-xs font-bold" style={{ color: edge.lean === 'wide' ? '#f59e0b' : '#64748b' }}>
+                  {edge.lean === 'wide' ? 'Wide gap' : 'Gap'} +{edge.edge}
                 </p>
               </div>
             </div>
@@ -130,7 +136,7 @@ export default function TodaysEdges() {
 
       <div className="px-4 py-2" style={{ borderTop: '1px solid #f1f5f9' }}>
         <p className="text-xs" style={{ color: '#94a3b8' }}>
-          Edge = line spread across DraftKings, FanDuel & Pinnacle · For informational use only
+          Value = line spread across DraftKings, FanDuel & Pinnacle · Not betting-splits data · Informational only
         </p>
       </div>
     </div>

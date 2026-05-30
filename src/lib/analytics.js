@@ -44,4 +44,33 @@ export function trackEvent(eventName, params = {}) {
   window.gtag('event', eventName, params)
 }
 
+/** Phase 3 — product flow events */
+export function trackSportSelect(sportKey, page, source = 'manual') {
+  trackEvent('sport_select', { sport_key: sportKey, page, source })
+}
+
+export function trackDailyPickTeaserClick(fromPage = 'odds') {
+  trackEvent('daily_pick_teaser_click', { from_page: fromPage })
+}
+
+export function trackMatchupCardClick({ sportKey, gameId, action = 'compare' }) {
+  trackEvent('matchup_card_click', { sport_key: sportKey, game_id: gameId, action })
+}
+
+export function trackCompareInteraction(action, extra = {}) {
+  trackEvent('compare_interaction', { action, ...extra })
+}
+
+export function trackAnalysisOpen({ sportKey, gameId, provider }) {
+  trackEvent('analysis_open', { sport_key: sportKey, game_id: gameId, provider })
+}
+
+export function trackScoresTabOpen(sportKey, page = 'odds') {
+  trackEvent('scores_tab_open', { sport_key: sportKey, page })
+}
+
+export function trackMoreToolsEngagement(tool) {
+  trackEvent('more_tools_engagement', { tool })
+}
+
 export { GA_MEASUREMENT_ID }

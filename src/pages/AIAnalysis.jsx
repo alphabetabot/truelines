@@ -11,11 +11,13 @@ import AIDisclaimer from '../components/AIDisclaimer'
 import OddsLoadError from '../components/OddsLoadError'
 import { useAuth } from '../lib/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useSportSelection } from '../hooks/useSportSelection'
+import { trackAnalysisOpen } from '../lib/analytics'
 
 export default function AIAnalysis() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
-  const [sport, setSport] = useState('basketball_nba')
+  const [sport, setSport] = useSportSelection('analysis')
   const [selectedGame, setSelectedGame] = useState(null)
   const [claudeData, setClaudeData] = useState(null)
   const [claudeLoading, setClaudeLoading] = useState(false)
@@ -44,6 +46,9 @@ export default function AIAnalysis() {
     setSelectedGame(g || null)
     setClaudeData(null); setClaudeError(null)
     setGptData(null); setGptError(null)
+    if (g) {
+      trackAnalysisOpen({ sportKey: sport, gameId: g.id, provider: 'game_select' })
+    }
   }
 
   async function runClaude() {
@@ -54,6 +59,7 @@ export default function AIAnalysis() {
     }
     setClaudeLoading(true); setClaudeError(null); setClaudeData(null)
     try {
+      trackAnalysisOpen({ sportKey: sport, gameId: selectedGame.id, provider: 'claude' })
       setClaudeData(await analyzeGame(selectedGame, pitchers))
     } catch (e) {
       setClaudeError(e.message)
@@ -70,6 +76,7 @@ export default function AIAnalysis() {
     }
     setGptLoading(true); setGptError(null); setGptData(null)
     try {
+      trackAnalysisOpen({ sportKey: sport, gameId: selectedGame.id, provider: 'gpt' })
       setGptData(await analyzeGameGPT(selectedGame, pitchers))
     } catch (e) {
       setGptError(e.message)
@@ -88,7 +95,7 @@ export default function AIAnalysis() {
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Vega AI Analysis</h1>
             <p className="text-sm" style={{ color: '#64748b' }}>
-              Two model perspectives using current odds · MLB includes probable pitchers when listed
+              Long-form matchup breakdowns — injuries, trends, and AI reasoning. No pick cards mixed in here.
             </p>
           </div>
         </div>
