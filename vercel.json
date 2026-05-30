@@ -1,4 +1,17 @@
 {
+  "functions": {
+    "api/log-results.js": {
+      "maxDuration": 60
+    }
+  },
+  "redirects": [
+    {
+      "source": "/api/:path*",
+      "has": [{ "type": "host", "value": "trueoddsiq.com" }],
+      "destination": "https://www.trueoddsiq.com/api/:path*",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }

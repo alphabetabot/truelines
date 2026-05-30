@@ -5,6 +5,7 @@ import {
   cleanPickHeadline,
   formatBetDisplay,
   extractSportFromPick,
+  resolvePickSport,
   parseAmericanOdds,
   formatConfidence,
 } from './pick-utils.js'
@@ -34,13 +35,14 @@ export function extractPicksFromResponse(claudeResponse) {
     const pickSelection = cleanPickHeadline(rawHeadline)
     if (!isActionablePick(pickSelection, section)) continue
 
-    const sport = extractSportFromPick(pickLine)
+    const game = matchup || pickSelection
+    const sport = resolvePickSport({ pick: pickSelection, game, edge: edgeLine })
     const bet = parseBetLine(betLine, false)
 
     picks.push({
       pickLine,
       pickSelection,
-      game: matchup || pickSelection,
+      game,
       sport,
       betType: bet.betType,
       odds: bet.odds,
@@ -153,7 +155,12 @@ export async function storePicks(picks, date) {
 
     return {
       date: dateStr,
-      sport: pick.sport,
+      sport: resolvePickSport({
+        sport: pick.sport,
+        pick: pickText,
+        game: pick.game,
+        edge: pick.edge,
+      }),
       game: pick.game,
       pick: pickText,
       bet,

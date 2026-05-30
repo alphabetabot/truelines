@@ -12,9 +12,30 @@ export function isCronAuthorized(req) {
   return Boolean(process.env.CRON_SECRET && token === process.env.CRON_SECRET)
 }
 
+export function isJobSecretAuthorized(req) {
+  const token = getBearerToken(req)
+  if (process.env.CRON_SECRET && token === process.env.CRON_SECRET) return true
+  if (process.env.NEWSLETTER_SECRET && token === process.env.NEWSLETTER_SECRET) return true
+  return false
+}
+
 export function requireCronAuth(req, res) {
   if (isCronAuthorized(req)) return true
   res.status(401).json({ error: 'Unauthorized' })
+  return false
+}
+
+/** Cron jobs + one-off maintenance (e.g. regrade tracker). */
+export function requireJobAuth(req, res) {
+  if (isJobSecretAuthorized(req)) return true
+  const hasCron = Boolean(process.env.CRON_SECRET)
+  const hasNewsletter = Boolean(process.env.NEWSLETTER_SECRET)
+  res.status(401).json({
+    error: 'Unauthorized',
+    hint: hasCron || hasNewsletter
+      ? 'Send Authorization: Bearer <CRON_SECRET or NEWSLETTER_SECRET>. Use https://www.trueoddsiq.com/api/log-results'
+      : 'CRON_SECRET is not configured on this deployment',
+  })
   return false
 }
 

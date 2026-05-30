@@ -72,7 +72,7 @@ export function isFadePick(pick) {
 }
 
 export function extractSportFromPick(pickLine) {
-  const clean = pickLine.replace(/^FADE:\s*/i, '')
+  const clean = String(pickLine || '').replace(/^FADE:\s*/i, '')
   if (clean.toUpperCase().startsWith('MLB')) return 'MLB'
   if (clean.toUpperCase().startsWith('NBA')) return 'NBA'
   if (clean.toUpperCase().startsWith('NHL')) return 'NHL'
@@ -81,7 +81,36 @@ export function extractSportFromPick(pickLine) {
   if (clean.toLowerCase().includes('basketball')) return 'NBA'
   if (clean.toLowerCase().includes('hockey')) return 'NHL'
   if (clean.toLowerCase().includes('football')) return 'NFL'
-  return 'Mixed'
+  return null
+}
+
+/** MLB/NBA/NHL name hints when the newsletter headline omitted the sport prefix. */
+const MLB_TEAM_HINT =
+  /\b(yankees|red sox|dodgers|giants|cubs|mets|braves|phillies|nationals|marlins|brewers|cardinals|reds|pirates|astros|rangers|angels|athletics|mariners|twins|white sox|tigers|guardians|royals|rays|orioles|blue jays|rockies|padres|diamondbacks)\b/i
+const NBA_TEAM_HINT =
+  /\b(lakers|celtics|warriors|knicks|nets|bucks|suns|nuggets|heat|76ers|sixers|mavericks|clippers|bulls|raptors|hawks|hornets|magic|pistons|pacers|cavaliers|cavs|grizzlies|pelicans|spurs|rockets|thunder|timberwolves|wolves|trail blazers|blazers|jazz|kings)\b/i
+const NHL_TEAM_HINT =
+  /\b(bruins|rangers|maple leafs|canadiens|canucks|oilers|flames|jets|wild|avalanche|golden knights|kraken|sharks|ducks|kings|blackhawks|red wings|lightning|panthers|hurricanes|capitals|penguins|flyers|devils|islanders|sabres|senators|blue jackets|predators|stars|coyotes|utah hockey)\b/i
+
+/**
+ * Resolve sport for display, grading, and storage. Never returns "Mixed" — that was a
+ * legacy fallback when the pick headline had no MLB/NBA/NHL prefix.
+ */
+export function resolvePickSport({ sport, pick, game, edge } = {}) {
+  const stored = String(sport || '').trim()
+  if (stored && stored !== 'Mixed') return stored
+
+  const blob = `${pick || ''} ${game || ''} ${edge || ''}`
+  const fromPrefix = extractSportFromPick(blob)
+  if (fromPrefix) return fromPrefix
+
+  if (MLB_TEAM_HINT.test(blob) || /\b(ERA|WHIP|run line|innings|bullpen|starter)\b/i.test(blob)) {
+    return 'MLB'
+  }
+  if (NBA_TEAM_HINT.test(blob)) return 'NBA'
+  if (NHL_TEAM_HINT.test(blob)) return 'NHL'
+
+  return 'MLB'
 }
 
 // ── Pick grading (log-results) ─────────────────────────────────────────────
@@ -184,16 +213,16 @@ export function findGameForPickWithDateFallback(pickGameStr, games, pickDate, ad
  * @returns {{ result, units, game, previous, changed, skipReason? }}
  */
 export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
-  if (!pick.game || !pick.game.includes('@')) {
+  const pickGame = cleanGradingText(pick.game)
+  if (!pickGame || !pickGame.includes('@')) {
     return { skipReason: 'no matchup in game field' }
   }
 
-  const sportGames = pick.sport
-    ? games.filter(g => g.sport === pick.sport || pick.sport === 'Mixed')
-    : games
+  const sport = resolvePickSport(pick)
+  const sportGames = sport ? games.filter(g => g.sport === sport) : games
 
   const pool = sportGames.length ? sportGames : games
-  const game = findGameForPickWithDateFallback(pick.game, pool, pick.date, addDaysFn)
+  const game = findGameForPickWithDateFallback(pickGame, pool, pick.date, addDaysFn)
 
   if (!game) {
     return { skipReason: `no final score for ${pick.game} on ${pick.date}` }
@@ -203,7 +232,8 @@ export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
   const result = gradePickResult({
     pickText,
     betType: pick.bet_type,
-    pickGame: pick.game,
+    betText: pick.bet,
+    pickGame,
     game,
   })
 
@@ -248,8 +278,8 @@ export function pickNamesTeam(pickText, game, pickGameStr) {
   return null
 }
 
-function isMoneylineBet(pickText, betType) {
-  const type = String(betType || '').toLowerCase()
+function isMoneylineBet(pickText, betType, betText) {
+  const type = `${betType || ''} ${betText || ''}`.toLowerCase()
   if (/\bml\b|moneyline/.test(type)) return true
   const pick = pickText.toLowerCase()
   return (
@@ -265,7 +295,7 @@ function isMoneylineBet(pickText, betType) {
  * Grade a pick against a final game score.
  * @returns {'W'|'L'|null}
  */
-export function gradePickResult({ pickText, betType, pickGame, game }) {
+export function gradePickResult({ pickText, betType, betText, pickGame, game }) {
   const away = game.away_score
   const home = game.home_score
   if (away == null || home == null) return null
@@ -278,7 +308,7 @@ export function gradePickResult({ pickText, betType, pickGame, game }) {
   let result = null
   const margin = away - home
 
-  if (isMoneylineBet(pick, betType)) {
+  if (isMoneylineBet(pick, betType, betText)) {
     const side = pickNamesTeam(pick, game, pickGame)
     if (side === 'away') result = away > home ? 'W' : 'L'
     else if (side === 'home') result = home > away ? 'W' : 'L'
