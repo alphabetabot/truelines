@@ -10,6 +10,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "test:grading": "node api/pick-grading.test.js",
+    "test:live-status": "node src/lib/liveGameStatus.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
