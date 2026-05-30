@@ -19,9 +19,9 @@ export function getOddsGameTimeLabel(commenceTime) {
   return format(gameTime, 'EEE M/d · h:mm a')
 }
 
-export function getScoresTickerLabel(game) {
+export function getScoresTickerLabel(game, liveDetail = null) {
   if (isScoresGameFinal(game)) return 'FINAL'
-  if (isScoresGameLive(game)) return '● LIVE'
+  if (isScoresGameLive(game)) return liveDetail ? `● ${liveDetail}` : '● LIVE'
   const gameTime = new Date(game.commence_time)
   return gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
 }

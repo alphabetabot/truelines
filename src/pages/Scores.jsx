@@ -4,6 +4,8 @@ import { SPORTS } from '../lib/oddsApi'
 import { format, subDays } from 'date-fns'
 import { getScores, MAX_SCORES_DAYS_FROM } from '../lib/oddsApi'
 import { getGameStatus, pacificDateKey } from '../lib/scoreUtils'
+import { formatLiveStatusBadge, lookupLiveStatus } from '../lib/liveGameStatus'
+import { useLiveStatusMap } from '../hooks/useLiveStatusMap'
 import OddsLoadError from '../components/OddsLoadError'
 
 const SCOREABLE_SPORTS = SPORTS.filter(s =>
@@ -15,7 +17,7 @@ function parseScore(value) {
   return Number.isFinite(n) ? n : null
 }
 
-function ScoreCard({ game }) {
+function ScoreCard({ game, liveStatusMap }) {
   const home = game.scores?.find(s => s.name === game.home_team)
   const away = game.scores?.find(s => s.name === game.away_team)
   const gameTime = new Date(game.commence_time)
@@ -26,18 +28,13 @@ function ScoreCard({ game }) {
   const awayWins = hasResult && awayScore > homeScore
   const homeWins = hasResult && homeScore > awayScore
 
-  let statusLabel = format(gameTime, 'h:mm a')
-  let statusBg = 'rgba(251,191,36,0.2)'
-  let statusColor = '#fbbf24'
-  if (isLive) {
-    statusLabel = '● LIVE'
-    statusBg = 'rgba(74,222,128,0.2)'
-    statusColor = '#4ade80'
-  } else if (isFinal) {
-    statusLabel = 'Final'
-    statusBg = 'rgba(148,163,184,0.25)'
-    statusColor = '#94a3b8'
-  }
+  const liveDetail = isLive ? lookupLiveStatus(game, liveStatusMap) : null
+  const { label: statusLabel, bg: statusBg, color: statusColor } = formatLiveStatusBadge({
+    isFinal,
+    isLive,
+    gameTime,
+    liveDetail,
+  })
 
   return (
     <div className="rounded-xl overflow-hidden mb-2"
@@ -141,6 +138,8 @@ export default function Scores({ sport }) {
     refetchInterval: 60_000,
   })
 
+  const { data: liveStatusMap = {} } = useLiveStatusMap(sport)
+
   const games = useMemo(() => (data || []).filter(g =>
     pacificDateKey(new Date(g.commence_time)) === selectedKey,
   ), [data, selectedKey])
@@ -205,7 +204,7 @@ export default function Scores({ sport }) {
       )}
 
       {!isLoading && games.map(game => (
-        <ScoreCard key={game.id} game={game} />
+        <ScoreCard key={game.id} game={game} liveStatusMap={liveStatusMap} />
       ))}
     </div>
   )
