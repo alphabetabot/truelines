@@ -136,7 +136,9 @@ export default function PerformanceTracker({ defaultExpanded = false, trackerAnc
                     </span>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
-                      <p className="text-xs truncate" style={{ color: '#94a3b8' }}>{pick.game}</p>
+                      <p className="text-xs truncate" style={{ color: '#94a3b8' }}>
+                        {formatDate(pick.date)} · {pick.game}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-2">
@@ -158,7 +160,7 @@ export default function PerformanceTracker({ defaultExpanded = false, trackerAnc
             </div>
           )}
           <p className="text-xs text-center mt-3" style={{ color: '#94a3b8' }}>
-            All picks tracked from publication date · Grading runs after final scores are available · Past results don&apos;t guarantee future performance
+            Results matched to the game on each pick&apos;s date · Re-verified after every scores cron · Past results don&apos;t guarantee future performance
           </p>
         </div>
       )}
