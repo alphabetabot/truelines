@@ -3,10 +3,14 @@ import { useQuery } from '@tanstack/react-query'
 import { useLocation } from 'react-router-dom'
 import { useSportSelection } from '../hooks/useSportSelection'
 import { trackCompareInteraction } from '../lib/analytics'
-import { getOdds, parseOddsForComparison, SPORTS } from '../lib/oddsApi'
+import { getOdds, parseOddsForComparison } from '../lib/oddsApi'
 import SportSelector from '../components/SportSelector'
 import LineCompareTable from '../components/LineCompareTable'
 import OddsLoadError from '../components/OddsLoadError'
+import RecentlyViewedGames from '../components/RecentlyViewedGames'
+import GamePrevNextNav from '../components/GamePrevNextNav'
+import { addRecentGame } from '../lib/recentGames'
+import { sortGamesByTime } from '../lib/gameNavigation'
 import { ChevronDown, BarChart2 } from 'lucide-react'
 
 export default function LineCompare() {
@@ -20,7 +24,7 @@ export default function LineCompare() {
     if (!preSelected?.sport) return
     setSport(preSelected.sport, 'deep_link')
     setSelectedGame(preSelected)
-    // Apply navigation state once on mount
+    addRecentGame(preSelected, preSelected.sport)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -30,7 +34,21 @@ export default function LineCompare() {
     staleTime: 30_000,
   })
 
-  const games = data ? parseOddsForComparison(data) : []
+  const games = sortGamesByTime(data ? parseOddsForComparison(data) : [])
+
+  useEffect(() => {
+    if (!preSelected?.id || games.length === 0) return
+    const match = games.find(g => g.id === preSelected.id)
+    if (match) setSelectedGame(match)
+  }, [games, preSelected?.id])
+
+  function selectGame(g, source = 'dropdown') {
+    setSelectedGame(g)
+    if (g) {
+      addRecentGame(g, sport)
+      trackCompareInteraction(source, { sport_key: sport, game_id: g.id })
+    }
+  }
 
   return (
     <div>
@@ -45,11 +63,24 @@ export default function LineCompare() {
 
       <SportSelector selected={sport} onChange={s => { setSport(s); setSelectedGame(null) }} />
 
+      <RecentlyViewedGames
+        page="compare"
+        sportKey={sport}
+        onSelect={g => selectGame(g, 'recent')}
+      />
+
       {isError && (
         <OddsLoadError message={error?.message} onRetry={() => refetch()} />
       )}
 
-      {/* Game selector */}
+      <GamePrevNextNav
+        games={games}
+        selectedGame={selectedGame}
+        sportKey={sport}
+        page="compare"
+        onSelect={g => selectGame(g, 'prev_next')}
+      />
+
       <div className="mb-6">
         <label className="block text-xs font-medium mb-2" style={{ color: 'var(--text-secondary)' }}>
           SELECT GAME
@@ -59,10 +90,7 @@ export default function LineCompare() {
             value={selectedGame?.id || ''}
             onChange={e => {
               const g = games.find(x => x.id === e.target.value)
-              setSelectedGame(g || null)
-              if (g) {
-                trackCompareInteraction('game_select', { sport_key: sport, game_id: g.id })
-              }
+              selectGame(g || null, 'game_select')
             }}
             className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
             style={{
@@ -86,7 +114,6 @@ export default function LineCompare() {
         </div>
       </div>
 
-      {/* Comparison table */}
       {selectedGame ? (
         <LineCompareTable game={selectedGame} />
       ) : (
