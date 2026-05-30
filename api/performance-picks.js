@@ -1,6 +1,16 @@
 // Fetch picks with results from Supabase for the performance tracker
 
-import { profitUnits, parseAmericanOdds } from './pick-utils.js'
+import { profitUnits, parseAmericanOdds, resolvePickSport } from './pick-utils.js'
+
+function formatPickRow(p) {
+  const sport = resolvePickSport(p)
+  return {
+    ...p,
+    sport,
+    displayOdds: p.odds ?? parseAmericanOdds(p.bet),
+    units: computeUnits({ ...p, odds: p.odds ?? parseAmericanOdds(p.bet) }),
+  }
+}
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -47,11 +57,9 @@ export default async function handler(req, res) {
       }
       const allPicks = await fallback.json()
       const picksWithResults = allPicks.filter(p => p.result && p.result.trim() !== '')
-      const formatted = picksWithResults.map(p => ({
-        ...p,
-        displayOdds: parseAmericanOdds(p.bet),
-        units: computeUnits({ ...p, odds: parseAmericanOdds(p.bet) }),
-      }))
+      const formatted = picksWithResults.map(p =>
+        formatPickRow({ ...p, odds: parseAmericanOdds(p.bet) })
+      )
       res.setHeader('Cache-Control', 'no-store, max-age=0')
       return res.json(formatted)
     }
@@ -59,11 +67,7 @@ export default async function handler(req, res) {
     const allPicks = await response.json()
     const picksWithResults = allPicks.filter(p => p.result && p.result.trim() !== '')
 
-    const formatted = picksWithResults.map(p => ({
-      ...p,
-      displayOdds: p.odds ?? parseAmericanOdds(p.bet),
-      units: computeUnits(p),
-    }))
+    const formatted = picksWithResults.map(p => formatPickRow(p))
 
     res.setHeader('Cache-Control', 'no-store, max-age=0')
     return res.json(formatted)

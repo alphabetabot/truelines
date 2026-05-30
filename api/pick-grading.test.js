@@ -6,6 +6,7 @@ import {
   findGameForPickWithDateFallback,
   gradePickResult,
   resolvePickGrade,
+  resolvePickSport,
   stripAmericanOddsFromText,
 } from './pick-utils.js'
 import { addDays } from './grading-scores.js'
@@ -99,5 +100,14 @@ const resolved = resolvePickGrade(
   { addDaysFn: addDays, resolveOdds: p => p.odds }
 )
 assert(resolved.result === 'L', 'resolvePickGrade should correct stored W to L')
+
+assert(
+  resolvePickSport({
+    sport: 'Mixed',
+    pick: 'Seattle Mariners @ Kansas City Royals',
+    game: '**Seattle Mariners @ Kansas City Royals**',
+  }) === 'MLB',
+  'Mixed sport label should resolve to MLB'
+)
 
 console.log('pick-grading.test.js: all assertions passed')

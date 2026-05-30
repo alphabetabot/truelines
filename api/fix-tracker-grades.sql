@@ -2,6 +2,9 @@
 -- Run in Supabase SQL Editor, then hard-refresh the site tracker.
 -- Generated from corrected grading logic on 2026-05-30.
 
+-- "Mixed" was never a result type — it meant sport was unknown at save time. All current rows are MLB.
+UPDATE daily_picks SET sport = 'MLB' WHERE sport = 'Mixed';
+
 UPDATE daily_picks SET result = 'L', units = -1.0000 WHERE id = '03c39c87-21f5-49d7-99cc-0e7e0bfb59df'; -- 2026-05-29 Miami Marlins ML (was W)
 UPDATE daily_picks SET result = 'L', units = -1.0000 WHERE id = '47392be0-11ae-4b14-995d-963bc166e252'; -- 2026-05-28 Minnesota Twins ML (was W)
 UPDATE daily_picks SET result = 'W', units = 1.3600 WHERE id = '0202f68e-d4e0-4966-9f56-58611afae7f3'; -- 2026-05-28 Atlanta Braves -1.5 (was L)
