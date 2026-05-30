@@ -1,7 +1,8 @@
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
-import { TrendingUp, Activity, BarChart2, Brain, Zap, Download, BookOpen, Trophy } from 'lucide-react'
+import { Activity, BarChart2, Brain, Zap, Download, BookOpen } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
+import CollapsibleScoreTicker from './CollapsibleScoreTicker'
 import PageMeta from './PageMeta'
 import CookieConsent, { openCookiePreferences } from './CookieConsent'
 import LogoLink from './LogoLink'
@@ -9,15 +10,40 @@ import { useAuth } from '../lib/AuthContext'
 import { getRouteMeta } from '../lib/routeMeta'
 import SeoNavBar from '../seo/components/SeoNavBar'
 import SeoFooterNav from '../seo/components/SeoFooterNav'
-import { isAppWorkspaceRoute } from '../lib/appRoutes'
+import { isAppWorkspaceRoute, showCollapsibleScoreTicker, hideGlobalScoreTicker } from '../lib/appRoutes'
 
 const NAV = [
-  { to: '/odds', label: 'Live Odds', icon: Activity, exact: true },
-  { to: '/compare', label: 'Line Compare', icon: BarChart2 },
-  { to: '/analysis', label: 'AI Analysis', icon: Brain },
-  { to: '/picks', label: 'AI Picks', icon: Zap },
-  { to: '/blog', label: 'Blog', icon: BookOpen },
+  { to: '/odds', label: 'Live Odds', shortLabel: 'Odds', icon: Activity, exact: true },
+  { to: '/compare', label: 'Line Compare', shortLabel: 'Compare', icon: BarChart2 },
+  { to: '/analysis', label: 'AI Analysis', shortLabel: 'Analysis', icon: Brain },
+  { to: '/picks', label: 'AI Picks', shortLabel: 'Picks', icon: Zap },
+  { to: '/blog', label: 'Blog', shortLabel: 'Blog', icon: BookOpen },
 ]
+
+function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact }) {
+  const displayLabel = compact ? shortLabel : label
+  const iconSize = compact ? 13 : 14
+  const fontSize = compact ? 12 : 14
+  const gap = compact ? 'gap-1' : 'gap-2'
+  const px = compact ? 'px-2.5' : 'px-4'
+
+  return (
+    <NavLink
+      key={to}
+      to={to}
+      end={exact}
+      className={`flex items-center ${gap} ${px} h-full font-bold transition-all whitespace-nowrap shrink-0`}
+      style={({ isActive }) => ({
+        background: isActive ? '#f59e0b' : 'transparent',
+        color: isActive ? '#0f172a' : compact ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.8)',
+        fontSize,
+      })}
+    >
+      <Icon size={iconSize} />
+      {displayLabel}
+    </NavLink>
+  )
+}
 
 function RouteSEO() {
   const { pathname } = useLocation()
@@ -62,6 +88,9 @@ export default function Layout({ children }) {
 
   const hideRouteSEO = location.pathname.startsWith('/blog/') && location.pathname.length > '/blog/'.length
   const appWorkspace = isAppWorkspaceRoute(location.pathname)
+  const pathname = location.pathname
+  const showCollapsibleTicker = showCollapsibleScoreTicker(pathname)
+  const showFullTicker = !hideGlobalScoreTicker(pathname)
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
@@ -69,7 +98,10 @@ export default function Layout({ children }) {
 
       {/* ── Top bar: Logo + Install + Live ── */}
       <div style={{ background: '#0f172a' }}>
-        <div className="max-w-5xl mx-auto px-4 flex items-center justify-between" style={{ height: 68 }}>
+        <div
+          className="max-w-5xl mx-auto px-4 flex items-center justify-between"
+          style={{ height: appWorkspace ? 56 : 68 }}
+        >
           <LogoLink />
 
           <div className="flex items-center gap-3">
@@ -105,42 +137,37 @@ export default function Layout({ children }) {
       {/* ── Nav tabs ── */}
       <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
         <div className="max-w-5xl mx-auto px-3">
-          {/* Row 1: Live Odds + Line Compare */}
-          <div className="flex items-center gap-1" style={{ height: 40 }}>
-            {NAV.slice(0, 2).map(({ to, label, icon: Icon, exact }) => (
-              <NavLink key={to} to={to} end={exact}
-                className="flex items-center gap-2 px-4 h-full font-bold transition-all whitespace-nowrap"
-                style={({ isActive }) => ({
-                  background: isActive ? '#f59e0b' : 'transparent',
-                  color: isActive ? '#0f172a' : 'rgba(255,255,255,0.8)',
-                  fontSize: 14,
-                })}>
-                <Icon size={14} />{label}
-              </NavLink>
-            ))}
-          </div>
-          {/* Row 2: AI Analysis + AI Picks + Blog + Fantasy Sports */}
-          <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-            {NAV.slice(2).map(({ to, label, icon: Icon, exact }) => (
-              <NavLink key={to} to={to} end={exact}
-                className="flex items-center gap-1.5 px-3 h-full font-bold transition-all whitespace-nowrap"
-                style={({ isActive }) => ({
-                  background: isActive ? '#f59e0b' : 'transparent',
-                  color: isActive ? '#0f172a' : 'rgba(255,255,255,0.7)',
-                  fontSize: 13,
-                })}>
-                <Icon size={13} />{label}
-              </NavLink>
-            ))}
-
-          </div>
+          {appWorkspace ? (
+            <div
+              className="flex items-center gap-0.5 overflow-x-auto"
+              style={{ height: 36, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}
+            >
+              {NAV.map(item => (
+                <PrimaryNavLink key={item.to} {...item} compact />
+              ))}
+            </div>
+          ) : (
+            <>
+              <div className="flex items-center gap-1" style={{ height: 40 }}>
+                {NAV.slice(0, 2).map(item => (
+                  <PrimaryNavLink key={item.to} {...item} compact={false} />
+                ))}
+              </div>
+              <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                {NAV.slice(2).map(item => (
+                  <PrimaryNavLink key={item.to} {...item} compact={false} />
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
 
       {!appWorkspace && <SeoNavBar />}
 
-      {/* ── Score ticker ── */}
-      <ScoreTicker />
+      {/* ── Score ticker: hidden on /odds; collapsible on other app pages; full elsewhere ── */}
+      {showCollapsibleTicker && <CollapsibleScoreTicker />}
+      {showFullTicker && <ScoreTicker />}
 
       {/* ── iOS install hint ── */}
       {showIOSHint && (
