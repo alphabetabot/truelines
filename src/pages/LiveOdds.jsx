@@ -198,14 +198,16 @@ export default function LiveOdds() {
         </>
       )}
 
-      <section className="mt-8 pt-5" style={{ borderTop: '1px solid #e2e8f0' }}>
-        <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#94a3b8' }}>
-          More tools
-        </p>
-        <DailyPick />
-        <TodaysEdges />
-        <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
-      </section>
+      {activeTab === 'Odds' && (
+        <section className="mt-8 pt-5" style={{ borderTop: '1px solid #e2e8f0' }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#94a3b8' }}>
+            More tools
+          </p>
+          <DailyPick />
+          <TodaysEdges />
+          <PerformanceTracker defaultExpanded={showTracker} trackerAnchor={showTracker} />
+        </section>
+      )}
     </div>
   )
 }

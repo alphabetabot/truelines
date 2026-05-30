@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { SPORTS } from '../lib/oddsApi'
-import { format, subDays, isSameDay } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { getScores, MAX_SCORES_DAYS_FROM } from '../lib/oddsApi'
+import { getGameStatus, pacificDateKey } from '../lib/scoreUtils'
 import OddsLoadError from '../components/OddsLoadError'
 
 const SCOREABLE_SPORTS = SPORTS.filter(s =>
@@ -17,13 +18,26 @@ function parseScore(value) {
 function ScoreCard({ game }) {
   const home = game.scores?.find(s => s.name === game.home_team)
   const away = game.scores?.find(s => s.name === game.away_team)
-  const isCompleted = game.completed
   const gameTime = new Date(game.commence_time)
+  const { isFinal, isLive } = getGameStatus(game)
   const homeScore = parseScore(home?.score)
   const awayScore = parseScore(away?.score)
-  const hasResult = isCompleted && homeScore != null && awayScore != null
+  const hasResult = isFinal && homeScore != null && awayScore != null
   const awayWins = hasResult && awayScore > homeScore
   const homeWins = hasResult && homeScore > awayScore
+
+  let statusLabel = format(gameTime, 'h:mm a')
+  let statusBg = 'rgba(251,191,36,0.2)'
+  let statusColor = '#fbbf24'
+  if (isLive) {
+    statusLabel = '● LIVE'
+    statusBg = 'rgba(74,222,128,0.2)'
+    statusColor = '#4ade80'
+  } else if (isFinal) {
+    statusLabel = 'Final'
+    statusBg = 'rgba(148,163,184,0.25)'
+    statusColor = '#94a3b8'
+  }
 
   return (
     <div className="rounded-xl overflow-hidden mb-2"
@@ -35,11 +49,8 @@ function ScoreCard({ game }) {
           {format(gameTime, 'EEE M/d')}
         </span>
         <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{
-            background: isCompleted ? 'rgba(74,222,128,0.2)' : 'rgba(251,191,36,0.2)',
-            color: isCompleted ? '#4ade80' : '#fbbf24'
-          }}>
-          {isCompleted ? 'Final' : format(gameTime, 'h:mm a')}
+          style={{ background: statusBg, color: statusColor }}>
+          {statusLabel}
         </span>
       </div>
 
@@ -60,7 +71,7 @@ function ScoreCard({ game }) {
             minWidth: 36,
             textAlign: 'right',
           }}>
-            {isCompleted ? (away?.score ?? '—') : '—'}
+            {isFinal || isLive ? (away?.score ?? '—') : '—'}
           </span>
         </div>
         {/* Home */}
@@ -77,7 +88,7 @@ function ScoreCard({ game }) {
             minWidth: 36,
             textAlign: 'right',
           }}>
-            {isCompleted ? (home?.score ?? '—') : '—'}
+            {isFinal || isLive ? (home?.score ?? '—') : '—'}
           </span>
         </div>
       </div>
@@ -85,10 +96,11 @@ function ScoreCard({ game }) {
   )
 }
 
-function DateTab({ date, selected, onClick, label }) {
+function DateTab({ date, selected, onClick, label, displayLabel, gameCount }) {
   const isSelected = selected === label
   return (
     <button
+      type="button"
       onClick={() => onClick(label)}
       className="flex flex-col items-center px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
       style={{
@@ -97,43 +109,72 @@ function DateTab({ date, selected, onClick, label }) {
         border: `1px solid ${isSelected ? '#1e293b' : '#e2e8f0'}`,
       }}
     >
-      <span style={{ fontSize: 10, opacity: 0.7 }}>{format(date, 'EEE')}</span>
-      <span>{format(date, 'M/d')}</span>
+      <span>{displayLabel}</span>
+      <span style={{ fontSize: 10, opacity: 0.75, marginTop: 2 }}>
+        {gameCount > 0 ? `${gameCount} game${gameCount === 1 ? '' : 's'}` : 'No games'}
+      </span>
     </button>
   )
 }
 
-export default function Scores({ sport }) {
-  const today = new Date()
-  const dates = Array.from({ length: 8 }, (_, i) => subDays(today, 7 - i)) // last 7 days + today
-  const [selectedLabel, setSelectedLabel] = useState(format(today, 'M/d'))
+function dateTabLabel(date, todayKey) {
+  const key = pacificDateKey(date)
+  if (key === todayKey) return 'Today'
+  if (key === pacificDateKey(subDays(new Date(), 1))) return 'Yesterday'
+  return format(date, 'EEE M/d')
+}
 
-  const selectedDate = dates.find(d => format(d, 'M/d') === selectedLabel) || today
+export default function Scores({ sport }) {
+  const todayKey = pacificDateKey()
+  const today = new Date()
+  const dates = useMemo(
+    () => Array.from({ length: MAX_SCORES_DAYS_FROM }, (_, i) =>
+      subDays(today, MAX_SCORES_DAYS_FROM - 1 - i)),
+    [todayKey],
+  )
+  const [selectedKey, setSelectedKey] = useState(todayKey)
 
   const { data, isLoading, isError, error, refetch } = useQuery({
     queryKey: ['scores', sport],
-    queryFn: () => getScores(sport),
+    queryFn: () => getScores(sport, MAX_SCORES_DAYS_FROM),
     staleTime: 60_000,
+    refetchInterval: 60_000,
   })
 
-  const games = (data || []).filter(g => {
-    const gameDate = new Date(g.commence_time)
-    return isSameDay(gameDate, selectedDate)
-  })
+  const games = useMemo(() => (data || []).filter(g =>
+    pacificDateKey(new Date(g.commence_time)) === selectedKey,
+  ), [data, selectedKey])
+
+  const gamesByDay = useMemo(() => {
+    const counts = {}
+    for (const g of data || []) {
+      const key = pacificDateKey(new Date(g.commence_time))
+      counts[key] = (counts[key] || 0) + 1
+    }
+    return counts
+  }, [data])
 
   return (
     <div>
-      {/* Date tabs */}
+      <p className="text-xs mb-2" style={{ color: '#64748b' }}>
+        Game results for the selected sport (last {MAX_SCORES_DAYS_FROM} days).
+      </p>
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
-        {dates.map(d => (
-          <DateTab
-            key={format(d, 'M/d')}
-            date={d}
-            selected={selectedLabel}
-            label={format(d, 'M/d')}
-            onClick={setSelectedLabel}
-          />
-        ))}
+        {dates.map(d => {
+          const key = pacificDateKey(d)
+          const count = gamesByDay[key] || 0
+          return (
+            <DateTab
+              key={key}
+              date={d}
+              selected={selectedKey}
+              label={key}
+              displayLabel={dateTabLabel(d, todayKey)}
+              gameCount={count}
+              onClick={setSelectedKey}
+            />
+          )
+        })}
       </div>
 
       {isLoading && (
@@ -154,7 +195,12 @@ export default function Scores({ sport }) {
 
       {!isLoading && !isError && games.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-lg font-medium" style={{ color: '#94a3b8' }}>No games on {format(selectedDate, 'EEEE, MMMM d')}</p>
+          <p className="text-lg font-medium" style={{ color: '#94a3b8' }}>
+            No {SPORTS.find(s => s.key === sport)?.label || 'league'} games on this day
+          </p>
+          <p className="text-sm mt-2" style={{ color: '#cbd5e1' }}>
+            Try another date above, or switch sport.
+          </p>
         </div>
       )}
 
