@@ -37,54 +37,74 @@ function ScoreCard({ game, liveStatusMap }) {
   })
 
   return (
-    <div className="rounded-xl overflow-hidden mb-2"
-      style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-      {/* Header */}
-      <div className="flex items-center justify-between px-3 py-1.5"
-        style={{ background: '#1e293b' }}>
-        <span className="text-xs font-semibold text-white">
+    <div
+      className="mb-2 rounded-xl"
+      style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+    >
+      {/* Header — no overflow-hidden on card; it clipped “Final” and scores at rounded corners */}
+      <div
+        className="flex items-center justify-between gap-3 rounded-t-xl px-4 py-2"
+        style={{ background: '#1e293b' }}
+      >
+        <span className="min-w-0 shrink text-xs font-semibold text-white truncate">
           {format(gameTime, 'EEE M/d')}
         </span>
-        <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{ background: statusBg, color: statusColor }}>
+        <span
+          className="shrink-0 text-xs font-bold whitespace-nowrap px-2.5 py-0.5 rounded-full"
+          style={{ background: statusBg, color: statusColor }}
+        >
           {statusLabel}
         </span>
       </div>
 
       {/* Teams + scores */}
-      <div className="px-4 py-2">
+      <div className="rounded-b-xl px-4 py-2.5 sm:px-5">
         {/* Away */}
-        <div className="flex items-center justify-between py-1.5"
-          style={{ borderBottom: '1px solid #f1f5f9' }}>
-          <span className="text-sm" style={{
-            color: '#0f172a',
-            fontWeight: awayWins ? 800 : 500,
-          }}>
+        <div
+          className="flex items-center gap-3 py-1.5"
+          style={{ borderBottom: '1px solid #f1f5f9' }}
+        >
+          <span
+            className="min-w-0 flex-1 text-sm truncate"
+            style={{
+              color: '#0f172a',
+              fontWeight: awayWins ? 800 : 500,
+            }}
+          >
             {game.away_team}
           </span>
-          <span className="text-lg font-mono" style={{
-            color: awayWins ? '#16a34a' : '#0f172a',
-            fontWeight: awayWins ? 800 : 500,
-            minWidth: 36,
-            textAlign: 'right',
-          }}>
+          <span
+            className="shrink-0 text-lg font-mono tabular-nums"
+            style={{
+              color: awayWins ? '#16a34a' : '#0f172a',
+              fontWeight: awayWins ? 800 : 500,
+              minWidth: 44,
+              textAlign: 'right',
+            }}
+          >
             {isFinal || isLive ? (away?.score ?? '—') : '—'}
           </span>
         </div>
         {/* Home */}
-        <div className="flex items-center justify-between py-1.5">
-          <span className="text-sm" style={{
-            color: '#0f172a',
-            fontWeight: homeWins ? 800 : 500,
-          }}>
+        <div className="flex items-center gap-3 py-1.5">
+          <span
+            className="min-w-0 flex-1 text-sm truncate"
+            style={{
+              color: '#0f172a',
+              fontWeight: homeWins ? 800 : 500,
+            }}
+          >
             {game.home_team}
           </span>
-          <span className="text-lg font-mono" style={{
-            color: homeWins ? '#16a34a' : '#0f172a',
-            fontWeight: homeWins ? 800 : 500,
-            minWidth: 36,
-            textAlign: 'right',
-          }}>
+          <span
+            className="shrink-0 text-lg font-mono tabular-nums"
+            style={{
+              color: homeWins ? '#16a34a' : '#0f172a',
+              fontWeight: homeWins ? 800 : 500,
+              minWidth: 44,
+              textAlign: 'right',
+            }}
+          >
             {isFinal || isLive ? (home?.score ?? '—') : '—'}
           </span>
         </div>
