@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom'
-import { SEO_NAV_HUBS, SEO_NAV_ODDS, SEO_NAV_PICKS } from '../seoNavLinks'
+import { SEO_NAV_HUBS } from '../seoNavLinks'
+import { SEO_SPORT_SLUGS, SEO_SPORTS } from '../seoContent'
 
 const linkClass = ({ isActive }) =>
   `flex items-center px-2.5 py-1 rounded-md font-semibold whitespace-nowrap transition-all shrink-0 ${
@@ -26,6 +27,28 @@ function Divider() {
   )
 }
 
+/** One league label with Odds + Picks links (avoids duplicating MLB NBA NFL NHL). */
+function SportNavGroup({ slug }) {
+  const sport = SEO_SPORTS[slug]
+  return (
+    <div
+      className="flex items-center shrink-0 gap-0.5 rounded-md"
+      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
+      role="group"
+      aria-label={`${sport.label} odds and picks`}
+    >
+      <span
+        className="pl-2 pr-0.5 py-1 text-xs font-extrabold"
+        style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em' }}
+      >
+        {sport.label}
+      </span>
+      <NavItem to={`/odds/${slug}`} label="Odds" />
+      <NavItem to={`/picks/${slug}`} label="Picks" />
+    </div>
+  )
+}
+
 export default function SeoNavBar() {
   return (
     <div style={{ background: '#172033', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
@@ -38,12 +61,8 @@ export default function SeoNavBar() {
             <NavItem key={item.to} to={item.to} label={item.shortLabel || item.label} />
           ))}
           <Divider />
-          {SEO_NAV_ODDS.map(item => (
-            <NavItem key={item.to} to={item.to} label={item.label.replace(' Odds', '')} />
-          ))}
-          <Divider />
-          {SEO_NAV_PICKS.map(item => (
-            <NavItem key={item.to} to={item.to} label={item.label.replace(' Picks', '')} />
+          {SEO_SPORT_SLUGS.map(slug => (
+            <SportNavGroup key={slug} slug={slug} />
           ))}
         </div>
       </div>
