@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useMatch } from 'react-router-dom'
 import { SEO_NAV_HUBS } from '../seoNavLinks'
 import { SEO_SPORT_SLUGS, SEO_SPORTS } from '../seoContent'
 
@@ -9,9 +9,13 @@ const linkClass = ({ isActive }) =>
 
 const linkStyle = { fontSize: 12 }
 
-function NavItem({ to, label }) {
+function NavItem({ to, label, isActive: isActiveOverride }) {
   return (
-    <NavLink to={to} className={linkClass} style={linkStyle}>
+    <NavLink
+      to={to}
+      className={({ isActive }) => linkClass({ isActive: isActiveOverride ?? isActive })}
+      style={linkStyle}
+    >
       {label}
     </NavLink>
   )
@@ -27,25 +31,17 @@ function Divider() {
   )
 }
 
-/** One league label with Odds + Picks links (avoids duplicating MLB NBA NFL NHL). */
-function SportNavGroup({ slug }) {
+function SportNavItem({ slug }) {
   const sport = SEO_SPORTS[slug]
+  const onOdds = Boolean(useMatch({ path: `/odds/${slug}`, end: true }))
+  const onPicks = Boolean(useMatch({ path: `/picks/${slug}`, end: true }))
+
   return (
-    <div
-      className="flex items-center shrink-0 gap-0.5 rounded-md"
-      style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}
-      role="group"
-      aria-label={`${sport.label} odds and picks`}
-    >
-      <span
-        className="pl-2 pr-0.5 py-1 text-xs font-extrabold"
-        style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.02em' }}
-      >
-        {sport.label}
-      </span>
-      <NavItem to={`/odds/${slug}`} label="Odds" />
-      <NavItem to={`/picks/${slug}`} label="Picks" />
-    </div>
+    <NavItem
+      to={`/odds/${slug}`}
+      label={sport.label}
+      isActive={onOdds || onPicks}
+    />
   )
 }
 
@@ -62,7 +58,7 @@ export default function SeoNavBar() {
           ))}
           <Divider />
           {SEO_SPORT_SLUGS.map(slug => (
-            <SportNavGroup key={slug} slug={slug} />
+            <SportNavItem key={slug} slug={slug} />
           ))}
         </div>
       </div>
