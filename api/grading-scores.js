@@ -1,5 +1,7 @@
 // Final score providers for pick grading (MLB Stats API + The Odds API)
 
+import { pacificDateKey } from './date-utils.js'
+
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 
 function addDays(isoDate, delta) {
@@ -40,13 +42,17 @@ export async function getMLBGamesInRange(startDate, endDate) {
     data.dates?.forEach(d => {
       d.games?.forEach(g => {
         if (g.status?.abstractGameState === 'Final' || g.status?.abstractGameState === 'Completed Early') {
+          const scheduleDate = d.date || g.officialDate?.split('T')[0]
+          const commenceIso = g.gameDate || g.officialDate
+          const pacific_date = commenceIso ? pacificDateKey(new Date(commenceIso)) : scheduleDate
           games.push({
             away_team: g.teams?.away?.team?.name,
             home_team: g.teams?.home?.team?.name,
             away_score: parseInt(g.teams?.away?.score || 0, 10),
             home_score: parseInt(g.teams?.home?.score || 0, 10),
             sport: 'MLB',
-            game_date: d.date || g.officialDate?.split('T')[0],
+            game_date: scheduleDate,
+            pacific_date,
           })
         }
       })
@@ -75,6 +81,7 @@ export async function getOddsApiScores(sportKey, label, daysFrom = 3) {
         const away = g.scores.find(s => s.name === g.away_team)
         const home = g.scores.find(s => s.name === g.home_team)
         const commence = g.commence_time ? g.commence_time.split('T')[0] : null
+        const pacific_date = g.commence_time ? pacificDateKey(new Date(g.commence_time)) : commence
         return {
           away_team: g.away_team,
           home_team: g.home_team,
@@ -82,6 +89,7 @@ export async function getOddsApiScores(sportKey, label, daysFrom = 3) {
           home_score: parseInt(home?.score || 0, 10),
           sport: label,
           game_date: commence,
+          pacific_date,
         }
       })
   } catch (e) {

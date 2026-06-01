@@ -9,7 +9,6 @@ import {
   resolvePickSport,
   stripAmericanOddsFromText,
 } from './pick-utils.js'
-import { addDays } from './grading-scores.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
@@ -72,9 +71,46 @@ assert(
   'strip odds keeps team text'
 )
 
+const seriesBraves = [
+  {
+    game_date: '2026-05-30',
+    pacific_date: '2026-05-30',
+    away_team: 'Atlanta Braves',
+    home_team: 'Cincinnati Reds',
+    away_score: 5,
+    home_score: 3,
+    sport: 'MLB',
+  },
+  {
+    game_date: '2026-05-31',
+    pacific_date: '2026-05-31',
+    away_team: 'Atlanta Braves',
+    home_team: 'Cincinnati Reds',
+    away_score: 2,
+    home_score: 4,
+    sport: 'MLB',
+  },
+]
+const may31Braves = findGameForPickWithDateFallback(
+  'Atlanta Braves @ Cincinnati Reds',
+  seriesBraves,
+  '2026-05-31'
+)
+assert(may31Braves?.pacific_date === '2026-05-31', 'May 31 pick uses May 31 final, not series game from May 30')
+assert(
+  gradePickResult({
+    pickText: 'Atlanta Braves ML',
+    betType: 'ML',
+    pickGame: 'Atlanta Braves @ Cincinnati Reds',
+    game: may31Braves,
+  }) === 'L',
+  'Braves lost May 31'
+)
+
 const tzGames = [
   {
     game_date: '2026-05-30',
+    pacific_date: '2026-05-30',
     away_team: 'Miami Marlins',
     home_team: 'New York Mets',
     away_score: 7,
@@ -82,8 +118,8 @@ const tzGames = [
     sport: 'MLB',
   },
 ]
-const fallback = findGameForPickWithDateFallback(pickGame, tzGames, '2026-05-29', addDays)
-assert(fallback?.game_date === '2026-05-30', '±1 day fallback when slate date differs')
+const noWrongDayFallback = findGameForPickWithDateFallback(pickGame, tzGames, '2026-05-29')
+assert(noWrongDayFallback === null, 'do not grade against previous day in a series')
 
 const resolved = resolvePickGrade(
   {
@@ -97,7 +133,7 @@ const resolved = resolvePickGrade(
     odds: 103,
   },
   marlinsMetsSeries,
-  { addDaysFn: addDays, resolveOdds: p => p.odds }
+  { resolveOdds: p => p.odds }
 )
 assert(resolved.result === 'L', 'resolvePickGrade should correct stored W to L')
 

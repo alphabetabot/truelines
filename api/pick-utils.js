@@ -177,7 +177,15 @@ function pickExactOrderGame(onDate, pickGameStr) {
   return exact || onDate[0]
 }
 
-/** Prefer the final game on pick.date — avoids grading against an earlier game in a series. */
+/** True when a final’s calendar date matches the pick row (Pacific slate date preferred). */
+export function gameMatchesPickDate(game, pickDate) {
+  if (!pickDate) return false
+  if (game.pacific_date === pickDate) return true
+  if (game.game_date === pickDate) return true
+  return false
+}
+
+/** Prefer the final game on pick.date — never grade a series game from another day. */
 export function findGameForPick(pickGameStr, games, pickDate) {
   if (!pickGameStr || !pickGameStr.includes('@')) return null
 
@@ -185,7 +193,7 @@ export function findGameForPick(pickGameStr, games, pickDate) {
   if (teamMatches.length === 0) return null
 
   if (pickDate) {
-    const onDate = teamMatches.filter(g => g.game_date === pickDate)
+    const onDate = teamMatches.filter(g => gameMatchesPickDate(g, pickDate))
     if (onDate.length === 1) return onDate[0]
     if (onDate.length > 1) return pickExactOrderGame(onDate, pickGameStr)
     return null
@@ -195,24 +203,19 @@ export function findGameForPick(pickGameStr, games, pickDate) {
   return null
 }
 
-/** ±1 day fallback when pick.date and official game_date differ (timezone / slate). */
-export function findGameForPickWithDateFallback(pickGameStr, games, pickDate, addDaysFn) {
-  const direct = findGameForPick(pickGameStr, games, pickDate)
-  if (direct || !pickDate || typeof addDaysFn !== 'function') return direct
-
-  for (const delta of [-1, 1]) {
-    const altDate = addDaysFn(pickDate, delta)
-    const candidate = findGameForPick(pickGameStr, games, altDate)
-    if (candidate) return candidate
-  }
-  return null
+/**
+ * Match final on pick.date only (Pacific-aligned). No ±1 day fallback — that graded
+ * the wrong game when the same teams played on consecutive days in a series.
+ */
+export function findGameForPickWithDateFallback(pickGameStr, games, pickDate) {
+  return findGameForPick(pickGameStr, games, pickDate)
 }
 
 /**
  * Grade one stored pick row against a score list.
  * @returns {{ result, units, game, previous, changed, skipReason? }}
  */
-export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
+export function resolvePickGrade(pick, games, { resolveOdds }) {
   const pickGame = cleanGradingText(pick.game)
   if (!pickGame || !pickGame.includes('@')) {
     return { skipReason: 'no matchup in game field' }
@@ -222,7 +225,7 @@ export function resolvePickGrade(pick, games, { addDaysFn, resolveOdds }) {
   const sportGames = sport ? games.filter(g => g.sport === sport) : games
 
   const pool = sportGames.length ? sportGames : games
-  const game = findGameForPickWithDateFallback(pickGame, pool, pick.date, addDaysFn)
+  const game = findGameForPickWithDateFallback(pickGame, pool, pick.date)
 
   if (!game) {
     return { skipReason: `no final score for ${pick.game} on ${pick.date}` }
