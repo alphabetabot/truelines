@@ -9,7 +9,7 @@
     "start": "concurrently \"npm run server\" \"npm run dev\"",
     "build": "vite build",
     "lint": "eslint .",
-    "test:grading": "node api/pick-grading.test.js",
+    "test:grading": "node scripts/pick-grading.test.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
     "test:default-sport": "node src/lib/defaultSport.test.js",
     "test:pick-performance": "node src/lib/pickPerformance.test.js",
