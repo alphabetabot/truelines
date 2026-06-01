@@ -9,6 +9,7 @@ import {
   parseAmericanOdds,
   formatConfidence,
 } from './pick-utils.js'
+import { pacificDateKey } from './date-utils.js'
 
 /**
  * Parse picks from Claude's response text
@@ -144,7 +145,7 @@ function parseBetLine(betLine, isFade) {
 export async function storePicks(picks, date) {
   if (!picks || picks.length === 0) return []
 
-  const dateStr = date.toISOString().split('T')[0]
+  const dateStr = pacificDateKey(date)
 
   const rows = picks.map((pick, index) => {
     const oddsNum = parseAmericanOdds(pick.odds)
