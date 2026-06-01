@@ -135,6 +135,7 @@ function parseBetLine(betLine, isFade) {
     .trim()
 
   if (!betType) betType = isFade ? 'Fade' : 'Pick'
+  if (/\bml\b|moneyline/i.test(betType)) betType = 'ML'
 
   return { betType, odds, bestBook }
 }
@@ -153,6 +154,8 @@ export async function storePicks(picks, date) {
     const pickText = pick.isFade && !/^FADE:/i.test(pick.pickSelection)
       ? `FADE: ${pick.pickSelection}`
       : pick.pickSelection
+    let betType = pick.betType
+    if (/\bml\b/i.test(pickText) && (!betType || /^pick$/i.test(betType))) betType = 'ML'
 
     return {
       date: dateStr,
@@ -165,7 +168,7 @@ export async function storePicks(picks, date) {
       game: pick.game,
       pick: pickText,
       bet,
-      bet_type: pick.betType,
+      bet_type: betType,
       odds: oddsNum,
       confidence: formatConfidence(pick.confidence),
       edge: pick.edge,
