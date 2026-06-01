@@ -1,5 +1,5 @@
 /**
- * Run: node api/pick-grading.test.js
+ * Run: npm run test:grading
  */
 import {
   findGameForPick,
@@ -8,7 +8,7 @@ import {
   resolvePickGrade,
   resolvePickSport,
   stripAmericanOddsFromText,
-} from './pick-utils.js'
+} from '../api/pick-utils.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)
