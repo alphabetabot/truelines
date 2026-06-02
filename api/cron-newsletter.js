@@ -3,6 +3,12 @@ import { postTweet } from './post-to-x.js'
 import { getSupabase } from './supabase-client.js'
 import { extractPicksFromResponse, storePicks } from './store-picks.js'
 import { sendNewsletterEmail, unsubscribeUrl } from './newsletter-utils.js'
+import {
+  NEWSLETTER_CRON_SCHEDULE,
+  claimDailyNewsletterSend,
+  completeNewsletterSend,
+  releaseNewsletterClaim,
+} from './newsletter-send-guard.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
@@ -555,9 +561,59 @@ function buildEmail(picksText, date, unsubscribeHref = 'https://trueoddsiq.com/u
 export default async function handler(req, res) {
   const secret = req.headers['x-newsletter-secret']
   const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
+  const forceSend = req.query?.force === 'true' || req.body?.force === true
 
   if (!isVercelCron && secret !== process.env.NEWSLETTER_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  const todayKey = pacificDateKey(new Date())
+  const cronSchedule = req.headers['x-vercel-cron-schedule'] || null
+  let claimedSend = false
+
+  if (isVercelCron && !forceSend && cronSchedule && cronSchedule !== NEWSLETTER_CRON_SCHEDULE) {
+    console.warn(`Ignoring newsletter cron on unexpected schedule: ${cronSchedule}`)
+    return res.json({
+      sent: 0,
+      skipped: true,
+      reason: 'unexpected_cron_schedule',
+      schedule: cronSchedule,
+      expected: NEWSLETTER_CRON_SCHEDULE,
+      message: 'Duplicate or legacy cron schedule blocked',
+    })
+  }
+
+  if (!forceSend) {
+    const claim = await claimDailyNewsletterSend(getSupabase(), todayKey, { cronSchedule })
+    if (!claim.claimed) {
+      const message =
+        claim.reason === 'already_sent_today'
+          ? 'Newsletter already sent today — duplicate run skipped'
+          : claim.reason === 'send_in_progress'
+            ? 'Newsletter send already in progress — duplicate run skipped'
+            : claim.reason === 'table_missing'
+              ? 'Newsletter dedup table missing — run create-newsletter-send-log.sql in Supabase'
+              : 'Newsletter not claimed'
+      console.log(`Newsletter claim skipped for ${todayKey}:`, claim.reason, cronSchedule)
+      if (claim.tableMissing) {
+        return res.status(503).json({
+          sent: 0,
+          error: 'newsletter_daily_sends table missing',
+          message,
+          date: todayKey,
+        })
+      }
+      return res.json({
+        sent: 0,
+        skipped: true,
+        reason: claim.reason || 'not_claimed',
+        date: todayKey,
+        cronSchedule,
+        sentAt: claim.sentAt,
+        message,
+      })
+    }
+    claimedSend = true
   }
 
   try {
@@ -616,6 +672,7 @@ export default async function handler(req, res) {
 
     if (error) throw error
     if (!subscribers?.length) {
+      if (claimedSend) await releaseNewsletterClaim(getSupabase(), todayKey)
       return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText, stored: storedPicks.length })
     }
 
@@ -640,6 +697,7 @@ export default async function handler(req, res) {
     }
 
     if (sendErrors.length) {
+      if (claimedSend) await releaseNewsletterClaim(getSupabase(), todayKey)
       return res.status(502).json({
         error: 'One or more newsletter emails failed to send',
         sent,
@@ -648,6 +706,9 @@ export default async function handler(req, res) {
         stored: storedPicks.length,
       })
     }
+
+    await completeNewsletterSend(getSupabase(), todayKey, sent)
+    claimedSend = false
 
     const topPickSection = picksText.split('---')[0] || picksText
     const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
@@ -677,8 +738,9 @@ export default async function handler(req, res) {
       console.warn('X post failed:', tweetErr.message)
     }
 
-    return res.json({ sent, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
+    return res.json({ sent, date: todayKey, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
   } catch (err) {
+    if (claimedSend) await releaseNewsletterClaim(getSupabase(), todayKey)
     console.error('Newsletter error:', err)
     return res.status(500).json({ error: err.message })
   }
