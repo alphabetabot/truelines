@@ -7,7 +7,9 @@ import {
   NEWSLETTER_CRON_SCHEDULE,
   claimDailyNewsletterSend,
   completeNewsletterSend,
+  getPacificDateKey,
   releaseNewsletterClaim,
+  uniqueSubscriberEmails,
 } from './newsletter-send-guard.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
@@ -561,9 +563,21 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const todayKey = pacificDateKey(new Date())
+  const todayKey = getPacificDateKey(new Date())
   const cronSchedule = req.headers['x-vercel-cron-schedule'] || null
   let claimedSend = false
+  let emailsDelivered = 0
+
+  // Block cron-job.org / manual hits — only Vercel 0 14 UTC (or ?force=true for recovery).
+  if (!forceSend && !isVercelCron) {
+    return res.json({
+      sent: 0,
+      skipped: true,
+      reason: 'external_trigger_disabled',
+      message:
+        'Daily newsletter only runs via Vercel cron (0 14 UTC, ~7 AM Pacific). Remove duplicate newsletter jobs on cron-job.org.',
+    })
+  }
 
   if (isVercelCron && !forceSend && cronSchedule && cronSchedule !== NEWSLETTER_CRON_SCHEDULE) {
     console.warn(`Ignoring newsletter cron on unexpected schedule: ${cronSchedule}`)
@@ -573,7 +587,8 @@ export default async function handler(req, res) {
       reason: 'unexpected_cron_schedule',
       schedule: cronSchedule,
       expected: NEWSLETTER_CRON_SCHEDULE,
-      message: 'Duplicate or legacy cron schedule blocked',
+      message:
+        'Duplicate or legacy cron schedule blocked (e.g. 0 15 UTC). Delete extra newsletter crons in Vercel → Settings → Cron Jobs.',
     })
   }
 
@@ -672,7 +687,7 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText, stored: storedPicks.length })
     }
 
-    const emails = subscribers.map(s => s.email)
+    const emails = uniqueSubscriberEmails(subscribers)
     let sent = 0
     const sendErrors = []
 
@@ -686,25 +701,34 @@ export default async function handler(req, res) {
           text: `TrueOddsIQ Daily Picks - ${date}\n\nView picks: https://trueoddsiq.com/picks\nUnsubscribe: ${unsubscribeUrl(email)}`,
         })
         sent++
+        emailsDelivered++
       } catch (sendErr) {
         console.error(`Newsletter send failed for ${email}:`, sendErr.message)
         sendErrors.push({ email, error: sendErr.message })
       }
     }
 
+    if (emailsDelivered > 0) {
+      const recorded = await completeNewsletterSend(getSupabase(), todayKey, sent)
+      claimedSend = false
+      if (!recorded) {
+        console.error('Newsletter sent but newsletter_daily_sends update failed — dedup may break tomorrow')
+      }
+    }
+
     if (sendErrors.length) {
-      if (claimedSend) await releaseNewsletterClaim(getSupabase(), todayKey)
+      if (claimedSend && emailsDelivered === 0) {
+        await releaseNewsletterClaim(getSupabase(), todayKey)
+      }
       return res.status(502).json({
         error: 'One or more newsletter emails failed to send',
         sent,
         failed: sendErrors.length,
         failures: sendErrors.slice(0, 10),
         stored: storedPicks.length,
+        dedupRecorded: emailsDelivered > 0,
       })
     }
-
-    await completeNewsletterSend(getSupabase(), todayKey, sent)
-    claimedSend = false
 
     const topPickSection = picksText.split('---')[0] || picksText
     const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
@@ -736,8 +760,12 @@ export default async function handler(req, res) {
 
     return res.json({ sent, date: todayKey, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
   } catch (err) {
-    if (claimedSend) await releaseNewsletterClaim(getSupabase(), todayKey)
+    if (claimedSend && emailsDelivered === 0) {
+      await releaseNewsletterClaim(getSupabase(), todayKey)
+    } else if (emailsDelivered > 0) {
+      await completeNewsletterSend(getSupabase(), todayKey, emailsDelivered)
+    }
     console.error('Newsletter error:', err)
-    return res.status(500).json({ error: err.message })
+    return res.status(500).json({ error: err.message, emailsDelivered })
   }
 }
