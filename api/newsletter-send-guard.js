@@ -95,7 +95,20 @@ export async function completeNewsletterSend(supabase, dateKey, subscriberCount)
   return true
 }
 
-/** Drop a failed claim so a manual ?force=true retry can run. */
+/** One email per recipient even if newsletter_subscribers has duplicate rows. */
+export function uniqueSubscriberEmails(subscribers) {
+  const seen = new Set()
+  const out = []
+  for (const row of subscribers || []) {
+    const email = String(row?.email || '').trim().toLowerCase()
+    if (!email || seen.has(email)) continue
+    seen.add(email)
+    out.push(email)
+  }
+  return out
+}
+
+/** Drop a failed claim so a manual ?force=true retry can run (only if no mail was sent). */
 export async function releaseNewsletterClaim(supabase, dateKey) {
   const { error } = await supabase
     .from('newsletter_daily_sends')
