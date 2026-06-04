@@ -435,6 +435,7 @@ CRITICAL RULES:
 7. Only pick games that have actual numerical odds in the reference list.
 8. Cross-book odds ranges are NOT line movement. Do not call them steam, public money, or reverse line movement.
 9. Prefer bets where the best available price is clearly listed with a book. Put that exact best book and price in the Bet line.
+10. SPORT MIX: The slate can include MLB, NBA, and NHL on the same day. When NBA or NHL games appear in MATCHUP REFERENCE with valid odds, include at least one NBA or NHL pick among your 3. Do not choose only MLB picks when playoff basketball or hockey games are available with valid odds.
 
 MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
 ${gameReference}

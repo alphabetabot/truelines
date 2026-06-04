@@ -3,7 +3,7 @@
 export const PERFORMANCE_PERIODS = [
   { key: '7d', label: '7 Days' },
   { key: '30d', label: '30 Days' },
-  { key: 'all', label: 'Season' },
+  { key: 'all', label: 'Total' },
 ]
 
 export function parsePickDate(dateStr) {

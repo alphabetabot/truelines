@@ -1,6 +1,7 @@
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
 import { requireSupabaseUser } from './auth-utils.js'
+import { pacificDateKey } from './date-utils.js'
 import { isFadePick } from './pick-utils.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Supabase environment variables are not configured' })
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  const today = pacificDateKey()
   const date = req.query?.date || today
   const listAll = req.query?.all === '1' || req.query?.all === 'true'
 
