@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TrueOddsIQ — Homepage Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,900;1,9..144,500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Instrument Sans', system-ui, sans-serif;
+      background: #f8fafc;
+      color: #0f172a;
+      line-height: 1.5;
+    }
+    .preview-banner {
+      background: #1e1b4b;
+      color: #c4b5fd;
+      text-align: center;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* —— Hero —— */
+    .hero {
+      background: linear-gradient(165deg, #0a0f1a 0%, #0f172a 45%, #1a2332 100%);
+      color: #fff;
+      padding: 56px 24px 64px;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -40%;
+      right: -20%;
+      width: 70%;
+      height: 120%;
+      background: radial-gradient(ellipse, rgba(245,158,11,0.12) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .hero-inner { max-width: 720px; margin: 0 auto; position: relative; z-index: 1; }
+    .eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #f59e0b;
+      margin-bottom: 16px;
+    }
+    .hero h1 {
+      font-family: 'Fraunces', Georgia, serif;
+      font-size: clamp(2rem, 6vw, 3.25rem);
+      font-weight: 900;
+      line-height: 1.08;
+      margin-bottom: 16px;
+    }
+    .hero h1 em {
+      font-style: italic;
+      font-weight: 500;
+      color: #fbbf24;
+      display: block;
+      font-size: 0.92em;
+      margin-top: 4px;
+    }
+    .hero-sub {
+      font-size: 1.05rem;
+      color: rgba(255,255,255,0.72);
+      max-width: 520px;
+      margin-bottom: 28px;
+    }
+    .hero-sub strong { color: #fff; font-weight: 600; }
+    .proof-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px 32px;
+      margin-bottom: 32px;
+      padding-bottom: 28px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .proof-item span.label {
+      display: block;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 2px;
+    }
+    .proof-item span.val {
+      font-family: 'Fraunces', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #4ade80;
+    }
+    .cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+    .btn-primary {
+      background: #f59e0b;
+      color: #0f172a;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: rgba(255,255,255,0.85);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    /* —— Sections —— */
+    section { max-width: 720px; margin: 0 auto; padding: 48px 24px; }
+    .section-label {
+      font-family: 'Fraunces', serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      margin-bottom: 8px;
+    }
+    .section-title {
+      font-family: 'Fraunces', serif;
+      font-size: 1.75rem;
+      font-weight: 900;
+      margin-bottom: 24px;
+      color: #0f172a;
+    }
+    .section-title i { font-style: italic; font-weight: 500; color: #b45309; }
+
+    /* —— Today's card —— */
+    .pick-hero {
+      background: #0f172a;
+      border-radius: 20px;
+      padding: 24px;
+      color: #fff;
+      margin-bottom: 12px;
+    }
+    .pick-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .badge-mlb {
+      background: rgba(34,197,94,0.2);
+      color: #4ade80;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+    .badge-top {
+      color: #f59e0b;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+    .pick-matchup { font-size: 13px; color: rgba(255,255,255,0.55); margin-bottom: 8px; }
+    .pick-line {
+      font-family: 'Fraunces', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .pick-edge {
+      font-size: 14px;
+      color: rgba(255,255,255,0.7);
+      font-style: italic;
+      line-height: 1.55;
+    }
+    .pick-bet { margin-top: 12px; font-size: 14px; font-weight: 600; color: #fbbf24; }
+    .locked-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .locked-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      border: 1px dashed #cbd5e1;
+    }
+    .locked-card .lock { font-size: 24px; margin-bottom: 8px; opacity: 0.5; }
+    .locked-card p { font-size: 13px; color: #64748b; font-weight: 600; }
+    .unlock-note {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+      color: #64748b;
+    }
+    .unlock-note strong { color: #0f172a; }
+
+    /* —— Free vs Premium: BORDERLESS typography layout —— */
+    .tiers {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      margin-top: 8px;
+    }
+    @media (max-width: 600px) { .tiers { grid-template-columns: 1fr; gap: 36px; } }
+    .tier-col h3 {
+      font-family: 'Fraunces', serif;
+      font-size: 1.25rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .tier-col.free h3 { color: #0369a1; }
+    .tier-col.premium h3 { color: #b91c1c; }
+    .tier-price {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    .tier-col.free .tier-price { color: #0ea5e9; }
+    .tier-col.premium .tier-price { color: #dc2626; font-family: 'Fraunces', serif; font-size: 1.1rem; }
+    .tier-list {
+      list-style: none;
+      border: none;
+    }
+    .tier-list li {
+      padding: 10px 0;
+      border: none;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 14px;
+      color: #475569;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .tier-list li:last-child { border-bottom: none; }
+    .tier-list li::before {
+      content: '→';
+      color: #f59e0b;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    .tier-col.premium .tier-list li::before { content: '✦'; color: #dc2626; }
+    .tier-list li strong { color: #0f172a; font-weight: 700; }
+    .tier-list li em { font-style: italic; color: #64748b; font-size: 13px; display: block; margin-top: 2px; }
+    .premium-plus {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 2px solid #fef2f2;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #991b1b;
+    }
+
+    /* —— Powers —— */
+    .powers-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px 32px;
+    }
+    @media (max-width: 500px) { .powers-grid { grid-template-columns: 1fr; } }
+    .power-item h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .power-item h4 .live { color: #16a34a; font-size: 10px; vertical-align: middle; margin-left: 6px; letter-spacing: 0.08em; }
+    .power-item h4 .soon { color: #94a3b8; font-size: 10px; font-weight: 600; font-style: italic; margin-left: 6px; }
+    .power-item p { font-size: 13px; color: #64748b; }
+
+    /* —— Footer strip —— */
+    .footer-note {
+      text-align: center;
+      padding: 32px 24px 48px;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="preview-banner">Design preview only — not live site</div>
+
+  <header class="hero">
+    <div class="hero-inner">
+      <p class="eyebrow">Vega · Daily AI Picks</p>
+      <h1>
+        Smarter bets start with
+        <em>better data.</em>
+      </h1>
+      <p class="hero-sub">
+        <strong>Three picks every morning.</strong> Graded in public. Real odds from six books — no tout hype.
+      </p>
+      <div class="proof-row">
+        <div class="proof-item">
+          <span class="label">Record</span>
+          <span class="val">34–33</span>
+        </div>
+        <div class="proof-item">
+          <span class="label">Units</span>
+          <span class="val">+15.77u</span>
+        </div>
+        <div class="proof-item">
+          <span class="label">Graded</span>
+          <span class="val" style="color:#fbbf24">67 picks</span>
+        </div>
+      </div>
+      <div class="cta-row">
+        <button class="btn-primary">Get today&apos;s full card — free</button>
+        <button class="btn-ghost">See today&apos;s pick ↓</button>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <p class="section-label">Today&apos;s card</p>
+    <h2 class="section-title">The <i>play</i> is below.</h2>
+
+    <div class="pick-hero">
+      <div class="pick-meta">
+        <span class="badge-mlb">MLB</span>
+        <span class="badge-top">TOP PICK</span>
+      </div>
+      <p class="pick-matchup">Seattle Mariners @ Detroit Tigers</p>
+      <p class="pick-line">Mariners ML</p>
+      <p class="pick-edge">Woo on the mound at plus money; short summary for guests — full edge with free account.</p>
+      <p class="pick-bet">−118 · Pinnacle</p>
+    </div>
+
+    <div class="locked-row">
+      <div class="locked-card">
+        <div class="lock">🔒</div>
+        <p>Pick #2<br><span style="font-weight:400;font-size:12px">Free account</span></p>
+      </div>
+      <div class="locked-card">
+        <div class="lock">🔒</div>
+        <p>Pick #3<br><span style="font-weight:400;font-size:12px">Free account</span></p>
+      </div>
+    </div>
+    <p class="unlock-note"><strong>Free account</strong> unlocks the full card + newsletter. No credit card.</p>
+  </section>
+
+  <section style="background:#fff; max-width:100%; padding-left:0; padding-right:0;">
+    <div style="max-width:720px; margin:0 auto; padding:0 24px;">
+      <p class="section-label">Compare</p>
+      <h2 class="section-title">Free <i>vs</i> Premium</h2>
+
+      <!-- Borderless: typography + light dividers only, no colored boxes -->
+      <div class="tiers">
+        <div class="tier-col free">
+          <h3>Free account</h3>
+          <p class="tier-price">$0 · forever</p>
+          <ul class="tier-list">
+            <li><strong>Daily picks</strong> with short summary<em>All 3 plays on the card</em></li>
+            <li><strong>Live odds</strong> across six books</li>
+            <li><strong>Public W–L tracker</strong></li>
+            <li><strong>Free newsletter</strong> every morning</li>
+          </ul>
+        </div>
+        <div class="tier-col premium">
+          <h3>Premium</h3>
+          <p class="tier-price">$19.95 / mo</p>
+          <p class="premium-plus">Everything in free, plus</p>
+          <ul class="tier-list">
+            <li><strong>In-depth report</strong> per pick<em>Stats, injuries, weather, line context</em></li>
+            <li><strong>Unlimited AI analysis</strong><em>Any game on the slate</em></li>
+            <li><strong>Closing line value</strong><em>Track your edge vs the close</em></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <p class="section-label">Methodology</p>
+    <h2 class="section-title">What <i>powers</i> our picks</h2>
+    <div class="powers-grid">
+      <div class="power-item">
+        <h4>Real-time odds <span class="live">LIVE</span></h4>
+        <p>Six major sportsbooks, updated continuously.</p>
+      </div>
+      <div class="power-item">
+        <h4>Best-line value <span class="live">LIVE</span></h4>
+        <p>We surface the number worth betting, not noise.</p>
+      </div>
+      <div class="power-item">
+        <h4>Vega AI analysis <span class="live">LIVE</span></h4>
+        <p>Picks built from real data — never invented stats.</p>
+      </div>
+      <div class="power-item">
+        <h4>Public track record <span class="live">LIVE</span></h4>
+        <p>Every pick graded to the game date.</p>
+      </div>
+      <div class="power-item">
+        <h4>Injury &amp; weather depth <span class="soon">Premium</span></h4>
+        <p>Full reports for subscribers.</p>
+      </div>
+      <div class="power-item">
+        <h4>Line movement &amp; CLV <span class="soon">Rolling out</span></h4>
+        <p>Closing line value tracking for Premium.</p>
+      </div>
+    </div>
+  </section>
+
+  <p class="footer-note">21+ · Informational only · Not a sportsbook · Past results don&apos;t guarantee future performance</p>
+</body>
+</html>
