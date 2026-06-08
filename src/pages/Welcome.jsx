@@ -98,7 +98,7 @@ export default function Welcome() {
       >
         <div className="max-w-2xl mx-auto relative z-10">
           <p className="text-xs font-bold uppercase mb-4" style={{ color: '#f59e0b', letterSpacing: '0.2em' }}>
-            Vega · Daily AI Picks
+            Vega&apos;s Daily AI Picks
           </p>
           <h1
             className="font-black leading-tight mb-4"
