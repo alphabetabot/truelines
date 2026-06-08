@@ -27,7 +27,7 @@ export default function AuthCallback() {
           }, { onConflict: 'email', ignoreDuplicates: true })
         }
         trackEvent('login', { method: 'email', source: 'email_confirm' })
-        navigate('/picks', { replace: true })
+        navigate('/odds', { replace: true })
       } else {
         navigate('/login', { replace: true })
       }

@@ -1,5 +1,5 @@
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
-import { Activity, BarChart2, Brain, Zap, Download, BookOpen } from 'lucide-react'
+import { Activity, BarChart2, Brain, Zap, Download, BookOpen, Lock } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import ScoreTicker from './ScoreTicker'
 import CollapsibleScoreTicker from './CollapsibleScoreTicker'
@@ -7,6 +7,7 @@ import PageMeta from './PageMeta'
 import CookieConsent, { openCookiePreferences } from './CookieConsent'
 import LogoLink from './LogoLink'
 import { useAuth } from '../lib/AuthContext'
+import { useSubscription } from '../hooks/useSubscription'
 import { getRouteMeta } from '../lib/routeMeta'
 import SeoNavBar from '../seo/components/SeoNavBar'
 import SeoFooterNav from '../seo/components/SeoFooterNav'
@@ -15,12 +16,12 @@ import { isAppWorkspaceRoute, showCollapsibleScoreTicker, hideGlobalScoreTicker 
 const NAV = [
   { to: '/odds', label: 'Live Odds', shortLabel: 'Odds', icon: Activity, exact: true },
   { to: '/compare', label: 'Line Compare', shortLabel: 'Compare', icon: BarChart2 },
-  { to: '/analysis', label: 'AI Analysis', shortLabel: 'Analysis', icon: Brain },
-  { to: '/picks', label: 'AI Picks', shortLabel: 'Picks', icon: Zap },
+  { to: '/analysis', label: 'AI Analysis', shortLabel: 'Analysis', icon: Brain, premium: true },
+  { to: '/picks', label: 'AI Picks', shortLabel: 'Picks', icon: Zap, premium: true },
   { to: '/blog', label: 'Blog', shortLabel: 'Blog', icon: BookOpen },
 ]
 
-function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact }) {
+function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact, locked }) {
   const displayLabel = compact ? shortLabel : label
   const iconSize = compact ? 13 : 14
   const fontSize = compact ? 12 : 14
@@ -41,6 +42,7 @@ function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact }) {
     >
       <Icon size={iconSize} />
       {displayLabel}
+      {locked && <Lock size={10} style={{ opacity: 0.85 }} />}
     </NavLink>
   )
 }
@@ -60,6 +62,7 @@ function RouteSEO() {
 
 export default function Layout({ children }) {
   const { user, signOut } = useAuth()
+  const { isPremium } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
   const [installPrompt, setInstallPrompt] = useState(null)
@@ -143,19 +146,19 @@ export default function Layout({ children }) {
               style={{ height: 36, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}
             >
               {NAV.map(item => (
-                <PrimaryNavLink key={item.to} {...item} compact />
+                <PrimaryNavLink key={item.to} {...item} compact locked={item.premium && !isPremium} />
               ))}
             </div>
           ) : (
             <>
               <div className="flex items-center gap-1" style={{ height: 40 }}>
                 {NAV.slice(0, 2).map(item => (
-                  <PrimaryNavLink key={item.to} {...item} compact={false} />
+                  <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
                 ))}
               </div>
               <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
                 {NAV.slice(2).map(item => (
-                  <PrimaryNavLink key={item.to} {...item} compact={false} />
+                  <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
                 ))}
               </div>
             </>

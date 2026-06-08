@@ -2,7 +2,7 @@ import { Navigate } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
 import Welcome from './Welcome'
 
-/** Homepage: landing for guests; signed-in users go to today's picks. */
+/** Homepage: landing for guests; signed-in users go to live odds. */
 export default function Home() {
   const { user, loading } = useAuth()
 
@@ -15,7 +15,7 @@ export default function Home() {
   }
 
   if (user) {
-    return <Navigate to="/picks" replace />
+    return <Navigate to="/odds" replace />
   }
 
   return <Welcome />

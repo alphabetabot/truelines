@@ -8,7 +8,7 @@ export default function LogoLink({
   style = {},
 }) {
   const { user } = useAuth()
-  const homeTo = user ? '/picks' : '/'
+  const homeTo = user ? '/odds' : '/'
 
   return (
     <Link

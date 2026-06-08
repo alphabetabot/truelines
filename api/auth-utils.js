@@ -65,3 +65,25 @@ export async function requireSupabaseUser(req, res) {
 
   return response.json()
 }
+
+export async function requirePremiumUser(req, res) {
+  const user = await requireSupabaseUser(req, res)
+  if (!user) return null
+
+  try {
+    const { getSubscriptionRow, isPremiumRow } = await import('./billing-utils.js')
+    const row = await getSubscriptionRow(user.id)
+    if (!isPremiumRow(row)) {
+      res.status(402).json({
+        error: 'Premium subscription required',
+        code: 'premium_required',
+      })
+      return null
+    }
+    return user
+  } catch (err) {
+    console.error('Premium check failed:', err.message)
+    res.status(500).json({ error: 'Unable to verify subscription status' })
+    return null
+  }
+}
