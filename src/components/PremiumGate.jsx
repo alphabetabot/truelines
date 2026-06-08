@@ -51,7 +51,7 @@ export default function PremiumGate({
         {description}
       </p>
       <p className="text-sm font-bold mb-6" style={{ color: '#0f172a' }}>
-        {PREMIUM_PRICE_DISPLAY} · same 3 daily picks + unlimited AI research
+        {PREMIUM_PRICE_DISPLAY} · full daily picks + unlimited AI research
       </p>
 
       <div className="flex flex-col sm:flex-row gap-3 justify-center">

@@ -1,11 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import PremiumTeaser from '../components/PremiumTeaser'
+import { Sparkles } from 'lucide-react'
 import SocialProofBar from '../components/SocialProofBar'
 import { useAuth } from '../lib/AuthContext'
 import { useSubscription } from '../hooks/useSubscription'
 import { openBillingPortal, startPremiumCheckout, syncCheckoutSession } from '../lib/billingApi'
+import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 import { trackEvent } from '../lib/analytics'
+
+const PREMIUM_FEATURES = [
+  {
+    title: 'Full AI Picks tab',
+    detail: 'All 3 daily picks with full write-ups, confidence scores, and on-demand generation.',
+  },
+  {
+    title: 'Unlimited AI analysis',
+    detail: 'Deep research on any game — injuries, weather, park factors, and advanced stats.',
+  },
+  {
+    title: 'Vega + ChatGPT research',
+    detail: 'No caps on AI breakdowns. Run as many reports as you need each slate.',
+  },
+]
 
 export default function Premium() {
   const { user, loading: authLoading } = useAuth()
@@ -29,7 +45,7 @@ export default function Premium() {
         await syncCheckoutSession(sessionId)
         if (!cancelled) {
           await refresh()
-          setMessage('Premium is active. Unlimited AI analysis is unlocked.')
+          setMessage('Premium is active. AI Picks and AI Analysis are unlocked.')
           trackEvent('premium_checkout_success')
         }
       } catch (err) {
@@ -83,101 +99,175 @@ export default function Premium() {
     : null
 
   return (
-    <div className="max-w-3xl mx-auto py-2">
-      <div className="mb-6">
-        <h1 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>
-          Premium analysis
-          {isPremium && (
-            <span className="ml-2 text-sm font-bold uppercase px-2 py-1 rounded-md" style={{ background: '#dcfce7', color: '#166534' }}>
-              Active
-            </span>
+    <div style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif" }}>
+      <header
+        className="relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(165deg, #0a0f1a 0%, #0f172a 45%, #1a2332 100%)',
+          color: '#fff',
+          margin: '0 -1rem',
+          padding: '40px 1.5rem 48px',
+        }}
+      >
+        <div className="max-w-2xl mx-auto relative z-10">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles size={18} style={{ color: '#f59e0b' }} />
+            <p className="text-xs font-bold uppercase" style={{ color: '#f59e0b', letterSpacing: '0.2em' }}>
+              TrueOddsIQ Premium
+            </p>
+            {isPremium && (
+              <span
+                className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md"
+                style={{ background: '#22c55e', color: '#0f172a', letterSpacing: '0.08em' }}
+              >
+                Active
+              </span>
+            )}
+          </div>
+
+          <h1
+            className="font-black leading-tight mb-3"
+            style={{
+              fontFamily: "'Fraunces', Georgia, serif",
+              fontSize: 'clamp(1.75rem, 5vw, 2.75rem)',
+            }}
+          >
+            Unlock AI Picks
+            <em
+              className="block not-italic"
+              style={{ color: '#fbbf24', fontWeight: 500, fontStyle: 'italic', fontSize: '0.9em', marginTop: 4 }}
+            >
+              and unlimited analysis.
+            </em>
+          </h1>
+
+          <p className="text-base mb-6" style={{ color: 'rgba(255,255,255,0.72)', maxWidth: 520 }}>
+            Full daily card, deep matchup reports, and uncapped Vega research —{' '}
+            <strong style={{ color: '#fde68a' }}>{PREMIUM_PRICE_DISPLAY}</strong>.
+          </p>
+
+          <SocialProofBar compact dark />
+
+          {message && (
+            <div
+              className="rounded-xl p-3 mt-5 text-sm"
+              style={{ background: 'rgba(59,130,246,0.15)', border: '1px solid rgba(147,197,253,0.35)', color: '#bfdbfe' }}
+            >
+              {message}
+            </div>
           )}
-        </h1>
-        <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>
-          Unlock the <strong style={{ color: '#0f172a' }}>AI Picks</strong> and <strong style={{ color: '#0f172a' }}>AI Analysis</strong> tabs —
-          full daily card, unlimited Vega/ChatGPT research, injuries, weather, and stats. <strong style={{ color: '#0f172a' }}>$19.95/month</strong>.
+
+          {error && (
+            <div
+              className="rounded-xl p-3 mt-5 text-sm"
+              style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(252,165,165,0.35)', color: '#fecaca' }}
+            >
+              {error}
+            </div>
+          )}
+
+          {isPremium && (
+            <div
+              className="rounded-xl p-4 mt-5 text-sm"
+              style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(134,239,172,0.35)', color: '#bbf7d0' }}
+            >
+              <strong>Premium active.</strong>
+              {periodEndLabel && (
+                <span>
+                  {' '}Renews {cancelAtPeriodEnd ? 'until' : 'on'} {periodEndLabel}
+                  {cancelAtPeriodEnd ? ' (cancels at period end)' : ''}.
+                </span>
+              )}
+              {' '}Open <Link to="/picks" style={{ color: '#4ade80', fontWeight: 600 }}>AI Picks</Link>
+              {' '}or <Link to="/analysis" style={{ color: '#4ade80', fontWeight: 600 }}>AI Analysis</Link>.
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-3 mt-6">
+            {isPremium ? (
+              <button
+                type="button"
+                onClick={handleManageBilling}
+                disabled={busy || subLoading}
+                className="px-6 py-3.5 rounded-xl text-sm font-bold"
+                style={{ background: '#f59e0b', color: '#0f172a' }}
+              >
+                {busy ? 'Opening…' : 'Manage billing'}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={handleSubscribe}
+                disabled={busy || authLoading || subLoading}
+                className="px-7 py-3.5 rounded-xl text-sm font-extrabold"
+                style={{ background: '#f59e0b', color: '#0f172a' }}
+              >
+                {busy ? 'Redirecting…' : `Subscribe — ${PREMIUM_PRICE_DISPLAY}`}
+              </button>
+            )}
+            <Link
+              to={isPremium ? '/picks' : '/login'}
+              state={!user ? { from: '/premium' } : undefined}
+              className="px-6 py-3.5 rounded-xl text-sm font-semibold inline-flex items-center"
+              style={{ background: 'transparent', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.2)' }}
+            >
+              {!user ? 'Sign in first' : isPremium ? 'Go to AI Picks' : 'Preview locked tabs'}
+            </Link>
+          </div>
+
+          {!authLoading && !user && (
+            <p className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+              Sign in to subscribe. Free accounts keep odds, newsletter, and the public tracker.
+            </p>
+          )}
+        </div>
+      </header>
+
+      <div className="max-w-2xl mx-auto py-8">
+        <section
+          className="rounded-2xl p-5 mb-6 relative"
+          style={{
+            background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
+            border: '2px solid #f59e0b',
+            boxShadow: '0 12px 40px rgba(245, 158, 11, 0.18)',
+            color: '#fff',
+          }}
+        >
+          <span
+            className="absolute -top-2.5 right-4 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md"
+            style={{ background: '#f59e0b', color: '#0f172a', letterSpacing: '0.1em' }}
+          >
+            What you get
+          </span>
+          <h2
+            className="font-black text-xl mb-4"
+            style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#fbbf24' }}
+          >
+            Premium includes
+          </h2>
+          {PREMIUM_FEATURES.map(f => (
+            <div
+              key={f.title}
+              className="rounded-xl p-3.5 mb-2.5 last:mb-0"
+              style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
+            >
+              <strong className="block text-sm font-bold text-white mb-1">{f.title}</strong>
+              <span className="text-xs italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
+                {f.detail}
+              </span>
+            </div>
+          ))}
+          <p className="text-xs mt-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            Odds, newsletter, and the public tracker stay free. Cancel Premium anytime from billing settings.
+          </p>
+        </section>
+
+        <p className="text-center text-sm mt-8">
+          <Link to="/welcome" style={{ color: '#2563eb', fontWeight: 600 }}>← Back to welcome</Link>
+          {' · '}
+          <Link to="/odds" style={{ color: '#2563eb', fontWeight: 600 }}>Live odds</Link>
         </p>
       </div>
-
-      <SocialProofBar compact />
-
-      {!authLoading && !user && (
-        <div className="rounded-xl p-4 mb-4 text-sm" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
-          <Link to="/login" state={{ from: '/premium' }} style={{ color: '#b45309', fontWeight: 700 }}>
-            Sign in
-          </Link>
-          {' '}to subscribe. Free accounts still get all 3 daily picks.
-        </div>
-      )}
-
-      {isPremium && (
-        <div className="rounded-xl p-4 mb-4 text-sm" style={{ background: '#ecfdf5', border: '1px solid #86efac', color: '#166534' }}>
-          <strong>Premium active.</strong>
-          {periodEndLabel && (
-            <span>
-              {' '}Renews {cancelAtPeriodEnd ? 'until' : 'on'} {periodEndLabel}
-              {cancelAtPeriodEnd ? ' (cancels at period end)' : ''}.
-            </span>
-          )}
-          {' '}Use <Link to="/analysis" style={{ color: '#15803d', fontWeight: 600 }}>AI Analysis</Link> on any game.
-        </div>
-      )}
-
-      {message && (
-        <div className="rounded-xl p-3 mb-4 text-sm" style={{ background: '#eff6ff', border: '1px solid #bfdbfe', color: '#1d4ed8' }}>
-          {message}
-        </div>
-      )}
-
-      {error && (
-        <div className="rounded-xl p-3 mb-4 text-sm" style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}>
-          {error}
-        </div>
-      )}
-
-      <div className="flex flex-wrap gap-3 mb-6">
-        {isPremium ? (
-          <button
-            type="button"
-            onClick={handleManageBilling}
-            disabled={busy || subLoading}
-            className="px-5 py-3 rounded-xl text-sm font-bold"
-            style={{ background: '#0f172a', color: '#fff' }}
-          >
-            {busy ? 'Opening…' : 'Manage billing'}
-          </button>
-        ) : (
-          <button
-            type="button"
-            onClick={handleSubscribe}
-            disabled={busy || authLoading || subLoading}
-            className="px-5 py-3 rounded-xl text-sm font-bold"
-            style={{ background: '#f59e0b', color: '#0f172a' }}
-          >
-            {busy ? 'Redirecting…' : 'Subscribe — $19.95/mo'}
-          </button>
-        )}
-        <Link
-          to="/analysis"
-          className="px-5 py-3 rounded-xl text-sm font-bold inline-flex items-center"
-          style={{ background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0' }}
-        >
-          {isPremium ? 'Run AI analysis' : 'Preview analysis page'}
-        </Link>
-      </div>
-
-      <PremiumTeaser showWaitlist={false} />
-
-      <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
-        <strong>What stays free:</strong> live odds, line compare, homepage pick preview, newsletter email, and the public tracker.
-        Premium unlocks the AI Picks and AI Analysis tabs.
-      </div>
-
-      <p className="text-center text-sm mt-8">
-        <Link to="/welcome" style={{ color: '#2563eb', fontWeight: 600 }}>← Back to welcome</Link>
-        {' · '}
-        <Link to="/odds" style={{ color: '#2563eb', fontWeight: 600 }}>Live odds</Link>
-      </p>
     </div>
   )
 }

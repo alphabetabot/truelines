@@ -6,13 +6,6 @@ import { trackEvent } from '../lib/analytics'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
-const FREE_ROWS = [
-  ['Top pick preview', 'Homepage teaser'],
-  ['Live odds', '6 books'],
-  ['Public tracker', 'W–L graded'],
-  ['Newsletter', 'Morning email'],
-]
-
 const PREMIUM_FEATURES = [
   {
     title: 'Full AI Picks tab',
@@ -150,7 +143,7 @@ export default function Welcome() {
               className="px-7 py-3.5 rounded-xl font-bold text-sm"
               style={{ background: '#f59e0b', color: '#0f172a' }}
             >
-              Get today&apos;s full card — free
+              Create free account
             </button>
             <button
               type="button"
@@ -224,124 +217,77 @@ export default function Welcome() {
               <button
                 key={n}
                 type="button"
-                onClick={() => ctaSignup(`locked_pick_${n}`)}
+                onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: `locked_pick_${n}` }); navigate('/premium') }}
                 className="rounded-2xl p-5 text-center w-full"
                 style={{ background: '#fff', border: '1px dashed #cbd5e1', cursor: 'pointer' }}
               >
                 <div className="text-2xl mb-2 opacity-50">🔒</div>
                 <p className="text-sm font-bold" style={{ color: '#64748b' }}>
                   Pick #{n}
-                  <span className="block font-normal text-xs mt-0.5">Free account</span>
+                  <span className="block font-normal text-xs mt-0.5">Premium</span>
                 </p>
               </button>
             ))}
           </div>
           <p className="text-center text-sm" style={{ color: '#64748b' }}>
-            <button type="button" onClick={() => ctaSignup('unlock_note')} className="font-bold underline" style={{ color: '#0f172a', background: 'none', border: 'none', cursor: 'pointer' }}>
-              Free account
-            </button>
-            {' '}unlocks the full card + newsletter. No credit card.
+            <Link to="/premium" className="font-bold underline" style={{ color: '#0f172a' }}>
+              Premium
+            </Link>
+            {' '}unlocks the full daily card. Free accounts get newsletter + public tracker.
           </p>
         </section>
 
-        {/* Free vs Premium */}
+        {/* Premium */}
         <section className="py-8">
           <p className="text-xs font-bold uppercase mb-2" style={{ color: '#94a3b8', letterSpacing: '0.18em', fontFamily: "'Fraunces', Georgia, serif" }}>
-            Compare
+            Upgrade
           </p>
           <h2 className="font-black text-2xl sm:text-3xl mb-6" style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#0f172a' }}>
-            Free <em style={{ fontStyle: 'italic', fontWeight: 500, color: '#b45309' }}>vs</em> Premium
+            Unlock <em style={{ fontStyle: 'italic', fontWeight: 500, color: '#b45309' }}>Premium</em>
           </h2>
 
-          <div className="grid gap-5 sm:grid-cols-[0.85fr_1.2fr] items-start">
-            <div
-              className="rounded-2xl p-4"
-              style={{ background: '#f8fafc', border: '2px solid #0f172a' }}
+          <div
+            className="rounded-2xl p-5 relative max-w-xl"
+            style={{
+              background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
+              border: '2px solid #f59e0b',
+              boxShadow: '0 12px 40px rgba(245, 158, 11, 0.18)',
+              color: '#fff',
+            }}
+          >
+            <span
+              className="absolute -top-2.5 right-4 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md"
+              style={{ background: '#f59e0b', color: '#0f172a', letterSpacing: '0.1em' }}
             >
-              <h3 className="font-black text-lg mb-1" style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#0369a1' }}>
-                Free account
-              </h3>
-              <p className="text-sm font-semibold mb-4" style={{ color: '#0ea5e9' }}>$0</p>
-              <div className="rounded-lg overflow-hidden" style={{ border: '2px solid #0f172a', background: '#fff' }}>
-                <table className="w-full border-collapse" style={{ fontSize: 14, fontWeight: 700 }}>
-                  <thead>
-                    <tr>
-                      <th
-                        colSpan={2}
-                        className="text-left px-3 py-2 text-xs uppercase"
-                        style={{ background: '#0f172a', color: '#fff', letterSpacing: '0.06em' }}
-                      >
-                        Included
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {FREE_ROWS.map(([feature, detail], i) => (
-                      <tr key={feature} style={{ background: i % 2 ? '#f8fafc' : '#fff' }}>
-                        <td className="px-3 py-2 border-b border-slate-100" style={{ color: '#0f172a', width: '42%' }}>
-                          {feature}
-                        </td>
-                        <td className="px-3 py-2 border-b border-slate-100 text-sm" style={{ color: '#475569', fontWeight: 600 }}>
-                          {detail}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              Best value
+            </span>
+            <h3 className="font-black text-xl mb-1" style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#fbbf24' }}>
+              Premium
+            </h3>
+            <p className="font-bold text-lg mb-4" style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#fde68a' }}>
+              $19.95 / month
+            </p>
+            {PREMIUM_FEATURES.map(f => (
+              <div
+                key={f.title}
+                className="rounded-xl p-3.5 mb-2.5 last:mb-0"
+                style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
+              >
+                <strong className="block text-sm font-bold text-white mb-1">{f.title}</strong>
+                <span className="text-xs italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>{f.detail}</span>
               </div>
-              <button
-                type="button"
-                onClick={() => ctaSignup('free_tier')}
-                className="w-full mt-4 py-2.5 rounded-lg text-sm font-bold"
-                style={{ background: '#0f172a', color: '#fff' }}
-              >
-                Create free account
-              </button>
-            </div>
-
-            <div
-              className="rounded-2xl p-5 relative"
-              style={{
-                background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
-                border: '2px solid #f59e0b',
-                boxShadow: '0 12px 40px rgba(245, 158, 11, 0.18)',
-                color: '#fff',
-              }}
+            ))}
+            <Link
+              to="/premium"
+              onClick={() => trackEvent('welcome_cta', { action: 'premium' })}
+              className="block w-full mt-4 py-3 rounded-lg text-center text-sm font-extrabold"
+              style={{ background: '#f59e0b', color: '#0f172a' }}
             >
-              <span
-                className="absolute -top-2.5 right-4 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md"
-                style={{ background: '#f59e0b', color: '#0f172a', letterSpacing: '0.1em' }}
-              >
-                Best value
-              </span>
-              <h3 className="font-black text-xl mb-1" style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#fbbf24' }}>
-                Premium
-              </h3>
-              <p className="font-bold text-lg mb-4" style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#fde68a' }}>
-                $19.95 / month
-              </p>
-              <p className="font-bold text-base mb-4 text-white">
-                Everything in free account, plus
-              </p>
-              {PREMIUM_FEATURES.map(f => (
-                <div
-                  key={f.title}
-                  className="rounded-xl p-3.5 mb-2.5 last:mb-0"
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
-                >
-                  <strong className="block text-sm font-bold text-white mb-1">{f.title}</strong>
-                  <span className="text-xs italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>{f.detail}</span>
-                </div>
-              ))}
-              <Link
-                to="/premium"
-                onClick={() => trackEvent('welcome_cta', { action: 'premium' })}
-                className="block w-full mt-4 py-3 rounded-lg text-center text-sm font-extrabold"
-                style={{ background: '#f59e0b', color: '#0f172a' }}
-              >
-                Upgrade to Premium
-              </Link>
-            </div>
+              Upgrade to Premium
+            </Link>
+            <p className="text-xs mt-4 text-center leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+              Odds, newsletter, and the public tracker stay free.
+            </p>
           </div>
         </section>
 

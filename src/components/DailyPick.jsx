@@ -96,7 +96,7 @@ export default function DailyPick() {
         )}
         {!user && pick.edge && edgeDisplay !== pick.edge && (
           <p className="text-xs mb-3" style={{ color: 'rgba(245,158,11,0.85)' }}>
-            Free account unlocks full write-up for all 3 picks · Premium later adds injury, weather &amp; stat deep dives
+            Premium unlocks full write-ups for all 3 picks plus injury, weather &amp; stat deep dives
           </p>
         )}
         <div className="flex items-center justify-between">
@@ -104,11 +104,11 @@ export default function DailyPick() {
             {pick.bet}
           </span>
           <button
-            onClick={() => navigate(user ? '/picks' : '/login')}
+            onClick={() => navigate('/premium')}
             className="flex items-center gap-1 text-xs font-bold"
             style={{ color: '#f59e0b' }}
           >
-            {user ? 'See all 3 picks' : 'Sign up for all 3 picks'} <ChevronRight size={13} />
+            {user ? 'Unlock all 3 picks' : 'Get Premium picks'} <ChevronRight size={13} />
           </button>
         </div>
       </div>
@@ -117,7 +117,7 @@ export default function DailyPick() {
         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
           {user
             ? 'For informational purposes only · Always bet responsibly · 21+'
-            : 'Public preview — brief edge only · Free account = all 3 picks · 21+'}
+            : 'Public preview — brief edge only · Premium = full card · 21+'}
         </p>
       </div>
     </div>

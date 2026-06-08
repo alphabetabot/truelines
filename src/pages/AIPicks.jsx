@@ -12,7 +12,6 @@ import { useNavigate } from 'react-router-dom'
 import { getAuthHeaders } from '../lib/authHeaders'
 import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 import { briefEdgeSummary } from '../lib/pickText'
-import PremiumTeaser from '../components/PremiumTeaser'
 import PerformanceTracker from '../components/PerformanceTracker'
 import DailyPick from '../components/DailyPick'
 import PickPerformanceHero from '../components/PickPerformanceHero'
@@ -88,14 +87,14 @@ function LockedPickCard({ index, onUnlock }) {
         <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
       </div>
       <div className="p-6 text-center">
-        <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Included with a free account</p>
+        <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Premium subscribers only</p>
         <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-          Unlock picks #{index + 1}–{DAILY_NEWSLETTER_PICK_COUNT} plus email delivery and the full pick tracker.
+          Picks #{index + 1}–{DAILY_NEWSLETTER_PICK_COUNT} are on the full AI Picks tab with a Premium subscription.
         </p>
         <button type="button" onClick={onUnlock}
           className="px-5 py-2.5 rounded-xl font-bold text-sm"
-          style={{ background: '#0f172a', color: '#fff' }}>
-          Create free account
+          style={{ background: '#f59e0b', color: '#0f172a' }}>
+          View Premium
         </button>
       </div>
     </div>
@@ -226,8 +225,8 @@ export default function AIPicks() {
   }, [user])
 
   const subtitle = user
-    ? "Your full daily newsletter slate · Updated each morning (Pacific)"
-    : `Today's top pick with a brief summary below · Free account unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups`
+    ? 'Your full daily newsletter slate · Updated each morning (Pacific)'
+    : `Today's top pick preview · Premium unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups`
 
   const lockedCount = Math.max(0, DAILY_NEWSLETTER_PICK_COUNT - (user ? storedPicks.length : FREE_PUBLIC_PICK_COUNT))
   const performance = usePickPerformanceData()
@@ -253,13 +252,13 @@ export default function AIPicks() {
         <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
           style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
           <p className="text-sm" style={{ color: '#92400e' }}>
-            Today&apos;s top pick with a short summary below. Free account = all {DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups.
-            Premium subscribers get deep injury, weather, and stat analysis per game.
+            Today&apos;s top pick with a short summary below. Premium unlocks all {DAILY_NEWSLETTER_PICK_COUNT} picks,
+            full write-ups, and deep injury, weather, and stat analysis.
           </p>
-          <button type="button" onClick={() => navigate('/login')}
+          <button type="button" onClick={() => navigate('/premium')}
             className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"
-            style={{ background: '#0f172a', color: '#fff' }}>
-            Unlock all {DAILY_NEWSLETTER_PICK_COUNT} picks — free
+            style={{ background: '#f59e0b', color: '#0f172a' }}>
+            Upgrade to Premium
           </button>
         </div>
       )}
@@ -340,7 +339,7 @@ export default function AIPicks() {
                 <LockedPickCard
                   key={`locked-${i + FREE_PUBLIC_PICK_COUNT}`}
                   index={i + FREE_PUBLIC_PICK_COUNT}
-                  onUnlock={() => navigate('/login')}
+                  onUnlock={() => navigate('/premium')}
                 />
               ))}
             </div>
@@ -356,9 +355,6 @@ export default function AIPicks() {
               loading={performance.loading}
               error={performance.error}
             />
-          </div>
-          <div className="mt-10 pt-8" style={{ borderTop: '1px solid var(--border)' }}>
-            <PremiumTeaser />
           </div>
         </>
       )}

@@ -52,7 +52,7 @@ export const SEO_ROUTE_META = {
   '/ai-sports-picks': {
     title: 'AI Sports Picks — Daily Analysis & Free Preview',
     description:
-      'AI-assisted daily picks for MLB, NBA, and NHL with transparent tracking. Free top pick preview; full slate with a free account. Informational only.',
+      'AI-assisted daily picks for MLB, NBA, and NHL with transparent tracking. Free top pick preview; full slate with Premium. Informational only.',
   },
   '/sportsbook-comparison': {
     title: 'Sportsbook Odds Comparison — 6 Books Side by Side',
@@ -105,7 +105,7 @@ export function getPicksSportFaqs(sport) {
     },
     {
       question: 'How do I see the full daily pick slate?',
-      answer: 'Create a free account to unlock all three daily picks, email delivery, and the performance tracker.',
+      answer: 'Subscribe to Premium to unlock all three daily picks on the AI Picks tab, plus unlimited AI analysis. Free accounts still get newsletter email and the public tracker.',
     },
   ]
 }
@@ -113,7 +113,7 @@ export function getPicksSportFaqs(sport) {
 export const AI_PICKS_FAQS = [
   {
     question: 'What are AI sports picks on TrueOddsIQ?',
-    answer: 'Each morning our pipeline reviews live odds and matchup data to surface a short list of bets. The homepage shows a free top pick preview; registered users get the full three-pick slate.',
+    answer: 'Each morning our pipeline reviews live odds and matchup data to surface a short list of bets. The homepage shows a free top pick preview; Premium subscribers get the full three-pick slate.',
   },
   {
     question: 'Is this a sportsbook?',
