@@ -1,13 +1,22 @@
 import { Link } from 'react-router-dom'
 import { SEO_FOOTER_SECTIONS } from '../seoNavLinks'
 
-export default function SeoFooterNav() {
+export default function SeoFooterNav({ variant = 'default' }) {
+  const marketing = variant === 'marketing'
+
   return (
     <div
-      className="max-w-5xl mx-auto w-full py-4 px-2 mb-2 rounded-xl"
-      style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+      className={`max-w-5xl mx-auto w-full rounded-xl ${marketing ? 'py-6 px-4 sm:px-6' : 'py-4 px-2 mb-2'}`}
+      style={{
+        background: marketing ? '#fff' : '#f8fafc',
+        border: marketing ? '2px solid #0f172a' : '1px solid #e2e8f0',
+        boxShadow: marketing ? '0 8px 24px rgba(15, 23, 42, 0.08)' : undefined,
+      }}
     >
-      <p className="text-xs font-black uppercase tracking-wider mb-3 text-center" style={{ color: '#64748b' }}>
+      <p
+        className={`font-black uppercase tracking-wider mb-3 text-center ${marketing ? 'text-sm' : 'text-xs'}`}
+        style={{ color: '#0f172a' }}
+      >
         Betting guides &amp; sport pages
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
