@@ -50,13 +50,13 @@ export default function DailyPick({ showEmpty = false }) {
   }, [])
 
   if (loading) return (
-    <div className="rounded-2xl animate-pulse" style={{ background: '#0f172a', height: 140 }} />
+    <div className="rounded-2xl p-5 mb-5 animate-pulse" style={{ background: '#0f172a', height: 140 }} />
   )
 
   if (!pick) {
     if (!showEmpty) return null
     return (
-      <div className="rounded-xl p-6 text-center" style={{ background: '#fff', border: '2px solid #e2e8f0' }}>
+      <div className="rounded-xl p-6 mb-5 text-center" style={{ background: '#fff', border: '2px solid #e2e8f0' }}>
         <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>Picks publish every morning</p>
         <button
           type="button"
@@ -73,7 +73,7 @@ export default function DailyPick({ showEmpty = false }) {
   const edgeDisplay = user ? pick.edge : briefEdgeSummary(pick.edge)
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid #f59e0b', background: '#0f172a' }}>
+    <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '2px solid #f59e0b', background: '#0f172a' }}>
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: 'rgba(245,158,11,0.15)', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#f59e0b' }}>
