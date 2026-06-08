@@ -77,8 +77,8 @@ export default function Auth({ onAuth = () => {} }) {
         <LogoLink height={48} maxWidth={280} style={{ margin: '0 auto 12px', justifyContent: 'center' }} />
         <p className="text-sm" style={{ color: '#64748b' }}>
           {mode === 'login'
-            ? 'Sign in for all daily picks, tracker, and analysis'
-            : 'Free account — all 3 daily picks, email, and tracker'}
+            ? 'Sign in for odds, newsletter, and tracker — Premium unlocks AI Picks & Analysis'
+            : 'Free account — live odds, newsletter email, and public tracker'}
         </p>
       </div>
 

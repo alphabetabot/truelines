@@ -28,8 +28,8 @@ export default function SeoPicksSportPage() {
     <SeoPageLayout meta={{ ...meta, path }}>
       <SEOHero
         title={`${sport.label} AI picks & analysis`}
-        subtitle={`See how TrueOddsIQ surfaces ${sport.label} bets with odds context and public grading. Free top pick preview daily; full slate with a free account.`}
-        primaryCta={{ to: '/picks', label: 'View today\'s picks' }}
+        subtitle={`See how TrueOddsIQ surfaces ${sport.label} bets with odds context and public grading. Free top pick preview daily; full slate with Premium.`}
+        primaryCta={{ to: '/premium', label: 'Upgrade to Premium' }}
         secondaryCta={{ to: '/login', label: 'Create free account' }}
       />
       <AIPicksExplainer sportLabel={sport.label} pickSport={sport.pickSport} />

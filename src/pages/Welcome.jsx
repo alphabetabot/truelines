@@ -150,7 +150,7 @@ export default function Welcome() {
               className="px-7 py-3.5 rounded-xl font-bold text-sm"
               style={{ background: '#f59e0b', color: '#0f172a' }}
             >
-              Get today&apos;s full card — free
+              Create free account
             </button>
             <button
               type="button"
@@ -224,23 +224,23 @@ export default function Welcome() {
               <button
                 key={n}
                 type="button"
-                onClick={() => ctaSignup(`locked_pick_${n}`)}
+                onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: `locked_pick_${n}` }); navigate('/premium') }}
                 className="rounded-2xl p-5 text-center w-full"
                 style={{ background: '#fff', border: '1px dashed #cbd5e1', cursor: 'pointer' }}
               >
                 <div className="text-2xl mb-2 opacity-50">🔒</div>
                 <p className="text-sm font-bold" style={{ color: '#64748b' }}>
                   Pick #{n}
-                  <span className="block font-normal text-xs mt-0.5">Free account</span>
+                  <span className="block font-normal text-xs mt-0.5">Premium</span>
                 </p>
               </button>
             ))}
           </div>
           <p className="text-center text-sm" style={{ color: '#64748b' }}>
-            <button type="button" onClick={() => ctaSignup('unlock_note')} className="font-bold underline" style={{ color: '#0f172a', background: 'none', border: 'none', cursor: 'pointer' }}>
-              Free account
-            </button>
-            {' '}unlocks the full card + newsletter. No credit card.
+            <Link to="/premium" className="font-bold underline" style={{ color: '#0f172a' }}>
+              Premium
+            </Link>
+            {' '}unlocks the full daily card. Free accounts get newsletter + public tracker.
           </p>
         </section>
 

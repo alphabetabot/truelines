@@ -51,8 +51,8 @@ export default function AIPicksExplainer({ sportLabel, pickSport }) {
           six books, and publishes up to three actionable bets — not fades or pass plays.
         </p>
         <p>
-          Everyone sees a <strong>free top pick preview</strong> on the homepage. A free account unlocks all three picks,
-          email delivery, and the public performance tracker.
+          Everyone sees a <strong>free top pick preview</strong> on the homepage. Premium unlocks all three picks
+          on the AI Picks tab. Free accounts still get newsletter email and the public performance tracker.
         </p>
       </div>
 

@@ -15,7 +15,7 @@ export default function HeroBanner({ campaignMode = false }) {
         </h2>
         <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
           See the top AI pick below, then compare lines across DraftKings, FanDuel, BetMGM, and more.
-          Free account unlocks all 3 daily picks and email delivery.
+          Free account adds newsletter email and the public tracker.
         </p>
         <button
           type="button"
@@ -23,7 +23,7 @@ export default function HeroBanner({ campaignMode = false }) {
           className="w-full py-3 rounded-xl font-black text-sm"
           style={{ background: '#f59e0b', color: '#0f172a' }}
         >
-          Get all 3 picks — free account →
+          Create free account →
         </button>
       </div>
     )
@@ -36,14 +36,14 @@ export default function HeroBanner({ campaignMode = false }) {
         <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-        Everyone gets today&apos;s top pick with a short summary below. A free account unlocks all 3 daily picks,
-        email delivery, and the performance tracker. Premium (coming later) adds deep breakdowns — injuries, weather, stats, and more.
+        Everyone gets today&apos;s top pick with a short summary below. Free accounts add newsletter email and the public tracker.
+        Premium unlocks the full AI Picks and AI Analysis tabs.
       </p>
       <div className="flex flex-wrap gap-3 mb-4">
         {[
-          '✔ 1 pick preview + brief edge (free)',
-          '✔ All 3 picks + tracker (free account)',
-          '✔ Live odds from 6 books',
+          '✔ Top pick preview (public)',
+          '✔ Newsletter + tracker (free account)',
+          '✔ Full AI picks + analysis (Premium)',
         ].map(item => (
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>
         ))}
@@ -57,7 +57,7 @@ export default function HeroBanner({ campaignMode = false }) {
         className="w-full py-3 rounded-xl font-black text-sm"
         style={{ background: '#f59e0b', color: '#0f172a' }}
       >
-        Unlock All 3 Picks — Free Account →
+        Create Free Account →
       </button>
     </div>
   )

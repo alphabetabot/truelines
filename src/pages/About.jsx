@@ -11,7 +11,7 @@ export default function About() {
         <p className="leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14 }}>
           TrueOddsIQ was built out of frustration. Jumping between multiple sportsbook tabs to find the best line
           wastes time — and that time costs money. We built one tool for real-time odds comparison, AI-assisted
-          research, and a daily picks newsletter. Free to browse odds; free account unlocks the full pick slate.
+          research, and a daily picks newsletter. Free to browse odds; Premium unlocks the full AI Picks and Analysis tabs.
         </p>
       </div>
 
@@ -32,7 +32,7 @@ export default function About() {
             {
               icon: TrendingUp,
               title: 'Daily Picks Newsletter',
-              desc: 'Each morning our pipeline surfaces a short list of bets from the stored slate (MLB, NBA, NHL). The homepage shows a public preview of the top pick; all picks require a free account.',
+              desc: 'Each morning our pipeline surfaces a short list of bets from the stored slate (MLB, NBA, NHL). The homepage shows a public preview of the top pick; the full slate requires Premium.',
             },
             {
               icon: Shield,
