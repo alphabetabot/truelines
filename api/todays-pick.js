@@ -1,6 +1,6 @@
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
-import { requireSupabaseUser } from './auth-utils.js'
+import { requirePremiumUser } from './auth-utils.js'
 import { pacificDateKey } from './date-utils.js'
 import { isFadePick } from './pick-utils.js'
 
@@ -55,7 +55,7 @@ export default async function handler(req, res) {
   const listAll = req.query?.all === '1' || req.query?.all === 'true'
 
   if (listAll) {
-    const user = await requireSupabaseUser(req, res)
+    const user = await requirePremiumUser(req, res)
     if (!user) return
   }
 

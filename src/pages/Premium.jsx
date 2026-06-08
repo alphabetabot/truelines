@@ -94,8 +94,8 @@ export default function Premium() {
           )}
         </h1>
         <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>
-          Deep research for serious bettors: injuries, weather, stats, unlimited AI analysis on any game,
-          and long-form breakdowns on every pick. <strong style={{ color: '#0f172a' }}>$19.95/month</strong> — same 3 daily picks, more depth.
+          Unlock the <strong style={{ color: '#0f172a' }}>AI Picks</strong> and <strong style={{ color: '#0f172a' }}>AI Analysis</strong> tabs —
+          full daily card, unlimited Vega/ChatGPT research, injuries, weather, and stats. <strong style={{ color: '#0f172a' }}>$19.95/month</strong>.
         </p>
       </div>
 
@@ -169,8 +169,8 @@ export default function Premium() {
       <PremiumTeaser showWaitlist={false} />
 
       <div className="rounded-xl p-4 text-sm leading-relaxed" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
-        <strong>What stays free:</strong> live odds comparison, today&apos;s top pick preview, and a free account for all 3 daily picks with full write-ups.
-        Premium adds depth and unlimited AI analysis — not more free picks.
+        <strong>What stays free:</strong> live odds, line compare, homepage pick preview, newsletter email, and the public tracker.
+        Premium unlocks the AI Picks and AI Analysis tabs.
       </div>
 
       <p className="text-center text-sm mt-8">

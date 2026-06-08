@@ -20,6 +20,7 @@ import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
 import Welcome from './pages/Welcome'
 import Premium from './pages/Premium'
+import PremiumGate from './components/PremiumGate'
 import { SeoLandingRoutes } from './seo/seoRoutes'
 
 const queryClient = new QueryClient({
@@ -44,8 +45,28 @@ export default function App() {
               <Route path="/welcome" element={<Welcome />} />
               <Route path="/premium" element={<Premium />} />
               <Route path="/compare" element={<LineCompare />} />
-              <Route path="/analysis" element={<AIAnalysis />} />
-              <Route path="/picks" element={<AIPicks />} />
+              <Route
+                path="/analysis"
+                element={(
+                  <PremiumGate
+                    title="AI Analysis"
+                    description="Run Vega and ChatGPT on any game — injuries, stats, weather, and line value. Premium unlocks unlimited analysis."
+                  >
+                    <AIAnalysis />
+                  </PremiumGate>
+                )}
+              />
+              <Route
+                path="/picks"
+                element={(
+                  <PremiumGate
+                    title="AI Picks"
+                    description="Full daily pick card with write-ups, confidence, and rationale. Premium unlocks the complete slate and on-demand picks."
+                  >
+                    <AIPicks />
+                  </PremiumGate>
+                )}
+              />
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />

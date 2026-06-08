@@ -7,7 +7,7 @@ import { trackEvent } from '../lib/analytics'
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
 
 const FREE_ROWS = [
-  ['3 daily picks', 'Short summary'],
+  ['Top pick preview', 'Homepage teaser'],
   ['Live odds', '6 books'],
   ['Public tracker', 'W–L graded'],
   ['Newsletter', 'Morning email'],
@@ -15,8 +15,8 @@ const FREE_ROWS = [
 
 const PREMIUM_FEATURES = [
   {
-    title: 'In-depth pick reports',
-    detail: 'Stats, injury updates, weather, and line context on every play — the full handicapper breakdown.',
+    title: 'Full AI Picks tab',
+    detail: 'All 3 daily picks with full write-ups, confidence, and on-demand pick generation.',
   },
   {
     title: 'Unlimited AI analysis',

@@ -58,7 +58,7 @@ export default function Auth({ onAuth = () => {} }) {
         if (data?.user) {
           trackEvent('login', { method: 'email' })
           onAuth(data.user)
-          navigate('/picks')
+          navigate('/odds')
         }
       }
     } catch (e) {
