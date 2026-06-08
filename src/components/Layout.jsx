@@ -105,13 +105,14 @@ export default function Layout({ children }) {
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
       {!hideRouteSEO && <RouteSEO />}
 
-      {/* ── Top bar: Logo + Install + Live ── */}
+      {/* ── Top bar: Logo + Install + Live (logo lives in Welcome hero on marketing home) ── */}
       <div style={{ background: '#0f172a' }}>
         <div
           className="max-w-5xl mx-auto px-4 flex items-center justify-between"
-          style={{ height: appWorkspace ? 56 : 68 }}
+          style={{ height: marketingHome ? 48 : appWorkspace ? 56 : 68 }}
         >
-          <LogoLink />
+          {!marketingHome && <LogoLink />}
+          {marketingHome && <div className="w-0 sm:w-auto" aria-hidden />}
 
           <div className="flex items-center gap-3">
             {showInstall && (
