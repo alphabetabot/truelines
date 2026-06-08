@@ -1,6 +1,6 @@
 import express from 'express'
 import cors from 'cors'
-import billingHandler from './api/billing.js'
+import picksStatusHandler from './api/picks-status.js'
 
 // Load .env manually (dotenv ESM)
 import 'dotenv/config'
@@ -12,12 +12,18 @@ const jsonParser = express.json({ limit: '1mb' })
 
 app.use(cors({ origin: ['http://localhost:5173', 'http://localhost:4173'] }))
 
-app.all('/api/billing', (req, res, next) => {
-  if (req.method === 'POST' && (req.query?.action === 'webhook' || req.headers['stripe-signature'])) {
-    return express.raw({ type: 'application/json' })(req, res, () => billingHandler(req, res))
+function forwardToPicksStatus(path) {
+  return (req, res, next) => {
+    const run = () => picksStatusHandler(req, res)
+    if (req.method === 'POST' && (req.query?.action === 'webhook' || req.query?.action === 'billing-webhook' || req.headers['stripe-signature'])) {
+      return express.raw({ type: 'application/json' })(req, res, run)
+    }
+    return jsonParser(req, res, run)
   }
-  return jsonParser(req, res, () => billingHandler(req, res))
-})
+}
+
+app.all('/api/billing', forwardToPicksStatus('/api/billing'))
+app.all('/api/picks-status', forwardToPicksStatus('/api/picks-status'))
 
 // ─── Claude proxy ────────────────────────────────────────────────────────────
 app.post('/api/claude', jsonParser, async (req, res) => {

@@ -2,6 +2,7 @@
 
 import { getSupabase } from './supabase-client.js'
 import { verifyUnsubscribeToken } from './newsletter-utils.js'
+import { handleBillingRequest, isBillingAction } from './_billing-handlers.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -162,7 +163,12 @@ export default async function handler(req, res) {
 
   res.setHeader('Cache-Control', 'no-store')
 
-  if (req.method === 'GET' && req.query?.action === 'odds') {
+  const action = String(req.query?.action || '').toLowerCase()
+  if (isBillingAction(action) || req.headers['stripe-signature']) {
+    return handleBillingRequest(req, res)
+  }
+
+  if (req.method === 'GET' && action === 'odds') {
     return proxyOddsRequest(req, res)
   }
 

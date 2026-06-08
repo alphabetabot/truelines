@@ -3,7 +3,7 @@
     "api/log-results.js": {
       "maxDuration": 60
     },
-    "api/billing.js": {
+    "api/picks-status.js": {
       "maxDuration": 30
     }
   },
@@ -19,6 +19,7 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/api/cron-midday-post", "destination": "/api/cron-posts" },
     { "source": "/api/cron-evening-post", "destination": "/api/cron-posts?evening=true" },
+    { "source": "/api/billing", "destination": "/api/picks-status" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [

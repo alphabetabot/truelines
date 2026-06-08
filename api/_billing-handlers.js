@@ -151,33 +151,55 @@ async function handleWebhook(req, res) {
   return res.json({ received: true })
 }
 
-export default async function handler(req, res) {
+const BILLING_ACTIONS = new Set([
+  'billing-checkout',
+  'billing-portal',
+  'billing-status',
+  'billing-sync',
+  'billing-webhook',
+  // Legacy aliases (pre-consolidation URLs)
+  'checkout',
+  'portal',
+  'status',
+  'sync',
+  'webhook',
+])
+
+export function isBillingAction(action) {
+  return BILLING_ACTIONS.has(action)
+}
+
+/** Route Stripe billing inside picks-status to stay under Vercel's 12-function limit. */
+export async function handleBillingRequest(req, res) {
   const action = String(req.query?.action || '').toLowerCase()
 
-  if (req.method === 'POST' && (action === 'webhook' || req.headers['stripe-signature'])) {
+  if (req.method === 'POST' && (action === 'billing-webhook' || action === 'webhook' || req.headers['stripe-signature'])) {
     return handleWebhook(req, res)
   }
 
-  if (action === 'status' && req.method === 'GET') {
+  if ((action === 'billing-status' || action === 'status') && req.method === 'GET') {
     const user = await requireSupabaseUser(req, res)
-    if (!user) return
+    if (!user) return undefined
     return handleStatus(req, res, user)
   }
 
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    res.status(405).json({ error: 'Method not allowed' })
+    return undefined
   }
 
   const user = await requireSupabaseUser(req, res)
-  if (!user) return
+  if (!user) return undefined
 
   try {
-    if (action === 'checkout') return handleCheckout(req, res, user)
-    if (action === 'portal') return handlePortal(req, res, user)
-    if (action === 'sync') return handleSync(req, res, user)
-    return res.status(400).json({ error: 'Unknown billing action' })
+    if (action === 'billing-checkout' || action === 'checkout') return handleCheckout(req, res, user)
+    if (action === 'billing-portal' || action === 'portal') return handlePortal(req, res, user)
+    if (action === 'billing-sync' || action === 'sync') return handleSync(req, res, user)
+    res.status(400).json({ error: 'Unknown billing action' })
+    return undefined
   } catch (err) {
     console.error('Billing error:', err.message)
-    return res.status(500).json({ error: err.message })
+    res.status(500).json({ error: err.message })
+    return undefined
   }
 }
