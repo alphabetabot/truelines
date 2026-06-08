@@ -23,13 +23,6 @@ const PREMIUM_FEATURES = [
   },
 ]
 
-const FREE_INCLUDES = [
-  'Homepage top-pick preview',
-  'Live odds + line compare',
-  'Morning newsletter email',
-  'Public performance tracker',
-]
-
 export default function Premium() {
   const { user, loading: authLoading } = useAuth()
   const { isPremium, loading: subLoading, refresh, currentPeriodEnd, cancelAtPeriodEnd } = useSubscription()
@@ -264,22 +257,8 @@ export default function Premium() {
               </span>
             </div>
           ))}
-        </section>
-
-        <section className="rounded-2xl p-4" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-          <p className="text-xs font-bold uppercase mb-3" style={{ color: '#94a3b8', letterSpacing: '0.12em' }}>
-            Still free without Premium
-          </p>
-          <ul className="text-sm space-y-2" style={{ color: '#475569' }}>
-            {FREE_INCLUDES.map(item => (
-              <li key={item} className="flex gap-2">
-                <span style={{ color: '#64748b' }}>·</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-xs mt-4 leading-relaxed" style={{ color: '#94a3b8' }}>
-            AI Picks and AI Analysis tabs require Premium. Cancel anytime from billing settings.
+          <p className="text-xs mt-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            Odds, newsletter, and the public tracker stay free. Cancel Premium anytime from billing settings.
           </p>
         </section>
 
