@@ -6,3 +6,4 @@
  */
 export const FREE_PUBLIC_PICK_COUNT = 1
 export const DAILY_NEWSLETTER_PICK_COUNT = 3
+export const PREMIUM_PRICE_DISPLAY = '$19.95/mo'

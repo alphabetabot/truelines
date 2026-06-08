@@ -12,7 +12,17 @@ export const FEATURE_FLAGS = {
   savedBettingTracker: false,
 }
 
-export function isFeatureEnabled(flag) {
+const PREMIUM_GATED_FEATURES = new Set([
+  'bettingSplits',
+  'sharpPublicPercentages',
+  'steamMoves',
+  'premiumAIPicks',
+  'historicalPickPerformance',
+  'savedBettingTracker',
+])
+
+export function isFeatureEnabled(flag, { isPremium = false } = {}) {
+  if (PREMIUM_GATED_FEATURES.has(flag)) return isPremium
   return FEATURE_FLAGS[flag] === true
 }
 
@@ -24,6 +34,7 @@ export function getFeatureFlags() {
   return FEATURE_FLAGS
 }
 
-export function isFeatureEnabledSafe(flag) {
+export function isFeatureEnabledSafe(flag, options = {}) {
+  if (PREMIUM_GATED_FEATURES.has(flag)) return Boolean(options.isPremium)
   return getFeatureFlags()[flag] === true
 }

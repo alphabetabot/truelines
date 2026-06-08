@@ -22,9 +22,9 @@ export const ROUTE_META = {
       'See today\'s top AI pick, compare odds across six sportsbooks, and create a free account for all three daily picks.',
   },
   '/premium': {
-    title: 'Premium Analysis (Coming Soon)',
+    title: 'Premium Analysis — $19.95/mo',
     description:
-      'Deep injury, weather, and stats breakdowns per pick — launching after our free picks and track record foundation.',
+      'Unlimited AI analysis, injury and weather depth, and long-form pick reports — $19.95/month.',
   },
   '/compare': {
     title: 'Line Comparison Across Sportsbooks',

@@ -62,7 +62,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         )}
         {isPublicPreview && pick.edge && edgeText !== pick.edge && (
           <p className="text-xs mt-2" style={{ color: 'var(--gold)' }}>
-            Sign in for the full edge on all picks. Premium (coming) adds injury, weather, and advanced stat breakdowns.
+            Sign in for the full edge on all picks. Premium adds unlimited AI analysis and deeper injury/weather breakdowns.
           </p>
         )}
         {pick.result && (
@@ -254,7 +254,7 @@ export default function AIPicks() {
           style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
           <p className="text-sm" style={{ color: '#92400e' }}>
             Today&apos;s top pick with a short summary below. Free account = all {DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups.
-            Premium (coming) adds deep injury, weather, and stat analysis per game.
+            Premium subscribers get deep injury, weather, and stat analysis per game.
           </p>
           <button type="button" onClick={() => navigate('/login')}
             className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"

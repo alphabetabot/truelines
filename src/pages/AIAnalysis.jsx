@@ -11,7 +11,8 @@ import { Brain, ChevronDown, Zap } from 'lucide-react'
 import AIDisclaimer from '../components/AIDisclaimer'
 import OddsLoadError from '../components/OddsLoadError'
 import { useAuth } from '../lib/AuthContext'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
+import { useSubscription } from '../hooks/useSubscription'
 import { useSportSelection } from '../hooks/useSportSelection'
 import { trackAnalysisOpen } from '../lib/analytics'
 import RecentlyViewedGames from '../components/RecentlyViewedGames'
@@ -21,6 +22,7 @@ import { sortGamesByTime } from '../lib/gameNavigation'
 
 export default function AIAnalysis() {
   const { user, loading: authLoading } = useAuth()
+  const { isPremium, loading: subLoading } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
   const preSelected = location.state?.game || null
@@ -82,6 +84,10 @@ export default function AIAnalysis() {
       navigate('/login')
       return
     }
+    if (!isPremium) {
+      navigate('/premium')
+      return
+    }
     setClaudeLoading(true); setClaudeError(null); setClaudeData(null)
     try {
       trackAnalysisOpen({ sportKey: sport, gameId: selectedGame.id, provider: 'claude' })
@@ -97,6 +103,10 @@ export default function AIAnalysis() {
     if (!selectedGame) return
     if (!user) {
       navigate('/login')
+      return
+    }
+    if (!isPremium) {
+      navigate('/premium')
       return
     }
     setGptLoading(true); setGptError(null); setGptData(null)
@@ -174,12 +184,19 @@ export default function AIAnalysis() {
         </div>
       )}
 
+      {!authLoading && !subLoading && user && !isPremium && (
+        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: '#fffbeb', border: '1px solid #fde68a', color: '#92400e' }}>
+          Unlimited AI analysis is a Premium feature ($19.95/mo). Daily picks and live odds stay free.{' '}
+          <Link to="/premium" style={{ color: '#b45309', fontWeight: 700 }}>Upgrade to Premium →</Link>
+        </div>
+      )}
+
       {/* Two analyze buttons */}
       <div className="flex gap-3 mb-6">
         {/* Claude */}
         <button
           onClick={runClaude}
-          disabled={!selectedGame || claudeLoading || authLoading}
+          disabled={!selectedGame || claudeLoading || authLoading || subLoading || (user && !isPremium)}
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
           style={{
             background: selectedGame && !claudeLoading && !authLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#f1f5f9',
@@ -189,13 +206,13 @@ export default function AIAnalysis() {
           }}
         >
           <Zap size={15} />
-          {claudeLoading ? 'Vega Analyzing...' : user ? 'Analyze with Vega (Claude)' : 'Sign in for Vega'}
+          {claudeLoading ? 'Vega Analyzing...' : !user ? 'Sign in for Vega' : isPremium ? 'Analyze with Vega (Claude)' : 'Premium required'}
         </button>
 
         {/* GPT-4o */}
         <button
           onClick={runGPT}
-          disabled={!selectedGame || gptLoading || authLoading}
+          disabled={!selectedGame || gptLoading || authLoading || subLoading || (user && !isPremium)}
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
           style={{
             background: selectedGame && !gptLoading && !authLoading ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#f1f5f9',
@@ -205,7 +222,7 @@ export default function AIAnalysis() {
           }}
         >
           <Brain size={15} />
-          {gptLoading ? 'ChatGPT Analyzing...' : user ? 'Analyze with ChatGPT' : 'Sign in for ChatGPT'}
+          {gptLoading ? 'ChatGPT Analyzing...' : !user ? 'Sign in for ChatGPT' : isPremium ? 'Analyze with ChatGPT' : 'Premium required'}
         </button>
       </div>
 

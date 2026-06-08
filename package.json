@@ -12,6 +12,7 @@
     "test:grading": "node scripts/pick-grading.test.js",
     "test:pick-metrics": "node scripts/pick-metrics.test.js",
     "test:sport-context": "node scripts/sport-context.test.js",
+    "test:billing": "node scripts/billing-utils.test.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
     "test:default-sport": "node src/lib/defaultSport.test.js",
     "test:pick-performance": "node src/lib/pickPerformance.test.js",
@@ -30,7 +31,8 @@
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0",
-    "resend": "^6.11.0"
+    "resend": "^6.11.0",
+    "stripe": "^17.7.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

@@ -1,6 +1,10 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Mail } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import { trackEvent } from '../lib/analytics'
+import { useAuth } from '../lib/AuthContext'
+import { useSubscription } from '../hooks/useSubscription'
+import { startPremiumCheckout } from '../lib/billingApi'
 
 const TIERS = [
   {
@@ -19,24 +23,41 @@ const TIERS = [
   },
   {
     name: 'Premium analysis',
-    price: 'Coming soon',
+    price: '$19.95/mo',
     features: [
+      'Unlimited AI analysis on any game',
       'Injury & lineup context',
       'Weather & park factors (MLB)',
-      'Advanced stats & matchup models',
-      'Long-form breakdown per pick',
+      'Advanced stats & long-form breakdowns',
     ],
     highlight: false,
-    waitlist: true,
+    premium: true,
   },
 ]
 
 export default function PremiumTeaser({ showWaitlist = true }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { isPremium } = useSubscription()
+  const [busy, setBusy] = useState(false)
 
-  function notifyPremiumInterest() {
-    trackEvent('premium_interest', { source: 'premium_teaser' })
-    window.location.href = 'mailto:info@trueoddsiq.com?subject=TrueOddsIQ%20Premium%20waitlist'
+  async function handlePremiumCta() {
+    if (!user) {
+      navigate('/login', { state: { from: '/premium' } })
+      return
+    }
+    if (isPremium) {
+      navigate('/premium')
+      return
+    }
+    setBusy(true)
+    try {
+      trackEvent('premium_checkout_start', { source: 'premium_teaser' })
+      await startPremiumCheckout()
+    } catch {
+      navigate('/premium')
+      setBusy(false)
+    }
   }
 
   return (
@@ -44,12 +65,11 @@ export default function PremiumTeaser({ showWaitlist = true }) {
       <div className="flex items-center gap-2 mb-2">
         <Sparkles size={18} style={{ color: '#f59e0b' }} />
         <h2 className="text-lg font-black" style={{ color: '#0f172a' }}>
-          How picks work today — and what&apos;s next
+          How picks work today — and what Premium adds
         </h2>
       </div>
       <p className="text-sm mb-4 leading-relaxed" style={{ color: '#64748b' }}>
-        We&apos;re building toward paid premium picks with deeper research. Right now everything below is free except
-        the future premium tier.
+        Free account gets the full daily card. Premium unlocks unlimited AI research and deeper matchup reports.
       </p>
       <div className="grid gap-3 md:grid-cols-3">
         {TIERS.map(tier => (
@@ -84,16 +104,19 @@ export default function PremiumTeaser({ showWaitlist = true }) {
                 {tier.cta}
               </button>
             )}
-            {showWaitlist && tier.waitlist && (
+            {showWaitlist && tier.premium && (
               <button
                 type="button"
-                onClick={notifyPremiumInterest}
-                className="w-full py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2"
+                onClick={handlePremiumCta}
+                disabled={busy}
+                className="w-full py-2.5 rounded-xl text-sm font-bold"
                 style={{ background: '#0f172a', color: '#fff' }}
               >
-                <Mail size={14} />
-                Join premium waitlist
+                {busy ? 'Redirecting…' : isPremium ? 'Manage Premium' : 'Subscribe — $19.95/mo'}
               </button>
+            )}
+            {!showWaitlist && tier.premium && isPremium && (
+              <p className="text-xs font-bold text-center py-2" style={{ color: '#16a34a' }}>Your plan is active</p>
             )}
           </div>
         ))}
