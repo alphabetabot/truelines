@@ -174,7 +174,7 @@ export async function storePicks(picks, date) {
       edge: pick.edge,
       result: null,
       units: null,
-      _sort_order: index,
+      sort_order: index,
     }
   })
 
@@ -194,7 +194,7 @@ export async function storePicks(picks, date) {
     .select('*')
 
   if (error) {
-    // Fallback: table may not have the new _sort_order column yet.
+    // Fallback: table may not have sort_order column yet.
     // eslint-disable-next-line no-unused-vars -- sort_order omitted for legacy schema fallback
     const rowsWithoutSortOrder = rowsToStore.map(({ sort_order, ...row }) => row)
     const retry = await supabase
@@ -204,6 +204,7 @@ export async function storePicks(picks, date) {
 
     if (!retry.error) {
       await deleteStalePicks(supabase, dateStr, rowsToStore.map(row => row.pick))
+      await applyPickSortOrder(supabase, dateStr, rowsToStore)
       return retry.data || []
     }
 
@@ -217,6 +218,7 @@ export async function storePicks(picks, date) {
       confidence: row.confidence,
       edge: row.edge,
       result: null,
+      sort_order: row.sort_order,
     }))
 
     const { data: fallbackData, error: fallbackError } = await supabase
@@ -230,11 +232,28 @@ export async function storePicks(picks, date) {
     }
 
     await deleteStalePicks(supabase, dateStr, rowsToStore.map(row => row.pick))
+    await applyPickSortOrder(supabase, dateStr, rowsToStore)
     return fallbackData || []
   }
 
   await deleteStalePicks(supabase, dateStr, rowsToStore.map(row => row.pick))
+  await applyPickSortOrder(supabase, dateStr, rowsToStore)
   return data || []
+}
+
+/** Ensure sort_order matches newsletter order even if upsert skipped the column. */
+async function applyPickSortOrder(supabase, dateStr, rows) {
+  for (const row of rows) {
+    const { error } = await supabase
+      .from('daily_picks')
+      .update({ sort_order: row.sort_order })
+      .eq('date', dateStr)
+      .eq('pick', row.pick)
+
+    if (error && !/sort_order/i.test(error.message || '')) {
+      console.warn(`Failed to set sort_order for ${row.pick}:`, error.message)
+    }
+  }
 }
 
 async function fetchExistingPicksByText(supabase, dateStr) {

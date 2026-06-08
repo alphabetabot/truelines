@@ -22,7 +22,7 @@ async function fetchPicksForDate(date) {
   }
 
   const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${date}&order=sort_order.asc.nullslast,created_at.asc&select=${PICKS_SELECT}`,
+    `${SUPABASE_URL}/rest/v1/daily_picks?date=eq.${date}&order=sort_order.asc.nullslast,created_at.asc,id.asc&select=${PICKS_SELECT}`,
     { headers }
   )
 
