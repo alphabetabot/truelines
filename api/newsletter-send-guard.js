@@ -75,13 +75,16 @@ export async function claimDailyNewsletterSend(supabase, dateKey, { cronSchedule
   }
 }
 
-export async function completeNewsletterSend(supabase, dateKey, subscriberCount) {
+export async function completeNewsletterSend(supabase, dateKey, subscriberCount, picksText = null) {
+  const update = {
+    sent_at: new Date().toISOString(),
+    subscriber_count: subscriberCount,
+  }
+  if (picksText) update.picks_text = picksText
+
   const { error } = await supabase
     .from('newsletter_daily_sends')
-    .update({
-      sent_at: new Date().toISOString(),
-      subscriber_count: subscriberCount,
-    })
+    .update(update)
     .eq('date', dateKey)
 
   if (error) {
