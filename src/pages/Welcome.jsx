@@ -100,25 +100,31 @@ export default function Welcome() {
             <LogoLink height={96} maxWidth={440} />
           </div>
 
-          <p
-            className="font-semibold mb-5"
-            style={{ fontSize: 19, color: '#fbbf24', letterSpacing: '0.04em' }}
-          >
-            Where sharp bettors get their edge
-          </p>
-
           <h1
-            className="font-black leading-tight mb-4 uppercase"
+            className="font-black leading-tight mb-5"
             style={{
-              fontFamily: TEAM_FONT,
-              fontSize: 'clamp(1.85rem, 5.5vw, 3rem)',
-              letterSpacing: '0.02em',
+              fontSize: 'clamp(2.1rem, 8.5vw, 4.25rem)',
+              letterSpacing: '-0.01em',
+              color: '#fff',
+              lineHeight: 1.08,
             }}
           >
-            Three picks.
-            <span className="block" style={{ color: '#fbbf24' }}>Every morning.</span>
-            <span className="block text-white" style={{ fontSize: '0.88em', marginTop: 6 }}>Graded in public.</span>
+            Where sharp bettors
+            <span className="block" style={{ color: '#fbbf24' }}>get their edge</span>
           </h1>
+
+          <p
+            className="font-bold mb-4 uppercase mx-auto"
+            style={{
+              fontFamily: TEAM_FONT,
+              fontSize: 'clamp(1.1rem, 3.5vw, 1.45rem)',
+              letterSpacing: '0.06em',
+              color: 'rgba(255,255,255,0.88)',
+              maxWidth: 520,
+            }}
+          >
+            Three picks · Every morning · Graded in public
+          </p>
 
           <p className="mb-8 mx-auto" style={{ ...BODY_MUTED, color: 'rgba(255,255,255,0.82)', maxWidth: 480 }}>
             Vega&apos;s AI research on MLB, NBA, and NHL — <strong style={{ color: '#fff' }}>$19.95/mo</strong>, cancel anytime.
