@@ -18,6 +18,12 @@ import RecentlyViewedGames from '../components/RecentlyViewedGames'
 import GamePrevNextNav from '../components/GamePrevNextNav'
 import { addRecentGame } from '../lib/recentGames'
 import { sortGamesByTime } from '../lib/gameNavigation'
+import {
+  filterUpcomingGames,
+  formatGameOptionLabel,
+  getAnalysisWindow,
+  groupGamesByDay,
+} from '../lib/gameFilters'
 
 export default function AIAnalysis() {
   const { user, loading: authLoading } = useAuth()
@@ -33,9 +39,11 @@ export default function AIAnalysis() {
   const [gptLoading, setGptLoading] = useState(false)
   const [gptError, setGptError] = useState(null)
 
+  const analysisWindow = getAnalysisWindow()
+
   const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['odds', sport],
-    queryFn: () => getOdds(sport),
+    queryKey: ['odds', sport, 'analysis', analysisWindow.commenceTimeFrom],
+    queryFn: () => getOdds(sport, 'h2h,spreads,totals', 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365', analysisWindow),
     staleTime: 30_000,
   })
 
@@ -46,7 +54,10 @@ export default function AIAnalysis() {
     refetchOnMount: true,
   })
 
-  const games = sortGamesByTime(data ? parseOddsForComparison(data) : [])
+  const allGames = sortGamesByTime(data ? parseOddsForComparison(data) : [])
+  const games = filterUpcomingGames(allGames)
+  const gameGroups = groupGamesByDay(games)
+  const sportLabel = sport.split('_').pop()?.toUpperCase() || 'this sport'
 
   useEffect(() => {
     if (!preSelected?.sport) return
@@ -120,7 +131,7 @@ export default function AIAnalysis() {
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Vega AI Analysis</h1>
             <p className="text-sm" style={{ color: '#64748b' }}>
-              Long-form matchup breakdowns — injuries, trends, and AI reasoning. No pick cards mixed in here.
+              Upcoming games for the next 7 days with live lines. Books drop started games — switch sport if the slate looks empty.
             </p>
           </div>
         </div>
@@ -148,8 +159,26 @@ export default function AIAnalysis() {
         onSelect={g => selectGame(g, 'prev_next')}
       />
 
+      {!isLoading && games.length === 0 && (
+        <div className="mb-4 p-4 rounded-xl text-sm leading-relaxed" style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#475569' }}>
+          {allGames.length > 0 ? (
+            <>
+              <strong style={{ color: '#0f172a' }}>Today&apos;s {sportLabel} slate has already started.</strong>
+              {' '}We only show games that haven&apos;t tipped yet. Tomorrow&apos;s lines usually post overnight — check back then, or try NBA/NHL if they still have upcoming games.
+            </>
+          ) : (
+            <>
+              <strong style={{ color: '#0f172a' }}>No upcoming {sportLabel} games with lines in the next 7 days.</strong>
+              {' '}Try another sport tab above, or check back when books post the next slate.
+            </>
+          )}
+        </div>
+      )}
+
       <div className="mb-5">
-        <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b' }}>SELECT GAME</label>
+        <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b' }}>
+          SELECT UPCOMING GAME {games.length > 0 ? `(${games.length} this week)` : ''}
+        </label>
         <div className="relative">
           <select
             value={selectedGame?.id || ''}
@@ -157,11 +186,15 @@ export default function AIAnalysis() {
             className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
             style={{ background: '#fff', border: '1px solid #e2e8f0', color: selectedGame ? '#0f172a' : '#94a3b8' }}
           >
-            <option value="">{isLoading ? 'Loading...' : games.length === 0 ? 'No games available' : '— Choose a game —'}</option>
-            {games.map(g => (
-              <option key={g.id} value={g.id}>
-                {g.away} @ {g.home} · {new Date(g.commenceTime).toLocaleDateString()}
-              </option>
+            <option value="">{isLoading ? 'Loading...' : games.length === 0 ? 'No upcoming games' : '— Choose a game —'}</option>
+            {gameGroups.map(group => (
+              <optgroup key={group.key} label={group.label}>
+                {group.games.map(g => (
+                  <option key={g.id} value={g.id}>
+                    {formatGameOptionLabel(g)}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
           <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#94a3b8' }} />

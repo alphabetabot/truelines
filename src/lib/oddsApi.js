@@ -56,13 +56,21 @@ export async function getSports() {
   return apiFetch('/sports', { all: false })
 }
 
-export async function getOdds(sport, markets = 'h2h,spreads,totals', bookmakers = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365') {
-  return apiFetch(`/sports/${sport}/odds`, {
+export async function getOdds(
+  sport,
+  markets = 'h2h,spreads,totals',
+  bookmakers = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365',
+  { commenceTimeFrom, commenceTimeTo } = {},
+) {
+  const params = {
     regions: 'us',
     markets,
     oddsFormat: 'american',
     bookmakers,
-  })
+  }
+  if (commenceTimeFrom) params.commenceTimeFrom = commenceTimeFrom
+  if (commenceTimeTo) params.commenceTimeTo = commenceTimeTo
+  return apiFetch(`/sports/${sport}/odds`, params)
 }
 
 /** The Odds API scores endpoint only accepts daysFrom 1–3. */
