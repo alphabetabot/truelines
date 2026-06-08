@@ -203,62 +203,134 @@
     }
     .unlock-note strong { color: #0f172a; }
 
-    /* —— Free vs Premium: BORDERLESS typography layout —— */
+    /* —— About blurb —— */
+    .about-blurb {
+      font-size: 1.05rem;
+      line-height: 1.7;
+      color: #475569;
+      margin-bottom: 8px;
+    }
+    .about-blurb strong { color: #0f172a; font-weight: 600; }
+    .about-blurb em { font-style: italic; color: #64748b; }
+    .card-section-label {
+      margin-top: 40px;
+      margin-bottom: 16px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: #f59e0b;
+    }
+
+    /* —— Free vs Premium: bordered, premium emphasized —— */
     .tiers {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      margin-top: 8px;
+      grid-template-columns: 0.9fr 1.15fr;
+      gap: 20px;
+      margin-top: 12px;
+      align-items: stretch;
     }
-    @media (max-width: 600px) { .tiers { grid-template-columns: 1fr; gap: 36px; } }
-    .tier-col h3 {
+    @media (max-width: 640px) { .tiers { grid-template-columns: 1fr; } }
+    .tier-box {
+      border-radius: 18px;
+      padding: 24px 22px;
+    }
+    .tier-box.free {
+      background: #fff;
+      border: 2px solid #bae6fd;
+    }
+    .tier-box.premium {
+      background: linear-gradient(165deg, #0f172a 0%, #1e293b 100%);
+      border: 2px solid #f59e0b;
+      box-shadow: 0 12px 40px rgba(245, 158, 11, 0.18);
+      color: #fff;
+      position: relative;
+    }
+    .tier-badge {
+      position: absolute;
+      top: -11px;
+      right: 16px;
+      background: #f59e0b;
+      color: #0f172a;
+      font-size: 10px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+    }
+    .tier-box h3 {
       font-family: 'Fraunces', serif;
-      font-size: 1.25rem;
+      font-size: 1.2rem;
       font-weight: 900;
       margin-bottom: 4px;
     }
-    .tier-col.free h3 { color: #0369a1; }
-    .tier-col.premium h3 { color: #b91c1c; }
+    .tier-box.free h3 { color: #0369a1; }
+    .tier-box.premium h3 { color: #fbbf24; font-size: 1.45rem; }
     .tier-price {
       font-size: 13px;
       font-weight: 600;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
-    .tier-col.free .tier-price { color: #0ea5e9; }
-    .tier-col.premium .tier-price { color: #dc2626; font-family: 'Fraunces', serif; font-size: 1.1rem; }
+    .tier-box.free .tier-price { color: #0ea5e9; }
+    .tier-box.premium .tier-price {
+      color: #fde68a;
+      font-family: 'Fraunces', serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+    }
     .tier-list {
       list-style: none;
-      border: none;
     }
-    .tier-list li {
-      padding: 10px 0;
-      border: none;
+    .tier-box.free .tier-list li {
+      padding: 8px 0;
       border-bottom: 1px solid #f1f5f9;
-      font-size: 14px;
-      color: #475569;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
+      font-size: 13px;
+      color: #64748b;
     }
-    .tier-list li:last-child { border-bottom: none; }
-    .tier-list li::before {
-      content: '→';
-      color: #f59e0b;
+    .tier-box.free .tier-list li:last-child { border-bottom: none; }
+    .tier-box.free .tier-list li strong { color: #334155; }
+    .premium-includes {
+      font-size: 11px;
       font-weight: 700;
-      flex-shrink: 0;
-    }
-    .tier-col.premium .tier-list li::before { content: '✦'; color: #dc2626; }
-    .tier-list li strong { color: #0f172a; font-weight: 700; }
-    .tier-list li em { font-style: italic; color: #64748b; font-size: 13px; display: block; margin-top: 2px; }
-    .premium-plus {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 2px solid #fef2f2;
-      font-size: 12px;
-      font-weight: 700;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #991b1b;
+      color: rgba(255,255,255,0.45);
+      margin-bottom: 14px;
+    }
+    .premium-feature {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      border-radius: 12px;
+      padding: 14px 14px;
+      margin-bottom: 10px;
+    }
+    .premium-feature:last-child { margin-bottom: 0; }
+    .premium-feature strong {
+      display: block;
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .premium-feature span {
+      font-size: 13px;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.45;
+      font-style: italic;
+    }
+    .btn-premium {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background: #f59e0b;
+      color: #0f172a;
+      font-weight: 800;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     /* —— Powers —— */
@@ -321,8 +393,16 @@
   </header>
 
   <section>
-    <p class="section-label">Today&apos;s card</p>
-    <h2 class="section-title">The <i>play</i> is below.</h2>
+    <p class="section-label">TrueOddsIQ</p>
+    <h2 class="section-title">Pro research. <i>Clear</i> picks.</h2>
+    <p class="about-blurb">
+      Here at <strong>TrueOddsIQ</strong>, we deliver full analysis and top daily picks using the same metrics
+      professional sports handicappers rely on — <em>and then some.</em> Deciding who or what to bet on can be
+      overwhelming. <strong>Let us do the research</strong>, take the stress out of your morning slate, and
+      save you valuable time.
+    </p>
+
+    <p class="card-section-label">Today&apos;s top pick · preview</p>
 
     <div class="pick-hero">
       <div class="pick-meta">
@@ -353,27 +433,35 @@
       <p class="section-label">Compare</p>
       <h2 class="section-title">Free <i>vs</i> Premium</h2>
 
-      <!-- Borderless: typography + light dividers only, no colored boxes -->
       <div class="tiers">
-        <div class="tier-col free">
+        <div class="tier-box free">
           <h3>Free account</h3>
-          <p class="tier-price">$0 · forever</p>
+          <p class="tier-price">$0</p>
           <ul class="tier-list">
-            <li><strong>Daily picks</strong> with short summary<em>All 3 plays on the card</em></li>
-            <li><strong>Live odds</strong> across six books</li>
-            <li><strong>Public W–L tracker</strong></li>
-            <li><strong>Free newsletter</strong> every morning</li>
+            <li><strong>3 daily picks</strong> — short summary</li>
+            <li><strong>Live odds</strong> · 6 books</li>
+            <li><strong>Public tracker</strong></li>
+            <li><strong>Free newsletter</strong></li>
           </ul>
         </div>
-        <div class="tier-col premium">
+        <div class="tier-box premium">
+          <span class="tier-badge">Best value</span>
           <h3>Premium</h3>
-          <p class="tier-price">$19.95 / mo</p>
-          <p class="premium-plus">Everything in free, plus</p>
-          <ul class="tier-list">
-            <li><strong>In-depth report</strong> per pick<em>Stats, injuries, weather, line context</em></li>
-            <li><strong>Unlimited AI analysis</strong><em>Any game on the slate</em></li>
-            <li><strong>Closing line value</strong><em>Track your edge vs the close</em></li>
-          </ul>
+          <p class="tier-price">$19.95 / month</p>
+          <p class="premium-includes">Everything in free, plus</p>
+          <div class="premium-feature">
+            <strong>In-depth pick reports</strong>
+            <span>Stats, injury updates, weather, and line context on every play — the full handicapper breakdown.</span>
+          </div>
+          <div class="premium-feature">
+            <strong>Unlimited AI analysis</strong>
+            <span>Run deep research on any game on the board, not just our three picks.</span>
+          </div>
+          <div class="premium-feature">
+            <strong>Closing line value (CLV)</strong>
+            <span>See whether you&apos;re beating the closing number — the metric pros care about most.</span>
+          </div>
+          <button type="button" class="btn-premium">Upgrade to Premium</button>
         </div>
       </div>
     </div>
