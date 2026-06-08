@@ -17,6 +17,11 @@ import {
   rankGamesByDataQuality,
   validatePicksAgainstSlate,
 } from './pick-metrics.js'
+import {
+  appendGameStatsBlock,
+  applySportContext,
+  loadSportContextBundle,
+} from './sport-context.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
@@ -364,8 +369,10 @@ async function generatePicks(games) {
     return { picksText: 'No bettable games with multi-book odds for today', slate: [] }
   }
   
+  const contextBundle = await loadSportContextBundle()
+
   const gamesWithStats = await Promise.all(todaysGames.map(async g => {
-    const stats = {}
+    let stats = {}
     if (g.sport === 'MLB') {
       if (g.awayPitcherId) {
         const awayStats = await getPitcherStats(g.awayPitcherId)
@@ -378,9 +385,7 @@ async function generatePicks(games) {
       if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId, g.away)
       if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId, g.home)
     }
-    if (g.sport === 'NBA' || g.sport === 'NHL') {
-      stats.note = 'Only team names and market odds are provided for this sport; do not cite records, injuries, goalies, or player availability unless shown in the slate.'
-    }
+    stats = applySportContext({ ...g, stats }, contextBundle)
     return enrichOdds({ ...g, stats })
   }))
 
@@ -388,8 +393,14 @@ async function generatePicks(games) {
     let line = `${g.sport}: ${g.away} @ ${g.home}`
     if (g.venue) line += ` | ${g.venue}`
     if (g.venue) line += ` | Ballpark: ${ballparkInfo(g.venue)}`
-    if (g.weather?.temp) line += ` | ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}`
+    if (g.stats?.weatherReport) line += ` | Weather: ${g.stats.weatherReport}`
+    else if (g.weather?.temp) line += ` | ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}`
     if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
+    if (g.sport === 'NHL' && (g.stats?.awayGoalie || g.stats?.homeGoalie)) {
+      line += ` | G: ${g.stats.awayGoalie || 'TBD'} vs ${g.stats.homeGoalie || 'TBD'}`
+    }
+    if (g.stats?.awayStanding?.record) line += ` | ${g.away} ${g.stats.awayStanding.record}`
+    if (g.stats?.homeStanding?.record) line += ` | ${g.home} ${g.stats.homeStanding.record}`
     if (g.oddsSummary) line += ` | ${g.oddsSummary}`
     return line
   }).join('\n')
@@ -408,28 +419,9 @@ async function generatePicks(games) {
     return { picksText: 'No games found for today', slate: [] }
   }
 
-  let statsContext = '=== REAL 2026 SEASON STATS (Official League APIs) ===\n\n'
+  let statsContext = '=== REAL SEASON STATS, WEATHER, INJURIES (League + ESPN feeds) ===\n\n'
   gamesWithStats.forEach(g => {
-    statsContext += `${g.sport}: ${g.away} @ ${g.home}\n`
-    if (g.stats?.awayPitcher && g.awayPitcher) {
-      statsContext += `  Away SP ${g.awayPitcher}: ${g.stats.awayPitcher.wins}-${g.stats.awayPitcher.losses}, ERA ${g.stats.awayPitcher.era}, K/9 ${g.stats.awayPitcher.k9}, WHIP ${g.stats.awayPitcher.whip}, Opp AVG ${g.stats.awayPitcher.oppAvg}, HR/9 ${g.stats.awayPitcher.hr9}\n`
-    }
-    if (g.stats?.homePitcher && g.homePitcher) {
-      statsContext += `  Home SP ${g.homePitcher}: ${g.stats.homePitcher.wins}-${g.stats.homePitcher.losses}, ERA ${g.stats.homePitcher.era}, K/9 ${g.stats.homePitcher.k9}, WHIP ${g.stats.homePitcher.whip}, Opp AVG ${g.stats.homePitcher.oppAvg}, HR/9 ${g.stats.homePitcher.hr9}\n`
-    }
-    if (g.stats?.awayTeam) {
-      statsContext += `  ${g.away}: ${g.stats.awayTeam.wins}W-${g.stats.awayTeam.losses}L (${(g.stats.awayTeam.runDiff >= 0 ? '+' : '')}${g.stats.awayTeam.runDiff} run diff)\n`
-    }
-    if (g.stats?.homeTeam) {
-      statsContext += `  ${g.home}: ${g.stats.homeTeam.wins}W-${g.stats.homeTeam.losses}L (${(g.stats.homeTeam.runDiff >= 0 ? '+' : '')}${g.stats.homeTeam.runDiff} run diff)\n`
-    }
-    if (g.venue) {
-      statsContext += `  Ballpark: ${ballparkInfo(g.venue)}\n`
-    }
-    if (g.weather?.temp) {
-      statsContext += `  Weather: ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}\n`
-    }
-    statsContext += '\n'
+    statsContext += appendGameStatsBlock(g, ballparkInfo)
   })
 
   const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ${gm.oddsSummary}`).join('\n')
@@ -444,8 +436,8 @@ ${slate}
 
 CRITICAL RULES:
 1. ONLY cite stats you know for certain. NEVER make up statistics, estimates, player names, or team records.
-2. For MLB: Cite pitcher ERA, K/9, WHIP, and team win/loss records from the stats provided.
-3. For NBA/NHL: Cite only Vegas odds and matchup dynamics shown here. If records/injuries/goalies are not provided, say "not provided" or skip that angle.
+2. For MLB: Cite pitcher ERA, K/9, WHIP, team records, weather, ballpark, and listed injuries from STATS.
+3. For NBA: Cite team records, PPG/OPP PPG, home/road splits, last-10, streak, and injury report from STATS. For NHL: cite records, GF/GA, goalies, injuries, and home/road splits from STATS.
 4. EVERY pick's Edge explanation MUST reference specific real information.
 5. Use exact numbers. Avoid vague claims unless tied to supplied numbers.
 6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.

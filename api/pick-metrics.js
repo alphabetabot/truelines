@@ -43,11 +43,26 @@ export function scoreGameDataQuality(game) {
     if (mlbHasPitcherStats(game)) score += 3
     if (game.stats?.awayTeam?.wins) score += 1
     if (game.stats?.homeTeam?.wins) score += 1
-    if (game.weather?.temp) score += 1
+    if (game.weather?.temp || game.stats?.weatherReport) score += 1
     if (game.venue) score += 1
+    if (game.stats?.awayInjuries?.length) score += 1
+    if (game.stats?.homeInjuries?.length) score += 1
   }
 
-  if (game.sport === 'NBA' || game.sport === 'NHL') score += 1
+  if (game.sport === 'NBA') {
+    if (game.stats?.awayStanding) score += 2
+    if (game.stats?.homeStanding) score += 2
+    if (game.stats?.awayInjuries?.length) score += 1
+    if (game.stats?.homeInjuries?.length) score += 1
+  }
+
+  if (game.sport === 'NHL') {
+    if (game.stats?.awayStanding) score += 2
+    if (game.stats?.homeStanding) score += 2
+    if (game.stats?.awayGoalie || game.stats?.homeGoalie) score += 2
+    if (game.stats?.awayInjuries?.length) score += 1
+    if (game.stats?.homeInjuries?.length) score += 1
+  }
 
   return score
 }
@@ -132,9 +147,11 @@ export function validatePicksAgainstSlate(picks, slateEntries) {
 export const PICK_METRICS_PROMPT_RULES = `
 METRICS & CONFIDENCE RULES (strict):
 11. Every Edge MUST cite at least TWO numeric facts from STATS or MATCHUP REFERENCE (ERA, WHIP, K/9, W-L, run diff, odds, spread, total line).
-12. Confidence rubric: 5 = MLB with both SP stat lines + clear price edge; 4 = strong stats or multi-book line value; 3 = NBA/NHL odds-only or one-sided MLB data; never 5 without two numeric facts in Edge.
-13. Avoid ML favorites worse than -180 unless ERA gap ≥1.5 or run-differential gap ≥25 runs — explain in Edge.
+12. Confidence rubric: 5 = MLB both SP lines + weather/injury context + price edge, or NBA/NHL with records + injuries + goalie (NHL) + price edge; 4 = strong partial stats; 3 = thin data; never 5 without two numeric facts in Edge.
+13. Avoid ML favorites worse than -180 unless ERA gap ≥1.5, run-diff gap ≥25 (MLB), or point-diff ≥8 (NBA/NHL) — explain in Edge.
 14. If both SPs are TBD or stats missing, prefer spread/total or skip for a game with complete data.
-15. Do not cite ballpark, weather, or record unless shown in STATS for that matchup.
+15. Do not cite ballpark, weather, records, injuries, or goalies unless shown in STATS for that matchup.
 16. Bet line odds and book MUST match MATCHUP REFERENCE best price exactly.
+17. NBA picks should reference PPG/OPP PPG or home/road splits when provided; NHL picks should reference GF/GA, goalie names, and injury list when provided.
+18. MLB totals/spreads must weigh weather (wind/temp) and listed injuries when relevant.
 `.trim()
