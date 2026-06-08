@@ -10,7 +10,7 @@ function isPlaceholderBet(bet) {
   return !bet || bet.includes('-10000') || bet.includes('-99999')
 }
 
-export default function DailyPick({ showEmpty = false }) {
+export default function DailyPick() {
   const [pick, setPick] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
@@ -53,22 +53,7 @@ export default function DailyPick({ showEmpty = false }) {
     <div className="rounded-2xl p-5 mb-5 animate-pulse" style={{ background: '#0f172a', height: 140 }} />
   )
 
-  if (!pick) {
-    if (!showEmpty) return null
-    return (
-      <div className="rounded-xl p-6 mb-5 text-center" style={{ background: '#fff', border: '2px solid #e2e8f0' }}>
-        <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>Picks publish every morning</p>
-        <button
-          type="button"
-          onClick={() => navigate('/login')}
-          className="text-sm font-bold"
-          style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}
-        >
-          Sign up for the free newsletter →
-        </button>
-      </div>
-    )
-  }
+  if (!pick) return null
 
   const edgeDisplay = user ? pick.edge : briefEdgeSummary(pick.edge)
 
