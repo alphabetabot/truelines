@@ -6,8 +6,6 @@ import { trackEvent } from '../lib/analytics'
 import LogoLink from '../components/LogoLink'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
-
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
 const BODY = { fontSize: 18, color: '#0f172a', lineHeight: 1.55 }
 const BODY_MUTED = { fontSize: 17, color: '#0f172a', lineHeight: 1.5 }
@@ -131,13 +129,14 @@ export default function Welcome() {
           </h1>
 
           <p
-            className="font-bold mb-4 uppercase mx-auto"
+            className="font-bold uppercase mx-auto"
             style={{
               fontFamily: TEAM_FONT,
               fontSize: 'clamp(1.1rem, 3.5vw, 1.5rem)',
               letterSpacing: '0.06em',
               color: '#fff',
               maxWidth: 640,
+              marginBottom: '3.5rem',
             }}
           >
             Three Picks · Every Morning · Graded In Public
@@ -323,23 +322,33 @@ export default function Welcome() {
             )}
 
             {!pickLoading && pick && (
-              <div className="rounded-2xl p-6 mb-3 text-white w-full" style={{ background: '#0f172a' }}>
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-bold px-2.5 py-0.5 rounded-md uppercase" style={{ background: (sportColor[pick.sport] || '#64748b') + '33', color: sportColor[pick.sport] || '#64748b', fontFamily: TEAM_FONT }}>
+              <div className="rounded-2xl overflow-hidden mb-3 w-full" style={{ border: '2px solid #f59e0b' }}>
+                <div
+                  className="px-4 py-3 flex items-center justify-between"
+                  style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+                >
+                  <span className="text-xs font-black uppercase tracking-wider" style={{ color: '#0f172a' }}>
+                    Today&apos;s Top Pick Preview
+                  </span>
+                  <span
+                    className="text-xs font-bold px-2.5 py-0.5 rounded-md uppercase"
+                    style={{ background: 'rgba(15, 23, 42, 0.12)', color: '#0f172a', fontFamily: TEAM_FONT }}
+                  >
                     {pick.sport}
                   </span>
-                  <span className="text-sm font-bold uppercase" style={{ color: '#f59e0b', fontFamily: TEAM_FONT }}>Top pick</span>
                 </div>
-                <p className="mb-2 uppercase tracking-wide" style={{ fontFamily: TEAM_FONT, fontSize: 17, fontWeight: 600, color: '#fff' }}>
-                  {pick.game}
-                </p>
-                <p className="font-bold mb-2 uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 22, letterSpacing: '0.02em' }}>
-                  {pick.pick}
-                </p>
-                <p className="mb-3" style={{ fontSize: 17, color: '#fff', lineHeight: 1.45 }}>
-                  {briefEdgeSummary(pick.edge)}
-                </p>
-                <p className="font-semibold" style={{ fontSize: 17, color: '#fbbf24', fontFamily: TEAM_FONT }}>{pick.bet}</p>
+                <div className="p-6 text-white" style={{ background: '#0f172a' }}>
+                  <p className="mb-2 uppercase tracking-wide" style={{ fontFamily: TEAM_FONT, fontSize: 17, fontWeight: 600, color: '#fff' }}>
+                    {pick.game}
+                  </p>
+                  <p className="font-bold mb-2 uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 22, letterSpacing: '0.02em' }}>
+                    {pick.pick}
+                  </p>
+                  <p className="mb-3" style={{ fontSize: 17, color: '#fff', lineHeight: 1.45 }}>
+                    {briefEdgeSummary(pick.edge)}
+                  </p>
+                  <p className="font-semibold" style={{ fontSize: 17, color: '#fbbf24', fontFamily: TEAM_FONT }}>{pick.bet}</p>
+                </div>
               </div>
             )}
 
@@ -350,33 +359,6 @@ export default function Welcome() {
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-3 mb-3 w-full">
-              {[2, 3].map(n => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: `locked_pick_${n}` }); navigate('/premium') }}
-                  className="rounded-2xl p-5 text-center w-full"
-                  style={{ background: '#fff', border: '2px dashed #0f172a', cursor: 'pointer' }}
-                >
-                  <div className="text-2xl mb-2 opacity-50">🔒</div>
-                  <p className="font-bold uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 16, color: '#0f172a' }}>
-                    Pick #{n}
-                  </p>
-                  <span className="block font-semibold mt-1" style={{ fontSize: 16, color: '#0f172a' }}>Premium</span>
-                </button>
-              ))}
-            </div>
-            <p className="text-center" style={BODY_MUTED}>
-              <Link to="/login" className="font-bold" style={{ color: '#0f172a', fontSize: 17 }}>
-                Free newsletter
-              </Link>
-              {' '}for email + tracker ·{' '}
-              <Link to="/premium" className="font-bold" style={{ color: '#0f172a', fontSize: 17 }}>
-                Premium
-              </Link>
-              {' '}for the full daily card.
-            </p>
           </section>
 
           <p className="text-center leading-relaxed pb-12" style={{ fontSize: 17, color: '#0f172a' }}>
