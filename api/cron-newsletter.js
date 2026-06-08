@@ -11,6 +11,12 @@ import {
   releaseNewsletterClaim,
   uniqueSubscriberEmails,
 } from './newsletter-send-guard.js'
+import {
+  PICK_METRICS_PROMPT_RULES,
+  filterBettableGames,
+  rankGamesByDataQuality,
+  validatePicksAgainstSlate,
+} from './pick-metrics.js'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
@@ -91,7 +97,7 @@ async function getPitcherStats(pitcherId, pitcherName) {
 }
 
 async function getTodaysGames() {
-  const today = new Date().toISOString().split('T')[0]
+  const today = getPacificDateKey(new Date())
   const games = []
 
   try {
@@ -333,8 +339,9 @@ function balancedSlate(games, maxGames = 24) {
   // Guarantee playoff sports make the slate when they are playing today.
   ;['NBA', 'NHL'].forEach(sport => bySport[sport].slice(0, 4).forEach(add))
 
-  const remaining = [...games]
-    .sort((a, b) => (gameDate(a)?.getTime() || 0) - (gameDate(b)?.getTime() || 0))
+  const remaining = rankGamesByDataQuality(
+    [...games].sort((a, b) => (gameDate(a)?.getTime() || 0) - (gameDate(b)?.getTime() || 0))
+  )
 
   for (const game of remaining) {
     if (selected.length >= maxGames) break
@@ -349,9 +356,13 @@ async function generatePicks(games) {
   const date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
   const todayKey = pacificDateKey(now)
   
-  const todaysGames = balancedSlate(
-    games.filter(g => isGameOnPacificDate(g, todayKey))
-  )
+  const dated = games.filter(g => isGameOnPacificDate(g, todayKey))
+  const bettable = filterBettableGames(dated)
+  const todaysGames = balancedSlate(bettable)
+
+  if (todaysGames.length === 0) {
+    return { picksText: 'No bettable games with multi-book odds for today', slate: [] }
+  }
   
   const gamesWithStats = await Promise.all(todaysGames.map(async g => {
     const stats = {}
@@ -394,7 +405,7 @@ async function generatePicks(games) {
   }))
   
   if (gameMap.length === 0) {
-    return 'No games found for today'
+    return { picksText: 'No games found for today', slate: [] }
   }
 
   let statsContext = '=== REAL 2026 SEASON STATS (Official League APIs) ===\n\n'
@@ -411,6 +422,12 @@ async function generatePicks(games) {
     }
     if (g.stats?.homeTeam) {
       statsContext += `  ${g.home}: ${g.stats.homeTeam.wins}W-${g.stats.homeTeam.losses}L (${(g.stats.homeTeam.runDiff >= 0 ? '+' : '')}${g.stats.homeTeam.runDiff} run diff)\n`
+    }
+    if (g.venue) {
+      statsContext += `  Ballpark: ${ballparkInfo(g.venue)}\n`
+    }
+    if (g.weather?.temp) {
+      statsContext += `  Weather: ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}\n`
     }
     statsContext += '\n'
   })
@@ -436,6 +453,8 @@ CRITICAL RULES:
 8. Cross-book odds ranges are NOT line movement. Do not call them steam, public money, or reverse line movement.
 9. Prefer bets where the best available price is clearly listed with a book. Put that exact best book and price in the Bet line.
 10. SPORT MIX: The slate can include MLB, NBA, and NHL on the same day. When NBA or NHL games appear in MATCHUP REFERENCE with valid odds, include at least one NBA or NHL pick among your 3. Do not choose only MLB picks when playoff basketball or hockey games are available with valid odds.
+
+${PICK_METRICS_PROMPT_RULES}
 
 MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
 ${gameReference}
@@ -498,14 +517,17 @@ Only pick games with genuine edge. Be specific with stats and reasoning. Output 
 
     if (!apiRes.ok) {
       console.error('Claude API error:', apiRes.status, apiRes.statusText)
-      return ''
+      return { picksText: '', slate: gamesWithStats }
     }
 
     const data = await apiRes.json()
-    return data.content?.[0]?.text || ''
+    return {
+      picksText: data.content?.[0]?.text || '',
+      slate: gamesWithStats,
+    }
   } catch (err) {
     console.error('Claude API fetch error:', err.message)
-    return ''
+    return { picksText: '', slate: gamesWithStats }
   }
 }
 
@@ -631,22 +653,26 @@ export default async function handler(req, res) {
     const games = await getTodaysGames()
     if (!games.length) return res.json({ sent: 0, message: 'No games today' })
 
-    const picksText = await generatePicks(games)
-    
+    const generated = await generatePicks(games)
+    const picksText = typeof generated === 'string' ? generated : generated.picksText
+    const slate = typeof generated === 'string' ? [] : generated.slate || []
+
     if (!picksText || picksText.trim().length < 100) {
       console.warn('No valid picks generated')
       return res.json({ sent: 0, message: 'No picks generated' })
     }
-    
+
     if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data')) {
       console.warn('Claude refused picks')
       return res.json({ sent: 0, message: 'Claude refused to generate picks' })
     }
-    
-    const picks = extractPicksFromResponse(picksText)
-      .filter(p => !p.isFade)
-      .slice(0, 3)
-    console.log(`Extracted ${picks.length} picks from Claude response`)
+
+    const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade)
+    const { picks: validated, warnings } = validatePicksAgainstSlate(extracted, slate)
+    if (warnings.length) console.warn('Pick validation warnings:', warnings.join(' | '))
+
+    const picks = validated.slice(0, 3)
+    console.log(`Extracted ${extracted.length} picks, ${picks.length} passed metrics validation`)
 
     if (picks.length < 3) {
       console.error('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
