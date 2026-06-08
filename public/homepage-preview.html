@@ -279,24 +279,32 @@
       font-size: 1.35rem;
       font-weight: 700;
     }
-    .tier-list {
-      list-style: none;
+    .free-feature {
+      background: #f8fafc;
+      border: 1px solid #e0f2fe;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
     }
-    .tier-box.free .tier-list li {
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
+    .free-feature:last-child { margin-bottom: 0; }
+    .free-feature strong {
+      display: block;
       font-size: 13px;
-      color: #64748b;
-    }
-    .tier-box.free .tier-list li:last-child { border-bottom: none; }
-    .tier-box.free .tier-list li strong { color: #334155; }
-    .premium-includes {
-      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.45);
+      color: #0f172a;
+      margin-bottom: 2px;
+    }
+    .free-feature span {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+    .premium-includes {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
       margin-bottom: 14px;
+      line-height: 1.35;
     }
     .premium-feature {
       background: rgba(255,255,255,0.06);
@@ -437,18 +445,28 @@
         <div class="tier-box free">
           <h3>Free account</h3>
           <p class="tier-price">$0</p>
-          <ul class="tier-list">
-            <li><strong>3 daily picks</strong> — short summary</li>
-            <li><strong>Live odds</strong> · 6 books</li>
-            <li><strong>Public tracker</strong></li>
-            <li><strong>Free newsletter</strong></li>
-          </ul>
+          <div class="free-feature">
+            <strong>3 daily picks</strong>
+            <span>Short summary on each play.</span>
+          </div>
+          <div class="free-feature">
+            <strong>Live odds</strong>
+            <span>Compare six major books.</span>
+          </div>
+          <div class="free-feature">
+            <strong>Public tracker</strong>
+            <span>Full W–L record, graded in public.</span>
+          </div>
+          <div class="free-feature">
+            <strong>Free newsletter</strong>
+            <span>Morning card to your inbox.</span>
+          </div>
         </div>
         <div class="tier-box premium">
           <span class="tier-badge">Best value</span>
           <h3>Premium</h3>
           <p class="tier-price">$19.95 / month</p>
-          <p class="premium-includes">Everything in free, plus</p>
+          <p class="premium-includes">Everything in free account, plus</p>
           <div class="premium-feature">
             <strong>In-depth pick reports</strong>
             <span>Stats, injury updates, weather, and line context on every play — the full handicapper breakdown.</span>
