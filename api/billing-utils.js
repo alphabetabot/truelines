@@ -6,6 +6,19 @@ export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing'])
 
 let stripeClient = null
 
+/** Default Premium price IDs — public, not secrets. Matched to sk_test_ vs sk_live_ when env unset. */
+export const STRIPE_PRICE_IDS = {
+  test: 'price_1TfpfBFCKgaALk0xP6JzwBkm',
+  live: 'price_1TRjAFFCKgaALk0xnt5WLpYI',
+}
+
+export function getStripeMode() {
+  const key = process.env.STRIPE_SECRET_KEY || ''
+  if (key.startsWith('sk_live_')) return 'live'
+  if (key.startsWith('sk_test_')) return 'test'
+  return 'unknown'
+}
+
 export function getStripe() {
   const key = process.env.STRIPE_SECRET_KEY
   if (!key) throw new Error('STRIPE_SECRET_KEY is not configured')
@@ -14,7 +27,28 @@ export function getStripe() {
 }
 
 export function getStripePriceId() {
-  return process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_ID_TEST || ''
+  const explicit = (process.env.STRIPE_PRICE_ID || '').trim()
+  if (explicit) return explicit
+
+  const mode = getStripeMode()
+  if (mode === 'live') return STRIPE_PRICE_IDS.live
+  if (mode === 'test') return STRIPE_PRICE_IDS.test
+  return ''
+}
+
+export function getStripeConfigStatus() {
+  const mode = getStripeMode()
+  const priceId = getStripePriceId()
+  const explicitPrice = Boolean((process.env.STRIPE_PRICE_ID || '').trim())
+  return {
+    mode,
+    secretKey: Boolean(process.env.STRIPE_SECRET_KEY),
+    priceId: Boolean(priceId),
+    priceIdSource: explicitPrice ? 'env' : priceId ? 'fallback' : 'missing',
+    siteUrl: Boolean(process.env.SITE_URL),
+    webhookSecret: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
+    publishableKey: Boolean(process.env.VITE_STRIPE_PUBLISHABLE_KEY),
+  }
 }
 
 export function getSiteUrl() {
