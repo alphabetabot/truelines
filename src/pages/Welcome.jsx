@@ -283,10 +283,20 @@ export default function Welcome() {
             </div>
           </section>
 
-          <section id="public-record" className="py-8" style={{ borderTop: '1px solid #e2e8f0' }}>
-            <h2 className="font-black text-2xl mb-2 uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
-              Graded In Public
-            </h2>
+          <section id="public-record" className="pb-8" style={{ borderTop: '1px solid #e2e8f0', paddingTop: '3.5rem' }}>
+            <div className="rounded-2xl overflow-hidden w-full mb-6" style={{ border: '2px solid #f59e0b' }}>
+              <div
+                className="px-4 py-3 text-center"
+                style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+              >
+                <h2
+                  className="font-black text-xl sm:text-2xl uppercase tracking-wide"
+                  style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+                >
+                  Graded In Public
+                </h2>
+              </div>
+            </div>
             <p className="mb-6" style={BODY_MUTED}>
               We grade every newsletter pick after games finish — wins, losses, and units tracked openly.
             </p>
