@@ -4,13 +4,18 @@ const APP_WORKSPACE_PATHS = new Set(['/odds', '/compare', '/analysis', '/picks']
 
 const COLLAPSIBLE_TICKER_PATHS = new Set(['/compare', '/analysis', '/picks'])
 
+/** Guest marketing landing — no tool nav or score ticker (features stay on other routes). */
+export function isMarketingHomepage(pathname) {
+  return pathname === '/'
+}
+
 export function isAppWorkspaceRoute(pathname) {
   return APP_WORKSPACE_PATHS.has(pathname)
 }
 
-/** Full ticker hidden only where collapsible ticker is used. */
+/** Hide full-width ticker on app sub-pages and on the marketing homepage. */
 export function hideGlobalScoreTicker(pathname) {
-  return showCollapsibleScoreTicker(pathname)
+  return showCollapsibleScoreTicker(pathname) || isMarketingHomepage(pathname)
 }
 
 export function showCollapsibleScoreTicker(pathname) {

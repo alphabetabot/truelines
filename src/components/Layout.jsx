@@ -11,7 +11,12 @@ import { useSubscription } from '../hooks/useSubscription'
 import { getRouteMeta } from '../lib/routeMeta'
 import SeoNavBar from '../seo/components/SeoNavBar'
 import SeoFooterNav from '../seo/components/SeoFooterNav'
-import { isAppWorkspaceRoute, showCollapsibleScoreTicker, hideGlobalScoreTicker } from '../lib/appRoutes'
+import {
+  isAppWorkspaceRoute,
+  isMarketingHomepage,
+  showCollapsibleScoreTicker,
+  hideGlobalScoreTicker,
+} from '../lib/appRoutes'
 
 const NAV = [
   { to: '/odds', label: 'Live Odds', shortLabel: 'Odds', icon: Activity, exact: true },
@@ -90,8 +95,9 @@ export default function Layout({ children }) {
   }
 
   const hideRouteSEO = location.pathname.startsWith('/blog/') && location.pathname.length > '/blog/'.length
-  const appWorkspace = isAppWorkspaceRoute(location.pathname)
   const pathname = location.pathname
+  const appWorkspace = isAppWorkspaceRoute(pathname)
+  const marketingHome = isMarketingHomepage(pathname)
   const showCollapsibleTicker = showCollapsibleScoreTicker(pathname)
   const showFullTicker = !hideGlobalScoreTicker(pathname)
 
@@ -121,6 +127,22 @@ export default function Layout({ children }) {
                 style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
                 Sign Out
               </button>
+            ) : marketingHome ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => navigate('/premium')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold hidden sm:inline-flex"
+                  style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}
+                >
+                  Premium
+                </button>
+                <button onClick={() => navigate('/login')}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                  style={{ background: '#f59e0b', color: '#0f172a' }}>
+                  Sign In
+                </button>
+              </>
             ) : (
               <button onClick={() => navigate('/login')}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold"
@@ -128,45 +150,49 @@ export default function Layout({ children }) {
                 Sign In
               </button>
             )}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
-              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
-              <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
-            </div>
+            {!marketingHome && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+                style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
+                <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
+                <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* ── Nav tabs ── */}
-      <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
-        <div className="max-w-5xl mx-auto px-3">
-          {appWorkspace ? (
-            <div
-              className="flex items-center gap-0.5 overflow-x-auto"
-              style={{ height: 36, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}
-            >
-              {NAV.map(item => (
-                <PrimaryNavLink key={item.to} {...item} compact locked={item.premium && !isPremium} />
-              ))}
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center gap-1" style={{ height: 40 }}>
-                {NAV.slice(0, 2).map(item => (
-                  <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
+      {/* ── Nav tabs (hidden on marketing homepage — tools live on /odds, /compare, etc.) ── */}
+      {!marketingHome && (
+        <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
+          <div className="max-w-5xl mx-auto px-3">
+            {appWorkspace ? (
+              <div
+                className="flex items-center gap-0.5 overflow-x-auto"
+                style={{ height: 36, WebkitOverflowScrolling: 'touch', scrollbarWidth: 'thin' }}
+              >
+                {NAV.map(item => (
+                  <PrimaryNavLink key={item.to} {...item} compact locked={item.premium && !isPremium} />
                 ))}
               </div>
-              <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-                {NAV.slice(2).map(item => (
-                  <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
-                ))}
-              </div>
-            </>
-          )}
+            ) : (
+              <>
+                <div className="flex items-center gap-1" style={{ height: 40 }}>
+                  {NAV.slice(0, 2).map(item => (
+                    <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
+                  ))}
+                </div>
+                <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                  {NAV.slice(2).map(item => (
+                    <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {!appWorkspace && <SeoNavBar />}
+      {!appWorkspace && !marketingHome && <SeoNavBar />}
 
       {/* ── Score ticker: hidden on /odds; collapsible on other app pages; full elsewhere ── */}
       {showCollapsibleTicker && <CollapsibleScoreTicker />}
@@ -186,7 +212,7 @@ export default function Layout({ children }) {
 
       {/* ── Main content ── */}
       <main
-        className={`flex-1 max-w-5xl mx-auto w-full px-4 ${appWorkspace ? 'py-2 sm:py-3' : 'py-5'}`}
+        className={`flex-1 max-w-5xl mx-auto w-full px-4 ${appWorkspace ? 'py-2 sm:py-3' : marketingHome ? 'py-0' : 'py-5'}`}
         style={{ paddingLeft: 16, paddingRight: 16 }}
       >
         {children}
