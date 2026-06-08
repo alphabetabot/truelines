@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { Lock } from 'lucide-react'
 import { usePickPerformance } from '../hooks/usePickPerformance'
-import { briefEdgeSummary } from '../lib/pickText'
 import { trackEvent } from '../lib/analytics'
 import LogoLink from '../components/LogoLink'
+import DailyPick from '../components/DailyPick'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
-
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
-const BODY = { fontSize: 18, color: '#0f172a', lineHeight: 1.55 }
-const BODY_MUTED = { fontSize: 17, color: '#0f172a', lineHeight: 1.5 }
-const SECTION_LABEL = { fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.14em', textTransform: 'uppercase' }
+const PAGE_BG = 'var(--bg-primary)'
+const NAVY = '#0f172a'
+const AMBER = '#f59e0b'
+const BODY = { fontSize: 18, color: NAVY, lineHeight: 1.55 }
+const BODY_MUTED = { fontSize: 17, color: NAVY, lineHeight: 1.5 }
+const SECTION_LABEL = { fontSize: 14, fontWeight: 800, color: NAVY, letterSpacing: '0.14em', textTransform: 'uppercase' }
 const CONTENT_PAD = 'px-5 sm:px-8 lg:px-12'
-const CONTENT_MAX = 'max-w-4xl mx-auto w-full'
+const CONTENT_MAX = 'max-w-3xl mx-auto w-full'
 
 const FREE_INCLUDES = [
   'Morning newsletter email — no credit card',
@@ -51,10 +52,6 @@ const POWERS = [
   { title: 'Line movement & CLV', tag: 'Rolling out', text: 'Closing line value tracking for Premium.' },
 ]
 
-function isPlaceholderBet(bet) {
-  return !bet || bet.includes('-10000') || bet.includes('-99999')
-}
-
 function scrollToId(id) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -62,28 +59,6 @@ function scrollToId(id) {
 export default function Welcome() {
   const navigate = useNavigate()
   const perf = usePickPerformance()
-  const [pick, setPick] = useState(null)
-  const [pickLoading, setPickLoading] = useState(true)
-
-  useEffect(() => {
-    let cancelled = false
-    async function load() {
-      try {
-        const res = await fetch('/api/todays-pick')
-        if (!res.ok) return
-        const data = await res.json()
-        if (!cancelled && data?.bet && !isPlaceholderBet(data.bet)) {
-          setPick(data)
-        }
-      } catch {
-        // preview optional when picks not ready
-      } finally {
-        if (!cancelled) setPickLoading(false)
-      }
-    }
-    load()
-    return () => { cancelled = true }
-  }, [])
 
   function ctaSignup(source) {
     trackEvent('welcome_cta', { action: 'signup', source })
@@ -103,49 +78,51 @@ export default function Welcome() {
       <header
         className="relative overflow-hidden text-center w-full"
         style={{
-          background: 'linear-gradient(165deg, #0a0f1a 0%, #0f172a 45%, #1a2332 100%)',
-          color: '#fff',
-          minHeight: 'min(92vh, 920px)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          padding: '40px 0 56px',
+          background: PAGE_BG,
+          color: NAVY,
+          padding: '36px 0 44px',
+          borderBottom: '3px solid #f59e0b',
         }}
       >
         <div className={`${CONTENT_MAX} ${CONTENT_PAD} relative z-10`}>
-          <div className="flex justify-center mb-8">
-            <LogoLink height={112} maxWidth={520} />
+          <div className="flex justify-center mb-6">
+            <LogoLink height={96} maxWidth={480} />
           </div>
 
+          <p className="text-xs font-bold uppercase mb-4 mx-auto" style={{ color: AMBER, letterSpacing: '0.2em' }}>
+            Vega&apos;s Daily AI Picks
+          </p>
+
           <h1
-            className="font-black leading-tight mb-5"
+            className="font-black leading-tight mb-4 mx-auto"
             style={{
-              fontSize: 'clamp(2.25rem, 9vw, 4.5rem)',
+              fontSize: 'clamp(2rem, 7vw, 3.5rem)',
               letterSpacing: '-0.01em',
-              color: '#fff',
-              lineHeight: 1.08,
+              color: NAVY,
+              lineHeight: 1.1,
+              maxWidth: 720,
             }}
           >
             Where Sharp Bettors
-            <span className="block" style={{ color: '#fbbf24' }}>Get Their Edge</span>
+            <span className="block" style={{ color: AMBER }}>Get Their Edge</span>
           </h1>
 
           <p
             className="font-bold mb-4 uppercase mx-auto"
             style={{
               fontFamily: TEAM_FONT,
-              fontSize: 'clamp(1.1rem, 3.5vw, 1.5rem)',
+              fontSize: 'clamp(1rem, 3vw, 1.35rem)',
               letterSpacing: '0.06em',
-              color: '#fff',
+              color: NAVY,
               maxWidth: 640,
             }}
           >
             Three Picks · Every Morning · Graded In Public
           </p>
 
-          <p className="mb-8 mx-auto" style={{ fontSize: 18, color: '#fff', maxWidth: 560, lineHeight: 1.5 }}>
-            <strong style={{ color: '#fff' }}>Free account</strong> gets the morning newsletter, odds tools, and our public tracker.
-            {' '}<strong style={{ color: '#fde68a' }}>Premium ({PREMIUM_PRICE_DISPLAY})</strong> unlocks the full pick card and AI analysis.
+          <p className="mb-8 mx-auto" style={{ fontSize: 18, color: NAVY, maxWidth: 560, lineHeight: 1.5 }}>
+            <strong>Free account</strong> gets the morning newsletter, odds tools, and our public tracker.
+            {' '}<strong style={{ color: '#b45309' }}>Premium ({PREMIUM_PRICE_DISPLAY})</strong> unlocks the full pick card and AI analysis.
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center max-w-xl mx-auto">
@@ -153,7 +130,7 @@ export default function Welcome() {
               type="button"
               onClick={() => ctaSignup('hero_free_newsletter')}
               className="w-full sm:flex-1 px-8 py-4 rounded-xl font-bold"
-              style={{ background: '#f59e0b', color: '#0f172a', fontSize: 17 }}
+              style={{ background: AMBER, color: NAVY, fontSize: 17 }}
             >
               Get Free Newsletter
             </button>
@@ -161,7 +138,7 @@ export default function Welcome() {
               type="button"
               onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: 'hero_primary' }); navigate('/premium') }}
               className="w-full sm:flex-1 px-8 py-4 rounded-xl font-bold"
-              style={{ background: '#fff', color: '#0f172a', fontSize: 17 }}
+              style={{ background: NAVY, color: '#fff', fontSize: 17 }}
             >
               Premium — {PREMIUM_PRICE_DISPLAY}
             </button>
@@ -170,7 +147,7 @@ export default function Welcome() {
             type="button"
             onClick={() => scrollToId('what-you-get')}
             className="mt-4 text-sm font-semibold underline"
-            style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             Compare free vs Premium ↓
           </button>
@@ -179,13 +156,13 @@ export default function Welcome() {
 
       <div className={`w-full ${CONTENT_PAD}`}>
         <div className={CONTENT_MAX}>
-          <section id="what-you-get" className="py-10">
+          <section id="what-you-get" className="py-10 text-center">
             <p className="mb-3" style={SECTION_LABEL}>Free account — $0</p>
             <div
-              className="rounded-2xl p-5 mb-8"
-              style={{ background: '#f0fdf4', border: '2px solid #16a34a' }}
+              className="rounded-2xl p-5 mb-8 mx-auto text-left"
+              style={{ background: '#fff', border: `2px solid ${NAVY}`, maxWidth: 560 }}
             >
-              <h2 className="font-black text-xl mb-3 uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
+              <h2 className="font-black text-xl mb-3 uppercase text-center" style={{ fontFamily: TEAM_FONT, color: NAVY }}>
                 Newsletter &amp; Tools Stay Free
               </h2>
               <ul className="space-y-3 mb-4">
@@ -199,27 +176,28 @@ export default function Welcome() {
               <button
                 type="button"
                 onClick={() => ctaSignup('free_tier')}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold"
-                style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+                className="w-full px-8 py-3.5 rounded-xl font-bold"
+                style={{ background: NAVY, color: '#fff', fontSize: 17 }}
               >
                 Create Free Account
               </button>
             </div>
 
             <p className="mb-3" style={SECTION_LABEL}>Premium — {PREMIUM_PRICE_DISPLAY}</p>
-            <ul className="space-y-3 mb-2">
+            <ul className="space-y-3 mb-2 mx-auto text-left" style={{ maxWidth: 560 }}>
               {PREMIUM_BULLETS.map(item => (
                 <li key={item} className="flex gap-3" style={BODY}>
-                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>✓</span>
+                  <span style={{ color: AMBER, fontWeight: 800 }}>✓</span>
                   <span>{item}</span>
                 </li>
               ))}
             </ul>
           </section>
 
-          <section className="py-4 pb-10">
+          <section className="py-4 pb-10 text-center">
             <div
-              className="rounded-2xl p-5 relative w-full"
+              className="rounded-2xl p-5 relative w-full mx-auto text-left"
+              style={{ maxWidth: 560 }}
               style={{
                 background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
                 border: '2px solid #f59e0b',
@@ -312,60 +290,42 @@ export default function Welcome() {
             </div>
           </section>
 
-          <section id="todays-pick" className="py-10" style={{ borderTop: '1px solid #e2e8f0' }}>
+          <section id="todays-pick" className="py-10 text-center" style={{ borderTop: '1px solid #e2e8f0' }}>
             <p className="mb-3" style={SECTION_LABEL}>Today&apos;s card</p>
-            <h2 className="font-black text-2xl mb-4 uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
+            <h2 className="font-black text-2xl mb-6 uppercase" style={{ fontFamily: TEAM_FONT, color: NAVY }}>
               Top Pick Preview
             </h2>
 
-            {pickLoading && (
-              <div className="rounded-2xl mb-3 animate-pulse w-full" style={{ background: '#0f172a', height: 180 }} />
-            )}
+            <div className="mx-auto text-left" style={{ maxWidth: 560 }}>
+              <DailyPick showEmpty />
 
-            {!pickLoading && pick && (
-              <div className="rounded-2xl p-6 mb-3 text-white w-full" style={{ background: '#0f172a' }}>
-                <div className="flex justify-between items-center mb-3">
-                  <span className="text-sm font-bold px-2.5 py-0.5 rounded-md uppercase" style={{ background: (sportColor[pick.sport] || '#64748b') + '33', color: sportColor[pick.sport] || '#64748b', fontFamily: TEAM_FONT }}>
-                    {pick.sport}
-                  </span>
-                  <span className="text-sm font-bold uppercase" style={{ color: '#f59e0b', fontFamily: TEAM_FONT }}>Top pick</span>
-                </div>
-                <p className="mb-2 uppercase tracking-wide" style={{ fontFamily: TEAM_FONT, fontSize: 17, fontWeight: 600, color: '#fff' }}>
-                  {pick.game}
-                </p>
-                <p className="font-bold mb-2 uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 22, letterSpacing: '0.02em' }}>
-                  {pick.pick}
-                </p>
-                <p className="mb-3" style={{ fontSize: 17, color: '#fff', lineHeight: 1.45 }}>
-                  {briefEdgeSummary(pick.edge)}
-                </p>
-                <p className="font-semibold" style={{ fontSize: 17, color: '#fbbf24', fontFamily: TEAM_FONT }}>{pick.bet}</p>
+              <div className="grid grid-cols-2 gap-3 mb-3 w-full">
+                {[2, 3].map(n => (
+                  <button
+                    key={n}
+                    type="button"
+                    onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: `locked_pick_${n}` }); navigate('/premium') }}
+                    className="rounded-2xl p-5 text-center w-full"
+                    style={{
+                      background: '#fff',
+                      border: `2px solid ${AMBER}`,
+                      boxShadow: '0 4px 14px rgba(245, 158, 11, 0.12)',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-full flex items-center justify-center mx-auto mb-2"
+                      style={{ background: 'rgba(245, 158, 11, 0.15)' }}
+                    >
+                      <Lock size={16} style={{ color: AMBER }} />
+                    </div>
+                    <p className="font-bold uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 16, color: NAVY }}>
+                      Pick #{n}
+                    </p>
+                    <span className="block font-semibold mt-1" style={{ fontSize: 14, color: '#b45309' }}>Premium</span>
+                  </button>
+                ))}
               </div>
-            )}
-
-            {!pickLoading && !pick && (
-              <div className="rounded-xl p-6 mb-3 text-center w-full" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-                <p className="font-semibold mb-1" style={BODY}>Picks publish every morning</p>
-                <Link to="/login" className="font-bold" style={{ fontSize: 17, color: '#2563eb' }}>Sign up for the free newsletter →</Link>
-              </div>
-            )}
-
-            <div className="grid grid-cols-2 gap-3 mb-3 w-full">
-              {[2, 3].map(n => (
-                <button
-                  key={n}
-                  type="button"
-                  onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: `locked_pick_${n}` }); navigate('/premium') }}
-                  className="rounded-2xl p-5 text-center w-full"
-                  style={{ background: '#fff', border: '2px dashed #0f172a', cursor: 'pointer' }}
-                >
-                  <div className="text-2xl mb-2 opacity-50">🔒</div>
-                  <p className="font-bold uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 16, color: '#0f172a' }}>
-                    Pick #{n}
-                  </p>
-                  <span className="block font-semibold mt-1" style={{ fontSize: 16, color: '#0f172a' }}>Premium</span>
-                </button>
-              ))}
             </div>
             <p className="text-center" style={BODY_MUTED}>
               <Link to="/login" className="font-bold" style={{ color: '#0f172a', fontSize: 17 }}>
