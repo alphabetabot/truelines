@@ -224,10 +224,10 @@ export default function Layout({ children }) {
       <footer className="py-4 px-4 pb-20 sm:pb-4" style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
         <div className="max-w-5xl mx-auto flex flex-col gap-2">
           <SeoFooterNav />
-          <div className="text-center" style={{ color: '#94a3b8', fontSize: 11 }}>
+          <div className="text-center" style={{ color: marketingHome ? '#0f172a' : '#334155', fontSize: 11 }}>
             TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
           </div>
-          <div className="text-center" style={{ fontSize: 11, color: '#94a3b8' }}>
+          <div className="text-center" style={{ fontSize: 11, color: marketingHome ? '#0f172a' : '#334155' }}>
             Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: '#16a34a', fontWeight: 700 }}>1-800-GAMBLER</a>
             {' '}·{' '}
             <Link to="/about" style={{ color: '#2563eb', fontWeight: 600 }}>About</Link>

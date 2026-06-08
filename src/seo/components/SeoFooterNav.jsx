@@ -7,7 +7,7 @@ export default function SeoFooterNav() {
       className="max-w-5xl mx-auto w-full py-4 px-2 mb-2 rounded-xl"
       style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
     >
-      <p className="text-xs font-black uppercase tracking-wider mb-3 text-center" style={{ color: '#64748b' }}>
+      <p className="text-xs font-black uppercase tracking-wider mb-3 text-center" style={{ color: '#0f172a' }}>
         Betting guides &amp; sport pages
       </p>
       <div className="grid gap-4 sm:grid-cols-3">
