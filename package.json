@@ -13,6 +13,7 @@
     "test:pick-metrics": "node scripts/pick-metrics.test.js",
     "test:sport-context": "node scripts/sport-context.test.js",
     "test:billing": "node scripts/billing-utils.test.js",
+    "stripe:setup-webhook": "node scripts/setup-stripe-webhook.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
     "test:default-sport": "node src/lib/defaultSport.test.js",
     "test:pick-performance": "node src/lib/pickPerformance.test.js",
