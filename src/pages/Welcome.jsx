@@ -116,12 +116,13 @@ export default function Welcome() {
           </div>
 
           <h1
-            className="font-black leading-tight mb-5"
+            className="font-black leading-tight mb-5 mx-auto"
             style={{
               fontSize: 'clamp(2.25rem, 9vw, 4.5rem)',
               letterSpacing: '-0.01em',
               color: '#fff',
               lineHeight: 1.08,
+              maxWidth: 720,
             }}
           >
             Where Sharp Bettors
