@@ -38,10 +38,17 @@ function summarizeRows(rows) {
   const graded = picks.filter(p => p.result && String(p.result).trim() !== '')
   const pending = picks.filter(p => !p.result || String(p.result).trim() === '')
 
+  const sortOrders = picks.map(p => p.sort_order).filter(v => v != null && v !== '')
+  const sortOrderOk =
+    picks.length === 3 &&
+    sortOrders.length === 3 &&
+    [...sortOrders].sort((a, b) => a - b).every((v, i) => v === i)
+
   return {
     total: picks.length,
     pending: pending.length,
     graded: graded.length,
+    sortOrderOk,
     picks: picks.map(p => ({
       id: p.id,
       date: p.date,
@@ -52,6 +59,7 @@ function summarizeRows(rows) {
       result: p.result,
       units: p.units,
       created_at: p.created_at,
+      sort_order: p.sort_order ?? null,
     })),
   }
 }
