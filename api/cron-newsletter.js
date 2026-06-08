@@ -640,13 +640,15 @@ export default async function handler(req, res) {
     claimedSend = true
   }
 
+  let picksText = ''
+
   try {
     const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
     const games = await getTodaysGames()
     if (!games.length) return res.json({ sent: 0, message: 'No games today' })
 
     const generated = await generatePicks(games)
-    const picksText = typeof generated === 'string' ? generated : generated.picksText
+    picksText = typeof generated === 'string' ? generated : generated.picksText
     const slate = typeof generated === 'string' ? [] : generated.slate || []
 
     if (!picksText || picksText.trim().length < 100) {
@@ -728,7 +730,7 @@ export default async function handler(req, res) {
     }
 
     if (emailsDelivered > 0) {
-      const recorded = await completeNewsletterSend(getSupabase(), todayKey, sent)
+      const recorded = await completeNewsletterSend(getSupabase(), todayKey, sent, picksText)
       claimedSend = false
       if (!recorded) {
         console.error('Newsletter sent but newsletter_daily_sends update failed — dedup may break tomorrow')
@@ -782,7 +784,7 @@ export default async function handler(req, res) {
     if (claimedSend && emailsDelivered === 0) {
       await releaseNewsletterClaim(getSupabase(), todayKey)
     } else if (emailsDelivered > 0) {
-      await completeNewsletterSend(getSupabase(), todayKey, emailsDelivered)
+      await completeNewsletterSend(getSupabase(), todayKey, emailsDelivered, picksText)
     }
     console.error('Newsletter error:', err)
     return res.status(500).json({ error: err.message, emailsDelivered })

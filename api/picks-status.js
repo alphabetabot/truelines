@@ -3,6 +3,8 @@
 import { getSupabase } from './supabase-client.js'
 import { verifyUnsubscribeToken } from './newsletter-utils.js'
 import { handleBillingRequest, isBillingAction } from './_billing-handlers.js'
+import { pacificDateKey } from './date-utils.js'
+import { repairPickOrderFromText } from './store-picks.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -134,6 +136,61 @@ async function proxyOddsRequest(req, res) {
   return res.status(upstream.status).send(text)
 }
 
+function verifyCronSecret(req) {
+  const auth = String(req.headers.authorization || '')
+  const token = auth.startsWith('Bearer ') ? auth.slice(7) : ''
+  return token && token === process.env.CRON_SECRET
+}
+
+async function fetchStoredNewsletterText(supabase, dateKey) {
+  const { data, error } = await supabase
+    .from('newsletter_daily_sends')
+    .select('picks_text')
+    .eq('date', dateKey)
+    .maybeSingle()
+
+  if (error && !/picks_text/i.test(error.message || '')) {
+    throw error
+  }
+  return data?.picks_text || null
+}
+
+async function handleRepairPickOrder(req, res) {
+  if (!verifyCronSecret(req)) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  const dateKey = req.query?.date || pacificDateKey()
+  let picksText = String(req.body?.picksText || req.query?.picksText || '').trim()
+
+  if (!picksText) {
+    const supabase = getSupabase()
+    picksText = await fetchStoredNewsletterText(supabase, dateKey)
+  }
+
+  if (!picksText) {
+    return res.status(400).json({
+      ok: false,
+      error: 'No picks text available for this date',
+      hint:
+        'POST JSON { "picksText": "<paste today newsletter body>" } with Authorization: Bearer CRON_SECRET, or run api/alter-newsletter-send-log-picks-text.sql in Supabase then re-store picks.',
+      date: dateKey,
+    })
+  }
+
+  try {
+    const result = await repairPickOrderFromText(picksText, dateKey)
+    return res.json({
+      ok: true,
+      message: 'Pick order repaired. Site top pick may take up to 5 minutes to refresh (CDN cache).',
+      ...result,
+    })
+  } catch (err) {
+    console.error('repair-pick-order error:', err)
+    return res.status(500).json({ ok: false, error: err.message })
+  }
+}
+
 async function handleUnsubscribe(req, res) {
   const email = String(req.query?.email || req.body?.email || '').trim().toLowerCase()
   const token = String(req.query?.token || req.body?.token || '')
@@ -179,6 +236,10 @@ export default async function handler(req, res) {
   try {
     if (req.query?.action === 'unsubscribe') {
       return handleUnsubscribe(req, res)
+    }
+
+    if (req.query?.action === 'repair-pick-order') {
+      return handleRepairPickOrder(req, res)
     }
 
     const today = req.query?.date || isoDate(new Date())

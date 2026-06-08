@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { extractPicksFromResponse } from '../api/store-picks.js'
+import { extractPicksFromResponse, repairPickOrderFromText } from '../api/store-picks.js'
 
 const SAMPLE = `TOP PICK OF THE DAY
 Pirates @ Rockies
@@ -36,5 +36,7 @@ assert.match(picks[2].pickSelection, /Under 6\.5/i, 'third pick is pick #3')
 // Row builder contract: storePicks maps index -> sort_order (regression for _sort_order typo)
 const rows = picks.map((pick, index) => ({ pick: pick.pickSelection, sort_order: index }))
 assert.deepEqual(rows.map(r => r.sort_order), [0, 1, 2], 'sort_order follows newsletter order')
+
+assert.equal(typeof repairPickOrderFromText, 'function', 'exports repairPickOrderFromText')
 
 console.log('store-picks.test.js: all passed')

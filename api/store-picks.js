@@ -241,6 +241,32 @@ export async function storePicks(picks, date) {
   return data || []
 }
 
+/**
+ * Re-apply newsletter pick order from raw Claude/newsletter text (fixes rows stored before sort_order fix).
+ */
+export async function repairPickOrderFromText(picksText, date = new Date()) {
+  const dateStr = pacificDateKey(date)
+  const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade).slice(0, 3)
+  if (!extracted.length) {
+    throw new Error('Could not parse any picks from text')
+  }
+
+  const supabase = getSupabase()
+  const rows = extracted.map((pick, index) => ({
+    pick: pick.isFade && !/^FADE:/i.test(pick.pickSelection)
+      ? `FADE: ${pick.pickSelection}`
+      : pick.pickSelection,
+    sort_order: index,
+  }))
+
+  await applyPickSortOrder(supabase, dateStr, rows)
+  return {
+    date: dateStr,
+    repaired: rows.length,
+    order: rows.map(r => ({ sort_order: r.sort_order, pick: r.pick })),
+  }
+}
+
 /** Ensure sort_order matches newsletter order even if upsert skipped the column. */
 async function applyPickSortOrder(supabase, dateStr, rows) {
   for (const row of rows) {
