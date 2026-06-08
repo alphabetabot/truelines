@@ -52,7 +52,7 @@ function summarizeRows(rows) {
 
 async function fetchPicksByDate(date) {
   const response = await fetchDailyPicks({
-    searchParams: { date: `eq.${date}`, order: 'sort_order.asc.nullslast,created_at.asc', select: SELECT_FIELDS },
+    searchParams: { date: `eq.${date}`, order: 'sort_order.asc.nullslast,created_at.asc,id.asc', select: SELECT_FIELDS },
   })
 
   if (response.ok) return response.json()
