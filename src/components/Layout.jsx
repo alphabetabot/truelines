@@ -213,8 +213,8 @@ export default function Layout({ children }) {
 
       {/* ── Main content ── */}
       <main
-        className={`flex-1 max-w-5xl mx-auto w-full px-4 ${appWorkspace ? 'py-2 sm:py-3' : marketingHome ? 'py-0' : 'py-5'}`}
-        style={{ paddingLeft: 16, paddingRight: 16 }}
+        className={`flex-1 w-full ${marketingHome ? 'max-w-none px-0 py-0' : `max-w-5xl mx-auto px-4 ${appWorkspace ? 'py-2 sm:py-3' : 'py-5'}`}`}
+        style={marketingHome ? undefined : { paddingLeft: 16, paddingRight: 16 }}
       >
         {children}
       </main>
