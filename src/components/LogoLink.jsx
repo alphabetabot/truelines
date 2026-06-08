@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../lib/AuthContext'
 
 export default function LogoLink({
   height = 48,
@@ -6,9 +7,12 @@ export default function LogoLink({
   className = '',
   style = {},
 }) {
+  const { user } = useAuth()
+  const homeTo = user ? '/picks' : '/'
+
   return (
     <Link
-      to="/"
+      to={homeTo}
       className={className}
       aria-label="TrueOddsIQ home"
       style={{ display: 'inline-flex', alignItems: 'center', ...style }}
