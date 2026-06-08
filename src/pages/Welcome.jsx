@@ -284,7 +284,6 @@ export default function Welcome() {
           </section>
 
           <section id="public-record" className="py-8" style={{ borderTop: '1px solid #e2e8f0' }}>
-            <p className="mb-3" style={SECTION_LABEL}>Public record</p>
             <h2 className="font-black text-2xl mb-2 uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
               Graded In Public
             </h2>
