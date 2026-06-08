@@ -13,8 +13,37 @@ export function getStripe() {
   return stripeClient
 }
 
+/** Known Premium price IDs — not secrets; used only when STRIPE_PRICE_ID env is unset. */
+const STRIPE_PRICE_FALLBACK = {
+  test: 'price_1TfpfBFCKgaALk0xP6JzwBkm',
+  live: 'price_1TRjAFFCKgaALk0xnt5WLpYI',
+}
+
 export function getStripePriceId() {
-  return process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_ID_TEST || ''
+  const explicit = process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_ID_TEST
+  if (explicit) return explicit.trim()
+
+  const key = process.env.STRIPE_SECRET_KEY || ''
+  if (key.startsWith('sk_live_')) return STRIPE_PRICE_FALLBACK.live
+  if (key.startsWith('sk_test_')) return STRIPE_PRICE_FALLBACK.test
+  return ''
+}
+
+export function getStripeConfigStatus() {
+  const secretKey = process.env.STRIPE_SECRET_KEY || ''
+  const priceId = getStripePriceId()
+  return {
+    secretKey: Boolean(secretKey),
+    priceId: Boolean(priceId),
+    siteUrl: Boolean(process.env.SITE_URL),
+    webhookSecret: Boolean(process.env.STRIPE_WEBHOOK_SECRET),
+    mode: secretKey.startsWith('sk_live_') ? 'live' : secretKey.startsWith('sk_test_') ? 'test' : 'unknown',
+    priceIdSource: process.env.STRIPE_PRICE_ID || process.env.STRIPE_PRICE_ID_TEST
+      ? 'env'
+      : priceId
+        ? 'fallback'
+        : 'missing',
+  }
 }
 
 export function getSiteUrl() {

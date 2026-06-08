@@ -2,6 +2,7 @@
  * Run: npm run test:billing
  */
 import {
+  getStripePriceId,
   isPremiumRow,
   isPremiumStatus,
   subscriptionPayload,
@@ -23,5 +24,20 @@ assert(!isPremiumRow(null), 'null row is not premium')
 const payload = subscriptionPayload({ status: 'active', current_period_end: future, cancel_at_period_end: false })
 assert(payload.isPremium, 'payload marks premium')
 assert(payload.priceDisplay.includes('19.95'), 'payload includes price label')
+
+const prevKey = process.env.STRIPE_SECRET_KEY
+const prevPrice = process.env.STRIPE_PRICE_ID
+delete process.env.STRIPE_PRICE_ID
+delete process.env.STRIPE_PRICE_ID_TEST
+process.env.STRIPE_SECRET_KEY = 'sk_test_example'
+assert(getStripePriceId() === 'price_1TfpfBFCKgaALk0xP6JzwBkm', 'test key uses test price fallback')
+process.env.STRIPE_SECRET_KEY = 'sk_live_example'
+assert(getStripePriceId() === 'price_1TRjAFFCKgaALk0xnt5WLpYI', 'live key uses live price fallback')
+process.env.STRIPE_PRICE_ID = 'price_custom'
+assert(getStripePriceId() === 'price_custom', 'explicit STRIPE_PRICE_ID wins')
+if (prevKey !== undefined) process.env.STRIPE_SECRET_KEY = prevKey
+else delete process.env.STRIPE_SECRET_KEY
+if (prevPrice !== undefined) process.env.STRIPE_PRICE_ID = prevPrice
+else delete process.env.STRIPE_PRICE_ID
 
 console.log('billing-utils.test.js: all assertions passed')

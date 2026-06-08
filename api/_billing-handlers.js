@@ -2,6 +2,7 @@ import { requireSupabaseUser } from './auth-utils.js'
 import {
   getSiteUrl,
   getStripe,
+  getStripeConfigStatus,
   getStripePriceId,
   getSubscriptionRow,
   refreshSubscriptionFromStripe,
@@ -25,7 +26,10 @@ async function readRawBody(req) {
 async function handleCheckout(req, res, user) {
   const priceId = getStripePriceId()
   if (!priceId) {
-    return res.status(500).json({ error: 'STRIPE_PRICE_ID is not configured' })
+    return res.status(500).json({
+      error: 'Stripe price ID is not configured. In Vercel, add STRIPE_PRICE_ID (starts with price_) for your $19.95/mo product, then redeploy.',
+      code: 'stripe_price_missing',
+    })
   }
 
   const stripe = getStripe()
@@ -157,6 +161,7 @@ const BILLING_ACTIONS = new Set([
   'billing-status',
   'billing-sync',
   'billing-webhook',
+  'billing-config',
   // Legacy aliases (pre-consolidation URLs)
   'checkout',
   'portal',
@@ -181,6 +186,10 @@ export async function handleBillingRequest(req, res) {
     const user = await requireSupabaseUser(req, res)
     if (!user) return undefined
     return handleStatus(req, res, user)
+  }
+
+  if ((action === 'billing-config' || action === 'config') && req.method === 'GET') {
+    return res.json(getStripeConfigStatus())
   }
 
   if (req.method !== 'POST') {
