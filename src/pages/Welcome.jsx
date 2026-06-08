@@ -7,7 +7,6 @@ import DailyPick from '../components/DailyPick'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
-const PAGE_BG = 'var(--bg-primary)'
 const NAVY = '#0f172a'
 const AMBER = '#f59e0b'
 const BODY = { fontSize: 18, color: NAVY, lineHeight: 1.55 }
@@ -78,51 +77,50 @@ export default function Welcome() {
       <header
         className="relative overflow-hidden text-center w-full"
         style={{
-          background: PAGE_BG,
-          color: NAVY,
-          padding: '36px 0 44px',
-          borderBottom: '3px solid #f59e0b',
+          background: 'linear-gradient(165deg, #0a0f1a 0%, #0f172a 45%, #1a2332 100%)',
+          color: '#fff',
+          minHeight: 'min(92vh, 920px)',
+          display: 'flex',
+          flexDirection: 'column',
+          justifyContent: 'center',
+          padding: '40px 0 56px',
         }}
       >
         <div className={`${CONTENT_MAX} ${CONTENT_PAD} relative z-10`}>
-          <div className="flex justify-center mb-6">
-            <LogoLink height={96} maxWidth={480} />
+          <div className="flex justify-center mb-8">
+            <LogoLink height={112} maxWidth={520} />
           </div>
 
-          <p className="text-xs font-bold uppercase mb-4 mx-auto" style={{ color: AMBER, letterSpacing: '0.2em' }}>
-            Vega&apos;s Daily AI Picks
-          </p>
-
           <h1
-            className="font-black leading-tight mb-4 mx-auto"
+            className="font-black leading-tight mb-5 mx-auto"
             style={{
-              fontSize: 'clamp(2rem, 7vw, 3.5rem)',
+              fontSize: 'clamp(2.25rem, 9vw, 4.5rem)',
               letterSpacing: '-0.01em',
-              color: NAVY,
-              lineHeight: 1.1,
+              color: '#fff',
+              lineHeight: 1.08,
               maxWidth: 720,
             }}
           >
             Where Sharp Bettors
-            <span className="block" style={{ color: AMBER }}>Get Their Edge</span>
+            <span className="block" style={{ color: '#fbbf24' }}>Get Their Edge</span>
           </h1>
 
           <p
             className="font-bold mb-4 uppercase mx-auto"
             style={{
               fontFamily: TEAM_FONT,
-              fontSize: 'clamp(1rem, 3vw, 1.35rem)',
+              fontSize: 'clamp(1.1rem, 3.5vw, 1.5rem)',
               letterSpacing: '0.06em',
-              color: NAVY,
+              color: '#fff',
               maxWidth: 640,
             }}
           >
             Three Picks · Every Morning · Graded In Public
           </p>
 
-          <p className="mb-8 mx-auto" style={{ fontSize: 18, color: NAVY, maxWidth: 560, lineHeight: 1.5 }}>
-            <strong>Free account</strong> gets the morning newsletter, odds tools, and our public tracker.
-            {' '}<strong style={{ color: '#b45309' }}>Premium ({PREMIUM_PRICE_DISPLAY})</strong> unlocks the full pick card and AI analysis.
+          <p className="mb-8 mx-auto" style={{ fontSize: 18, color: '#fff', maxWidth: 560, lineHeight: 1.5 }}>
+            <strong style={{ color: '#fff' }}>Free account</strong> gets the morning newsletter, odds tools, and our public tracker.
+            {' '}<strong style={{ color: '#fde68a' }}>Premium ({PREMIUM_PRICE_DISPLAY})</strong> unlocks the full pick card and AI analysis.
           </p>
 
           <div className="flex flex-col sm:flex-row flex-wrap gap-3 justify-center max-w-xl mx-auto">
@@ -138,7 +136,7 @@ export default function Welcome() {
               type="button"
               onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: 'hero_primary' }); navigate('/premium') }}
               className="w-full sm:flex-1 px-8 py-4 rounded-xl font-bold"
-              style={{ background: NAVY, color: '#fff', fontSize: 17 }}
+              style={{ background: '#fff', color: NAVY, fontSize: 17 }}
             >
               Premium — {PREMIUM_PRICE_DISPLAY}
             </button>
@@ -147,7 +145,7 @@ export default function Welcome() {
             type="button"
             onClick={() => scrollToId('what-you-get')}
             className="mt-4 text-sm font-semibold underline"
-            style={{ color: '#2563eb', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ color: '#fff', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             Compare free vs Premium ↓
           </button>
