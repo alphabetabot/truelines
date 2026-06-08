@@ -221,9 +221,27 @@ export default function Layout({ children }) {
 
       <CookieConsent />
 
-      <footer className="py-4 px-4 pb-20 sm:pb-4" style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}>
+      <footer
+        className={`px-4 pb-20 sm:pb-6 ${marketingHome ? 'pt-10 sm:pt-12' : 'py-4 sm:pb-4'}`}
+        style={{
+          borderTop: marketingHome ? '4px solid #0f172a' : '1px solid #e2e8f0',
+          background: marketingHome ? '#f1f5f9' : '#fff',
+        }}
+      >
         <div className="max-w-5xl mx-auto flex flex-col gap-2">
-          <SeoFooterNav />
+          {marketingHome && (
+            <p
+              className="text-center text-xs font-black uppercase tracking-[0.2em] mb-4"
+              style={{ color: '#0f172a' }}
+            >
+              Explore the site
+            </p>
+          )}
+          <SeoFooterNav variant={marketingHome ? 'marketing' : 'default'} />
+          <div
+            className={marketingHome ? 'pt-6 mt-4' : undefined}
+            style={marketingHome ? { borderTop: '2px solid #cbd5e1' } : undefined}
+          >
           <div className="text-center" style={{ color: marketingHome ? '#0f172a' : '#334155', fontSize: 11 }}>
             TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
           </div>
@@ -247,6 +265,7 @@ export default function Layout({ children }) {
             </button>
             {' '}·{' '}
             <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb', fontWeight: 600 }}>Contact Us</a>
+          </div>
           </div>
         </div>
       </footer>

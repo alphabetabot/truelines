@@ -379,7 +379,7 @@ export default function Welcome() {
             </p>
           </section>
 
-          <p className="text-center leading-relaxed pb-10" style={{ fontSize: 17, color: '#0f172a' }}>
+          <p className="text-center leading-relaxed pb-12" style={{ fontSize: 17, color: '#0f172a' }}>
             Already have an account?{' '}
             <Link to="/login" className="font-semibold" style={{ color: '#2563eb' }}>Sign in</Link>
             {' · '}
