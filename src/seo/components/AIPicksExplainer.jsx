@@ -52,7 +52,7 @@ export default function AIPicksExplainer({ sportLabel, pickSport }) {
         </p>
         <p>
           Everyone sees a <strong>free top pick preview</strong> on the homepage. Premium unlocks all three picks
-          on the AI Picks tab. Free accounts still get newsletter email and the public performance tracker.
+          on the AI Picks tab. Free accounts get one top pick in the morning newsletter and the public performance tracker.
         </p>
       </div>
 

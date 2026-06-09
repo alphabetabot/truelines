@@ -9,7 +9,7 @@ export const ROUTE_META = {
   '/': {
     title: 'Daily AI Picks & Live Odds Comparison',
     description:
-      'Vega\'s daily betting card — three picks, public track record, and live odds from six sportsbooks. Premium unlocks the full AI Picks and Analysis tabs.',
+      'Vega\'s daily top pick, public track record, and live odds from six sportsbooks. Premium unlocks the full three-pick slate and AI Analysis.',
   },
   '/odds': {
     title: 'Live Sports Betting Odds Comparison',
@@ -36,7 +36,7 @@ export const ROUTE_META = {
   },
   '/picks': {
     title: 'Daily AI Picks',
-    description: 'View the same daily picks from the TrueOddsIQ newsletter. Premium subscription required for the full pick slate.',
+    description: 'Full daily pick card with write-ups for every pick. Premium subscription required — free newsletter is one top pick per morning.',
   },
   '/blog': {
     title: 'Sports Betting Blog',

@@ -98,6 +98,12 @@ function splitPickSections(text) {
     .filter(Boolean)
 }
 
+/** First pick block from Claude/newsletter text — used for the daily email (one pick only). */
+export function extractTopPickSection(picksText) {
+  const sections = splitPickSections(picksText)
+  return sections[0]?.trim() || String(picksText || '').trim()
+}
+
 function getField(section, labels) {
   for (const label of labels) {
     const match = section.match(new RegExp(`(?:^|\\n)\\s*[-*]?\\s*${label}:\\s*(.+?)(?=\\n\\s*[-*]?\\s*(?:Bet|Confidence|Edge|Why|Reasoning):|\\n\\s*$|$)`, 'is'))
