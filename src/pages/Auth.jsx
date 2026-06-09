@@ -145,7 +145,7 @@ export default function Auth({ onAuth = () => {} }) {
                 <input type="checkbox" checked={newsletter} onChange={e => setNewsletter(e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-blue-600" />
                 <span className="text-xs leading-relaxed" style={{ color: '#475569' }}>
-                  ✉️ Yes! Send me the daily AI Picks newsletter with top picks, analysis, and line value alerts.
+                  ✉️ Yes! Send me the daily top pick newsletter with full analysis and line value alerts.
                 <span className="block mt-1" style={{ fontSize: 11, color: '#94a3b8' }}>📧 Using Outlook or Hotmail? Add picks@trueoddsiq.com to your contacts to ensure delivery.</span>
                 </span>
               </label>

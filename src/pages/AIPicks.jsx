@@ -225,7 +225,7 @@ export default function AIPicks() {
   }, [user])
 
   const subtitle = user
-    ? 'Your full daily newsletter slate · Updated each morning (Pacific)'
+    ? 'Your full Premium daily slate · Updated each morning (Pacific)'
     : `Today's top pick preview · Premium unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups`
 
   const lockedCount = Math.max(0, DAILY_NEWSLETTER_PICK_COUNT - (user ? storedPicks.length : FREE_PUBLIC_PICK_COUNT))

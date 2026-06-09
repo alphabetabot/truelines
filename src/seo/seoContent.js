@@ -105,7 +105,7 @@ export function getPicksSportFaqs(sport) {
     },
     {
       question: 'How do I see the full daily pick slate?',
-      answer: 'Subscribe to Premium to unlock all three daily picks on the AI Picks tab, plus unlimited AI analysis. Free accounts still get newsletter email and the public tracker.',
+      answer: 'Subscribe to Premium to unlock all three daily picks on the AI Picks tab, plus unlimited AI analysis. Free accounts get one top pick in the morning newsletter, live odds tools, and the public tracker.',
     },
   ]
 }

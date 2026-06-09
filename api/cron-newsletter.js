@@ -1,8 +1,13 @@
 import { Resend } from 'resend'
 import { postTweet } from './post-to-x.js'
 import { getSupabase } from './supabase-client.js'
-import { extractPicksFromResponse, storePicks } from './store-picks.js'
-import { sendNewsletterEmail, unsubscribeUrl } from './newsletter-utils.js'
+import { extractPicksFromResponse, extractTopPickSection, storePicks } from './store-picks.js'
+import {
+  sendNewsletterEmail,
+  unsubscribeUrl,
+  buildNewsletterEmailHtml,
+  buildNewsletterEmailPlainText,
+} from './newsletter-utils.js'
 import {
   NEWSLETTER_CRON_SCHEDULE,
   claimDailyNewsletterSend,
@@ -468,7 +473,7 @@ TOP PICK OF THE DAY
 **[SPORT] Pick: [Team/Total/Spread]**
 - Bet: [type] at [odds] via [best book]
 - Confidence: [rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
+- Edge: [4-6 sentences — full email write-up with specific stats, matchup context, and why this is the best bet today]
 
 ---
 
@@ -488,7 +493,7 @@ PICK #3
 - Confidence: [rating out of 5]
 - Edge: [2-3 sentences of specific analysis]
 
-Only pick games with genuine edge. Be specific with stats and reasoning. Output exactly 3 picks — no fourth section.`
+Only pick games with genuine edge. Be specific with stats and reasoning. Output exactly 3 picks — no fourth section. Picks #2 and #3 are for Premium subscribers on the site; only the TOP PICK goes in the free newsletter email.`
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -521,52 +526,6 @@ Only pick games with genuine edge. Be specific with stats and reasoning. Output 
     console.error('Claude API fetch error:', err.message)
     return { picksText: '', slate: gamesWithStats }
   }
-}
-
-function buildEmail(picksText, date, unsubscribeHref = 'https://trueoddsiq.com/unsubscribe') {
-  const lines = picksText.split('\n').map(line => {
-    if (line.includes('@') && line.includes('→')) {
-      const [matchup, pick] = line.split('→')
-      return `<div style="background:#f1f5f9;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin:12px 0;">
-        <p style="margin:0 0 4px;font-size:14px;color:#0f172a;font-weight:600;">${matchup.trim()}</p>
-        <p style="margin:0;font-size:15px;color:#f59e0b;font-weight:700;">${pick.trim()}</p>
-      </div>`
-    }
-    if (line.startsWith('**') && line.endsWith('**')) {
-      const t = line.slice(2, -2)
-      const color = '#f59e0b'
-      return `<p style="font-weight:900;font-size:16px;color:${color};margin:20px 0 6px;">${t}</p>`
-    }
-    if (line.startsWith('- ')) {
-      const content = line.slice(2)
-      const highlighted = content.replace(/([+-]\d+)/g, '<span style="color:#f59e0b;font-weight:700;">$1</span>')
-      return `<p style="margin:3px 0;padding-left:14px;color:#475569;font-size:14px;">• ${highlighted}</p>`
-    }
-    if (!line.trim()) return '<div style="height:8px"></div>'
-    return `<p style="margin:3px 0;color:#475569;font-size:14px;">${line}</p>`
-  }).join('')
-
-  return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f0f4f8;font-family:-apple-system,sans-serif;">
-<div style="max-width:600px;margin:0 auto;padding:20px;">
-  <div style="background:#0f172a;border-radius:16px 16px 0 0;padding:24px;text-align:center;">
-    <h1 style="margin:0;color:#fff;font-size:26px;font-weight:900;">TrueOdds<span style="color:#f59e0b;">IQ</span></h1>
-    <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">Daily AI Picks | ${date} | MLB | NBA | NHL</p>
-  </div>
-  <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;">
-    <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin-bottom:16px;font-size:12px;color:#92400e;line-height:1.6;">
-      <strong>Odds from DraftKings as of ${date}:</strong> These picks use live DraftKings odds. Shop other books (FanDuel, BetMGM, Caesars) for better lines. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
-    </div>
-    ${lines}
-    <div style="text-align:center;margin-top:24px;">
-      <a href="https://trueoddsiq.com/picks" style="background:#0f172a;color:#fff;padding:14px 28px;border-radius:10px;font-weight:700;font-size:14px;text-decoration:none;display:inline-block;">View Full Analysis and Live Odds</a>
-    </div>
-  </div>
-  <div style="background:#f8fafc;border-radius:0 0 16px 16px;padding:14px;text-align:center;border:1px solid #e2e8f0;border-top:none;">
-    <p style="margin:0;color:#94a3b8;font-size:11px;">TrueOddsIQ | trueoddsiq.com | Must be 21+ | Gambling problem? <a href="tel:18004264537" style="color:#16a34a;">1-800-GAMBLER</a></p>
-    <p style="margin:4px 0 0;"><a href="${unsubscribeHref}" style="color:#94a3b8;font-size:11px;">Unsubscribe</a></p>
-  </div>
-</div></body></html>`
 }
 
 export default async function handler(req, res) {
@@ -708,18 +667,28 @@ export default async function handler(req, res) {
       return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText, stored: storedPicks.length })
     }
 
+    const topPickText = extractTopPickSection(picksText)
+    if (!topPickText || topPickText.length < 40) {
+      console.error('Top pick section too short for newsletter email')
+      return res.status(500).json({
+        error: 'Could not extract top pick for newsletter email',
+        picksPreview: picksText.slice(0, 500),
+      })
+    }
+
     const emails = uniqueSubscriberEmails(subscribers)
     let sent = 0
     const sendErrors = []
 
     for (const email of emails) {
+      const unsub = unsubscribeUrl(email)
       try {
         await sendNewsletterEmail({
           resend,
           to: email,
-          subject: `TrueOddsIQ Daily Picks — ${date}`,
-          html: buildEmail(picksText, date, unsubscribeUrl(email)),
-          text: `TrueOddsIQ Daily Picks - ${date}\n\nView picks: https://trueoddsiq.com/picks\nUnsubscribe: ${unsubscribeUrl(email)}`,
+          subject: `TrueOddsIQ Top Pick — ${date}`,
+          html: buildNewsletterEmailHtml(topPickText, date, unsub),
+          text: buildNewsletterEmailPlainText(topPickText, date, unsub),
         })
         sent++
         emailsDelivered++
@@ -751,7 +720,7 @@ export default async function handler(req, res) {
       })
     }
 
-    const topPickSection = picksText.split('---')[0] || picksText
+    const topPickSection = extractTopPickSection(picksText)
     const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
     const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
     const betLine = topPickSection.match(/- Bet: (.+)/)?.[1]?.trim() || ''

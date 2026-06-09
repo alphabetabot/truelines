@@ -14,7 +14,7 @@ const CONTENT_PAD = 'px-5 sm:px-8 lg:px-12'
 const CONTENT_MAX = 'max-w-4xl mx-auto w-full'
 
 const FREE_INCLUDES = [
-  'Morning newsletter email — no credit card',
+  'Morning newsletter — one top pick with full write-up',
   'Homepage top-pick preview every day',
   'Live odds, line compare, and public tracker',
 ]
@@ -140,7 +140,7 @@ export default function Welcome() {
               marginBottom: '3.5rem',
             }}
           >
-            Three Picks · Every Morning · Graded In Public
+            Top Pick · Every Morning · Graded In Public
           </p>
 
           <p className="mb-8 mx-auto" style={{ fontSize: 18, color: '#fff', maxWidth: 560, lineHeight: 1.5 }}>
