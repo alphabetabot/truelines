@@ -49,7 +49,7 @@ function hotColor(hotness) {
 
 function ValueBar({ value }) {
   const pct = Math.min((value / 10) * 100, 100)
-  const color = value >= 6.5 ? '#22c55e' : value >= 5.5 ? '#f59e0b' : '#94a3b8'
+  const color = value >= 6.5 ? '#22c55e' : value >= 5.5 ? '#f59e0b' : '#64748b'
   return (
     <div style={{ background: '#f1f5f9', borderRadius: 4, height: 6, width: 60 }}>
       <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4 }} />
@@ -67,20 +67,20 @@ function PlayerCard({ player, selected, onToggle, contestType }) {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1 flex-wrap">
             <span className="font-bold text-sm" style={{ color: '#0f172a' }}>{player.name}</span>
-            <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: '#f1f5f9', color: '#64748b' }}>Sample</span>
+            <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: '#f1f5f9', color: '#475569' }}>Sample</span>
             <span className="text-xs px-1.5 py-0.5 rounded font-semibold" style={{ background: hot.bg, color: hot.color }}>{hot.label}</span>
           </div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-xs" style={{ color: '#64748b' }}>{player.team} · {player.pos}</span>
-            <span className="text-xs" style={{ color: '#94a3b8' }}>{player.ownership}% owned</span>
+            <span className="text-xs" style={{ color: '#475569' }}>{player.team} · {player.pos}</span>
+            <span className="text-xs" style={{ color: '#64748b' }}>{player.ownership}% owned</span>
           </div>
-          <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{player.reason}</p>
+          <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>{player.reason}</p>
         </div>
         <div className="text-right flex-shrink-0">
           <div className="font-bold text-sm" style={{ color: '#0f172a' }}>${player.salary.toLocaleString()}</div>
           <div className="text-xs font-semibold mt-0.5" style={{ color: '#2563eb' }}>{player.projPts} pts</div>
           <div className="flex items-center gap-1 mt-1 justify-end">
-            <span className="text-xs" style={{ color: '#94a3b8' }}>{player.value}x</span>
+            <span className="text-xs" style={{ color: '#64748b' }}>{player.value}x</span>
             <ValueBar value={player.value} />
           </div>
         </div>
@@ -99,7 +99,7 @@ function LineupBuilder({ players }) {
       <div className="flex items-center gap-2 mb-3">
         <Trophy size={16} style={{ color: '#f59e0b' }} />
         <span className="font-bold text-sm">My Lineup</span>
-        <span className="ml-auto text-xs" style={{ color: '#94a3b8' }}>{players.length} / {PREVIEW_MAX_PLAYERS}</span>
+        <span className="ml-auto text-xs" style={{ color: '#64748b' }}>{players.length} / {PREVIEW_MAX_PLAYERS}</span>
       </div>
       {players.length === 0 ? (
         <p className="text-xs text-center py-4" style={{ color: '#475569' }}>Tap players below to add them</p>
@@ -109,7 +109,7 @@ function LineupBuilder({ players }) {
             <div key={p.name} className="flex items-center justify-between">
               <span className="text-xs font-medium">{p.name}</span>
               <div className="flex items-center gap-3">
-                <span className="text-xs" style={{ color: '#94a3b8' }}>{p.projPts}pts</span>
+                <span className="text-xs" style={{ color: '#64748b' }}>{p.projPts}pts</span>
                 <span className="text-xs" style={{ color: '#f59e0b' }}>${p.salary.toLocaleString()}</span>
               </div>
             </div>
@@ -118,11 +118,11 @@ function LineupBuilder({ players }) {
       )}
       <div className="border-t pt-3" style={{ borderColor: '#1e293b' }}>
         <div className="flex justify-between text-xs mb-1">
-          <span style={{ color: '#94a3b8' }}>Salary used</span>
+          <span style={{ color: '#64748b' }}>Salary used</span>
           <span style={{ color: remaining < 0 ? '#ef4444' : '#22c55e' }}>${totalSalary.toLocaleString()} / ${salaryCap.toLocaleString()}</span>
         </div>
         <div className="flex justify-between text-xs">
-          <span style={{ color: '#94a3b8' }}>Proj. points</span>
+          <span style={{ color: '#64748b' }}>Proj. points</span>
           <span className="font-bold" style={{ color: '#2563eb' }}>{totalProj.toFixed(1)}</span>
         </div>
         {remaining < 0 && <p className="text-xs mt-2" style={{ color: '#ef4444' }}>Over salary cap by ${Math.abs(remaining).toLocaleString()}</p>}
@@ -161,8 +161,8 @@ export default function Fantasy() {
           <Trophy size={20} style={{ color: '#f59e0b' }} />
           <h1 style={{ color: '#0f172a', margin: 0 }}>Fantasy & DFS Optimizer Preview</h1>
         </div>
-        <p className="text-sm" style={{ color: '#64748b' }}>Sample player-ranking experience while live salary, ownership, and projection feeds are being integrated.</p>
-        <p className="text-xs mt-1" style={{ color: '#94a3b8' }}>Demo snapshot · Preview capped at {PREVIEW_MAX_PLAYERS} players per lineup</p>
+        <p className="text-sm" style={{ color: '#475569' }}>Sample player-ranking experience while live salary, ownership, and projection feeds are being integrated.</p>
+        <p className="text-xs mt-1" style={{ color: '#64748b' }}>Demo snapshot · Preview capped at {PREVIEW_MAX_PLAYERS} players per lineup</p>
       </div>
       <div className="rounded-xl p-3 mb-4" style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
         <p className="text-xs leading-relaxed" style={{ color: '#92400e' }}>Preview mode: sample data only — not live DFS advice. DraftKings/FanDuel integrations are not active yet.</p>
@@ -170,7 +170,7 @@ export default function Fantasy() {
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {SPORTS.map(s => (
           <button key={s.key} type="button" onClick={() => { setSport(s.key); setLineup([]) }} className="flex-shrink-0 px-4 py-2 rounded-xl font-semibold text-sm"
-            style={{ background: sport === s.key ? '#0f172a' : '#f1f5f9', color: sport === s.key ? '#fff' : '#64748b' }}>{s.emoji} {s.label}</button>
+            style={{ background: sport === s.key ? '#0f172a' : '#f1f5f9', color: sport === s.key ? '#fff' : '#475569' }}>{s.emoji} {s.label}</button>
         ))}
       </div>
       <div className="grid grid-cols-2 gap-3 mb-5">
@@ -178,7 +178,7 @@ export default function Fantasy() {
           <button key={c.key} type="button" onClick={() => setContestType(c.key)} className="p-3 rounded-xl text-left"
             style={{ border: contestType === c.key ? '2px solid #2563eb' : '1px solid #e2e8f0', background: contestType === c.key ? '#eff6ff' : '#fff' }}>
             <div className="font-bold text-sm mb-0.5" style={{ color: '#0f172a' }}>{c.label}</div>
-            <div className="text-xs" style={{ color: '#64748b' }}>{c.desc}</div>
+            <div className="text-xs" style={{ color: '#475569' }}>{c.desc}</div>
           </button>
         ))}
       </div>
@@ -187,16 +187,16 @@ export default function Fantasy() {
         <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: '#f59e0b' }}><Zap size={16} style={{ color: '#fff' }} /></div>
         <div className="flex-1 min-w-0">
           <div className="text-xs font-bold" style={{ color: '#f59e0b' }}>SAMPLE {contestType === 'gpp' ? 'GPP' : 'CASH'} PLAYER RANKINGS</div>
-          <div className="text-xs" style={{ color: '#94a3b8' }}>{contestType === 'cash' ? 'Demo sort by floor & consistency' : 'Demo sort by upside & low ownership'}</div>
+          <div className="text-xs" style={{ color: '#64748b' }}>{contestType === 'cash' ? 'Demo sort by floor & consistency' : 'Demo sort by upside & low ownership'}</div>
         </div>
         {!user ? <div className="flex items-center gap-1 text-xs font-semibold flex-shrink-0" style={{ color: '#f59e0b' }}><Lock size={12} /> Sign in to build a lineup</div>
-          : lineup.length > 0 ? <span className="text-xs flex-shrink-0" style={{ color: '#94a3b8' }}>Saved on this device</span> : null}
+          : lineup.length > 0 ? <span className="text-xs flex-shrink-0" style={{ color: '#64748b' }}>Saved on this device</span> : null}
       </div>
       <div className="flex items-center gap-2 mb-3 overflow-x-auto pb-1">
-        <span className="text-xs flex-shrink-0" style={{ color: '#94a3b8' }}>Sort:</span>
+        <span className="text-xs flex-shrink-0" style={{ color: '#64748b' }}>Sort:</span>
         {['value', 'proj', 'salary', 'ownership'].map(s => (
           <button key={s} type="button" onClick={() => setSortBy(s)} className="flex-shrink-0 px-3 py-1 rounded-lg text-xs font-semibold capitalize"
-            style={{ background: sortBy === s ? '#2563eb' : '#f1f5f9', color: sortBy === s ? '#fff' : '#64748b' }}>
+            style={{ background: sortBy === s ? '#2563eb' : '#f1f5f9', color: sortBy === s ? '#fff' : '#475569' }}>
             {s === 'proj' ? 'Proj Pts' : s === 'ownership' ? 'Low Own' : s.charAt(0).toUpperCase() + s.slice(1)}
           </button>
         ))}
@@ -209,13 +209,13 @@ export default function Fantasy() {
       <div className="mt-6 rounded-2xl p-5 text-center" style={{ background: 'linear-gradient(135deg, #1e3a5f, #1e293b)' }}>
         <div className="text-2xl mb-2">🏆</div>
         <div className="font-bold mb-1" style={{ color: '#fff' }}>DFS integrations coming soon</div>
-        <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>Verify salaries and contests on official apps before playing.</p>
+        <p className="text-xs mb-4" style={{ color: '#64748b' }}>Verify salaries and contests on official apps before playing.</p>
         <div className="flex gap-3 justify-center">
           <a href={getSportsbookLink('draftkings')} target="_blank" rel={getSportsbookLinkRel()} onClick={() => trackSportsbookClick('draftkings', 'fantasy')} className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1a7a4a', color: '#fff', textDecoration: 'none' }}>DraftKings</a>
           <a href={getSportsbookLink('fanduel')} target="_blank" rel={getSportsbookLinkRel()} onClick={() => trackSportsbookClick('fanduel', 'fantasy')} className="px-5 py-2.5 rounded-xl font-bold text-sm" style={{ background: '#1d4ed8', color: '#fff', textDecoration: 'none' }}>FanDuel</a>
         </div>
       </div>
-      <p className="text-xs text-center mt-4" style={{ color: '#94a3b8' }}>Preview data is for demonstration only. Always gamble responsibly.</p>
+      <p className="text-xs text-center mt-4" style={{ color: '#64748b' }}>Preview data is for demonstration only. Always gamble responsibly.</p>
     </div>
   )
 }

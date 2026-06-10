@@ -13,7 +13,7 @@ export default function HeroBanner({ campaignMode = false }) {
         <h2 className="font-black mb-2 leading-tight" style={{ color: '#fff', fontSize: '1.35rem' }}>
           Today&apos;s free pick + live odds from <span style={{ color: '#f59e0b' }}>6 books</span>
         </h2>
-        <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
+        <p className="text-sm mb-4 leading-relaxed" style={{ color: '#64748b' }}>
           See the top AI pick below, then compare lines across DraftKings, FanDuel, BetMGM, and more.
           Free account adds newsletter email and the public tracker.
         </p>
@@ -35,7 +35,7 @@ export default function HeroBanner({ campaignMode = false }) {
         Compare the Market with Data —<br />
         <span style={{ color: '#f59e0b' }}>Not Hype</span>
       </h2>
-      <p className="text-sm mb-4 leading-relaxed" style={{ color: '#94a3b8' }}>
+      <p className="text-sm mb-4 leading-relaxed" style={{ color: '#64748b' }}>
         Everyone gets today&apos;s top pick with a short summary below. Free accounts add newsletter email and the public tracker.
         Premium unlocks the full AI Picks and AI Analysis tabs.
       </p>
@@ -48,7 +48,7 @@ export default function HeroBanner({ campaignMode = false }) {
           <span key={item} className="text-xs font-semibold" style={{ color: '#4ade80' }}>{item}</span>
         ))}
       </div>
-      <p className="text-xs mb-4" style={{ color: '#94a3b8' }}>
+      <p className="text-xs mb-4" style={{ color: '#64748b' }}>
         New picks every morning · Pacific time
       </p>
       <button

@@ -114,18 +114,18 @@ export default function TodaysEdges() {
           <div key={i} className="px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
-                style={{ background: (sportColor[edge.sport] || '#94a3b8') + '20', color: sportColor[edge.sport] || '#94a3b8' }}>
+                style={{ background: (sportColor[edge.sport] || '#64748b') + '20', color: sportColor[edge.sport] || '#64748b' }}>
                 {edge.sport}
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold truncate" style={{ color: '#0f172a' }}>{edge.game}</p>
-                <p className="text-xs" style={{ color: '#94a3b8' }}>{edge.market} · Books: {edge.low} – {edge.high}</p>
+                <p className="text-xs" style={{ color: '#64748b' }}>{edge.market} · Books: {edge.low} – {edge.high}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="text-right">
                 <p className="text-xs font-black" style={{ color: '#0f172a' }}>Avg {edge.line}</p>
-                <p className="text-xs font-bold" style={{ color: edge.lean === 'wide' ? '#f59e0b' : '#64748b' }}>
+                <p className="text-xs font-bold" style={{ color: edge.lean === 'wide' ? '#f59e0b' : '#475569' }}>
                   {edge.lean === 'wide' ? 'Wide gap' : 'Gap'} +{edge.edge}
                 </p>
               </div>
@@ -135,7 +135,7 @@ export default function TodaysEdges() {
       </div>
 
       <div className="px-4 py-2" style={{ borderTop: '1px solid #f1f5f9' }}>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>
+        <p className="text-xs" style={{ color: '#64748b' }}>
           Value = line spread across DraftKings, FanDuel & Pinnacle · Not betting-splits data · Informational only
         </p>
       </div>

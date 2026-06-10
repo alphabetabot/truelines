@@ -9,8 +9,8 @@
   --border: #e2e8f0;
   --border-light: #f1f5f9;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
   --accent: #2563eb;
   --accent-dim: rgba(37, 99, 235, 0.08);
   --green: #16a34a;
@@ -58,4 +58,19 @@ h3 { font-size: 1.1rem; font-weight: 700; }
   background: linear-gradient(90deg, #f1f5f9 25%, #e8edf2 50%, #f1f5f9 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* +2px on small body copy inside pages; footer/nav chrome sits outside <main> */
+main .text-xs {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+main .text-sm {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+main .text-\[10px\] {
+  font-size: 0.75rem;
 }

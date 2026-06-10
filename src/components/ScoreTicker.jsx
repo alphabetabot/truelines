@@ -31,13 +31,13 @@ function TickerItem({ game, liveStatusMap }) {
     <div className="flex items-center gap-2 shrink-0 px-3"
       style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: '100%' }}>
       <span style={{
-        color: isLive ? '#4ade80' : isFinal ? '#94a3b8' : '#fbbf24',
+        color: isLive ? '#4ade80' : isFinal ? '#64748b' : '#fbbf24',
         fontSize: 9,
         fontWeight: 700,
       }}>
         {statusLabel}
       </span>
-      <span className="text-xs font-semibold" style={{ color: awayWin ? '#fff' : 'rgba(255,255,255,0.6)' }}>
+      <span className="text-xs font-semibold" style={{ color: awayWin ? '#fff' : 'rgba(255,255,255,0.82)' }}>
         {awayShort}
       </span>
       {showScores ? (
@@ -57,7 +57,7 @@ function TickerItem({ game, liveStatusMap }) {
       ) : isUpcoming ? null : (
         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>vs</span>
       )}
-      <span className="text-xs font-semibold" style={{ color: homeWin ? '#fff' : 'rgba(255,255,255,0.6)' }}>
+      <span className="text-xs font-semibold" style={{ color: homeWin ? '#fff' : 'rgba(255,255,255,0.82)' }}>
         {homeShort}
       </span>
     </div>

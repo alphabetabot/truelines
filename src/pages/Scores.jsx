@@ -122,7 +122,7 @@ function DateTab({ date, selected, onClick, label, displayLabel, gameCount }) {
       className="flex flex-col items-center px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
       style={{
         background: isSelected ? '#1e293b' : '#fff',
-        color: isSelected ? '#fff' : '#64748b',
+        color: isSelected ? '#fff' : '#475569',
         border: `1px solid ${isSelected ? '#1e293b' : '#e2e8f0'}`,
       }}
     >
@@ -175,7 +175,7 @@ export default function Scores({ sport }) {
 
   return (
     <div>
-      <p className="text-xs mb-2" style={{ color: '#64748b' }}>
+      <p className="text-xs mb-2" style={{ color: '#475569' }}>
         Game results for the selected sport (last {MAX_SCORES_DAYS_FROM} days).
       </p>
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
@@ -214,10 +214,10 @@ export default function Scores({ sport }) {
 
       {!isLoading && !isError && games.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-lg font-medium" style={{ color: '#94a3b8' }}>
+          <p className="text-lg font-medium" style={{ color: '#64748b' }}>
             No {SPORTS.find(s => s.key === sport)?.label || 'league'} games on this day
           </p>
-          <p className="text-sm mt-2" style={{ color: '#cbd5e1' }}>
+          <p className="text-sm mt-2" style={{ color: '#64748b' }}>
             Try another date above, or switch sport.
           </p>
         </div>

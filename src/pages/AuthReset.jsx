@@ -97,7 +97,7 @@ export default function AuthReset() {
       style={{ background: '#f0f4f8' }}>
       <div className="mb-8 text-center">
         <LogoLink height={60} maxWidth={280} style={{ margin: '0 auto 12px', justifyContent: 'center' }} />
-        <p className="text-sm" style={{ color: '#64748b' }}>Choose a new password for your account</p>
+        <p className="text-sm" style={{ color: '#475569' }}>Choose a new password for your account</p>
       </div>
 
       <div className="w-full max-w-sm rounded-2xl p-6"
@@ -106,7 +106,7 @@ export default function AuthReset() {
         {checking && (
           <div className="flex flex-col items-center py-8 gap-3">
             <Loader2 size={24} className="animate-spin" style={{ color: '#2563eb' }} />
-            <p className="text-sm" style={{ color: '#64748b' }}>Verifying reset link…</p>
+            <p className="text-sm" style={{ color: '#475569' }}>Verifying reset link…</p>
           </div>
         )}
 
@@ -137,7 +137,7 @@ export default function AuthReset() {
                   style={{ border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#94a3b8' }}>
+                  className="absolute right-3 top-1/2 -translate-y-1/2" style={{ color: '#64748b' }}>
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -172,7 +172,7 @@ export default function AuthReset() {
               className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2"
               style={{
                 background: loading ? '#e2e8f0' : '#0f172a',
-                color: loading ? '#94a3b8' : '#fff',
+                color: loading ? '#64748b' : '#fff',
                 cursor: loading ? 'not-allowed' : 'pointer',
               }}>
               {loading && <Loader2 size={15} className="animate-spin" />}
@@ -182,7 +182,7 @@ export default function AuthReset() {
         )}
       </div>
 
-      <p className="text-xs mt-6 text-center" style={{ color: '#94a3b8' }}>
+      <p className="text-xs mt-6 text-center" style={{ color: '#64748b' }}>
         <Link to="/login" style={{ color: '#2563eb' }}>Back to sign in</Link>
       </p>
     </div>

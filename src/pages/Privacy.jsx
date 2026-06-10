@@ -2,7 +2,7 @@ export default function Privacy() {
   return (
     <div className="max-w-3xl mx-auto py-8">
       <h1 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>Privacy Policy</h1>
-      <p className="text-xs mb-6" style={{ color: '#94a3b8' }}>Last updated: May 2026</p>
+      <p className="text-xs mb-6" style={{ color: '#64748b' }}>Last updated: May 2026</p>
 
       <div className="space-y-5 text-sm leading-relaxed" style={{ color: '#475569' }}>
         <section>

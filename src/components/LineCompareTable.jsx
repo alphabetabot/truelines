@@ -55,7 +55,7 @@ function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
         <table style={{ width: '100%', minWidth: availableBooks.length * 100 + 130, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: '#1e293b', borderBottom: '2px solid #334155' }}>
-              <th style={{ width: 130, padding: '8px 12px', textAlign: 'left', color: '#94a3b8', fontSize: 11, fontWeight: 700, position: 'sticky', left: 0, background: '#1e293b', zIndex: 2 }}>BOOK</th>
+              <th style={{ width: 130, padding: '8px 12px', textAlign: 'left', color: '#64748b', fontSize: 11, fontWeight: 700, position: 'sticky', left: 0, background: '#1e293b', zIndex: 2 }}>BOOK</th>
               {availableBooks.map(book => (
                 <th key={book} style={{ minWidth: 100, padding: '8px 12px', textAlign: 'center', color: '#ffffff', fontSize: 12, fontWeight: 800, borderLeft: '1px solid #334155', whiteSpace: 'nowrap' }}>
                   {SPORTSBOOK_LABELS[book] || book}
@@ -82,7 +82,7 @@ function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
                       {d ? (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                           {d.point != null && (
-                            <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#64748b' }}>
+                            <span style={{ fontFamily: 'monospace', fontSize: 12, color: '#475569' }}>
                               {d.point > 0 ? '+' : ''}{d.point}
                             </span>
                           )}
@@ -114,9 +114,9 @@ export default function LineCompareTable({ game }) {
       {/* Game header */}
       <div className="p-4 mb-4 rounded-xl" style={{ background: '#0f172a' }}>
         <h2 className="text-base font-black text-white mb-1">
-          {game.away} <span style={{ color: '#94a3b8' }}>@</span> {game.home}
+          {game.away} <span style={{ color: '#64748b' }}>@</span> {game.home}
         </h2>
-        <p className="text-xs" style={{ color: '#94a3b8' }}>
+        <p className="text-xs" style={{ color: '#64748b' }}>
           {new Date(game.commenceTime).toLocaleString()} · Green ▲ = best odds available
         </p>
       </div>

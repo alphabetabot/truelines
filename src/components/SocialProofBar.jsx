@@ -58,12 +58,12 @@ export default function SocialProofBar({ compact = false, dark = false }) {
           : { background: '#f8fafc', border: '1px solid #e2e8f0' }
       }
     >
-      <Shield size={18} className="shrink-0 mt-0.5" style={{ color: dark ? 'rgba(255,255,255,0.55)' : '#64748b' }} />
+      <Shield size={18} className="shrink-0 mt-0.5" style={{ color: dark ? 'rgba(255,255,255,0.78)' : '#475569' }} />
       <div>
         <p className="text-sm font-bold" style={{ color: dark ? '#fff' : '#0f172a' }}>
           Transparent track record
         </p>
-        <p className="text-xs leading-relaxed mt-1" style={{ color: dark ? 'rgba(255,255,255,0.6)' : '#64748b' }}>
+        <p className="text-xs leading-relaxed mt-1" style={{ color: dark ? 'rgba(255,255,255,0.82)' : '#475569' }}>
           {error
             ? 'Performance tracker is temporarily unavailable.'
             : 'We grade every newsletter pick after games finish. Record will appear here as results come in — no fabricated stats.'}

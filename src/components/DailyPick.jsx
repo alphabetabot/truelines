@@ -70,7 +70,7 @@ export default function DailyPick() {
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-            style={{ background: (sportColor[pick.sport] || '#64748b') + '30', color: sportColor[pick.sport] || '#64748b' }}>
+            style={{ background: (sportColor[pick.sport] || '#475569') + '30', color: sportColor[pick.sport] || '#475569' }}>
             {pick.sport}
           </span>
           <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -80,7 +80,7 @@ export default function DailyPick() {
       </div>
 
       <div className="px-4 py-4">
-        <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.5)' }}>{pick.game}</p>
+        <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.78)' }}>{pick.game}</p>
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="font-black text-lg leading-tight" style={{ color: '#fff' }}>{pick.pick}</h3>
           <span className="text-sm flex-shrink-0 tracking-widest" style={{ color: '#f59e0b' }}>
@@ -90,7 +90,7 @@ export default function DailyPick() {
           </span>
         </div>
         {edgeDisplay && (
-          <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.6)' }}>
+          <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>
             💡 {edgeDisplay}
           </p>
         )}

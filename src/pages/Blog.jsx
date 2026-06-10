@@ -164,10 +164,10 @@ function BlogCard({ post, onClick }) {
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-          style={{ background: '#f1f5f9', color: '#64748b' }}>
+          style={{ background: '#f1f5f9', color: '#475569' }}>
           <Tag size={10} className="inline mr-1" />{post.sport}
         </span>
-        <span className="text-xs" style={{ color: '#94a3b8' }}>
+        <span className="text-xs" style={{ color: '#64748b' }}>
           <Calendar size={10} className="inline mr-1" />
           {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </span>
@@ -181,7 +181,7 @@ function BlogCard({ post, onClick }) {
       <h2 className="font-bold mb-2 leading-tight" style={{ color: '#0f172a', fontSize: '1rem' }}>
         {post.title}
       </h2>
-      <p className="text-sm mb-3 leading-relaxed" style={{ color: '#64748b' }}>
+      <p className="text-sm mb-3 leading-relaxed" style={{ color: '#475569' }}>
         {post.summary}
       </p>
       <div className="flex items-center gap-1 text-sm font-semibold" style={{ color: '#2563eb' }}>
@@ -215,10 +215,10 @@ function BlogPost({ post, onBack }) {
         ← Back to blog
       </button>
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#f1f5f9', color: '#64748b' }}>
+        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#f1f5f9', color: '#475569' }}>
           {post.sport}
         </span>
-        <span className="text-xs" style={{ color: '#94a3b8' }}>
+        <span className="text-xs" style={{ color: '#64748b' }}>
           {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </span>
       </div>
@@ -284,13 +284,13 @@ export default function Blog() {
     <div>
       <div className="mb-6">
         <h1 style={{ color: '#0f172a' }}>Betting Insights</h1>
-        <p className="text-sm mt-1" style={{ color: '#64748b' }}>
+        <p className="text-sm mt-1" style={{ color: '#475569' }}>
           Expert analysis, betting guides, and AI-powered insights from Vega
         </p>
       </div>
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader size={20} className="animate-spin" style={{ color: '#94a3b8' }} />
+          <Loader size={20} className="animate-spin" style={{ color: '#64748b' }} />
         </div>
       ) : (
         <div className="grid gap-4">

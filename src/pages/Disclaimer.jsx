@@ -2,7 +2,7 @@ export default function Disclaimer() {
   return (
     <div className="max-w-3xl mx-auto py-8 px-4">
       <h1 className="mb-2" style={{ color: '#0f172a' }}>Site Disclaimer</h1>
-      <p className="mb-8 text-sm" style={{ color: '#64748b' }}>Last updated: April 2026</p>
+      <p className="mb-8 text-sm" style={{ color: '#475569' }}>Last updated: April 2026</p>
 
       {/* General */}
       <section className="mb-8 p-5 rounded-2xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>

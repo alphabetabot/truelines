@@ -143,7 +143,7 @@ export default function LiveOdds() {
         {activeTab === 'Odds' && (
           <div className="flex items-center gap-2 flex-1 justify-end min-w-0">
             {dataUpdatedAt > 0 && (
-              <span className="text-xs hidden sm:inline shrink-0" style={{ color: '#94a3b8' }}>
+              <span className="text-xs hidden sm:inline shrink-0" style={{ color: '#64748b' }}>
                 {sportLabel} · {format(new Date(dataUpdatedAt), 'h:mm a')}
               </span>
             )}
@@ -151,7 +151,7 @@ export default function LiveOdds() {
               <Search
                 size={13}
                 className="absolute left-2.5 top-1/2 -translate-y-1/2"
-                style={{ color: '#94a3b8' }}
+                style={{ color: '#64748b' }}
               />
               <input
                 type="search"
@@ -176,7 +176,7 @@ export default function LiveOdds() {
               style={{
                 background: '#fff',
                 border: '1px solid #e2e8f0',
-                color: '#64748b',
+                color: '#475569',
                 opacity: isFetching ? 0.5 : 1,
               }}
             >
@@ -201,7 +201,7 @@ export default function LiveOdds() {
                 <p className="font-semibold text-sm" style={{ color: '#dc2626' }}>
                   Failed to load odds
                 </p>
-                <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>
+                <p className="text-xs mt-0.5" style={{ color: '#475569' }}>
                   {error?.message}
                 </p>
               </div>
@@ -224,7 +224,7 @@ export default function LiveOdds() {
             <>
               {displayGames.length === 0 ? (
                 <div className="text-center py-12">
-                  <p style={{ color: '#94a3b8' }}>
+                  <p style={{ color: '#64748b' }}>
                     {allGames.length === 0
                       ? `No upcoming ${sportLabel} games`
                       : 'No games match your search'}
@@ -251,7 +251,7 @@ export default function LiveOdds() {
 
       {activeTab === 'Odds' && (
         <section className="mt-6 pt-5" style={{ borderTop: '1px solid #e2e8f0' }}>
-          <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#94a3b8' }}>
+          <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: '#64748b' }}>
             More tools
           </p>
           <TodaysEdges />

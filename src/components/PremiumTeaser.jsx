@@ -47,7 +47,7 @@ export default function PremiumTeaser({ showWaitlist = true }) {
           Upgrade to Premium
         </h2>
       </div>
-      <p className="text-sm mb-4 leading-relaxed" style={{ color: '#64748b' }}>
+      <p className="text-sm mb-4 leading-relaxed" style={{ color: '#475569' }}>
         Unlock the full AI Picks and AI Analysis tabs — {PREMIUM_PRICE_DISPLAY}.
       </p>
 

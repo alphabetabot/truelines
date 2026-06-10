@@ -7,9 +7,9 @@ import LogoLink from '../components/LogoLink'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
-const BODY = { fontSize: 18, color: '#0f172a', lineHeight: 1.55 }
-const BODY_MUTED = { fontSize: 17, color: '#0f172a', lineHeight: 1.5 }
-const SECTION_LABEL = { fontSize: 14, fontWeight: 800, color: '#0f172a', letterSpacing: '0.14em', textTransform: 'uppercase' }
+const BODY = { fontSize: 20, color: '#0f172a', lineHeight: 1.55 }
+const BODY_MUTED = { fontSize: 19, color: '#334155', lineHeight: 1.5 }
+const SECTION_LABEL = { fontSize: 16, fontWeight: 800, color: '#0f172a', letterSpacing: '0.14em', textTransform: 'uppercase' }
 const CONTENT_PAD = 'px-5 sm:px-8 lg:px-12'
 const CONTENT_MAX = 'max-w-4xl mx-auto w-full'
 
@@ -138,7 +138,7 @@ export default function Welcome() {
             Top Pick · Every Morning · Graded In Public
           </p>
 
-          <p className="mb-8 mx-auto" style={{ fontSize: 18, color: '#fff', maxWidth: 560, lineHeight: 1.5 }}>
+          <p className="mb-8 mx-auto" style={{ fontSize: 20, color: '#fff', maxWidth: 560, lineHeight: 1.5 }}>
             <strong style={{ color: '#fff' }}>Free account</strong> gets the morning newsletter, odds tools, and our public tracker.
             {' '}<strong style={{ color: '#fde68a' }}>Premium ({PREMIUM_PRICE_DISPLAY})</strong> unlocks the full pick card and AI analysis.
           </p>
@@ -148,7 +148,7 @@ export default function Welcome() {
               type="button"
               onClick={() => ctaSignup('hero_free_newsletter')}
               className="w-full sm:flex-1 px-8 py-4 rounded-xl font-bold"
-              style={{ background: '#f59e0b', color: '#0f172a', fontSize: 17 }}
+              style={{ background: '#f59e0b', color: '#0f172a', fontSize: 19 }}
             >
               Free Newsletter + 1 Daily Pick
             </button>
@@ -156,7 +156,7 @@ export default function Welcome() {
               type="button"
               onClick={() => { trackEvent('welcome_cta', { action: 'premium', source: 'hero_primary' }); navigate('/premium') }}
               className="w-full sm:flex-1 px-8 py-4 rounded-xl font-bold"
-              style={{ background: '#fff', color: '#0f172a', fontSize: 17 }}
+              style={{ background: '#fff', color: '#0f172a', fontSize: 19 }}
             >
               Premium — {PREMIUM_PRICE_DISPLAY}
             </button>
@@ -202,13 +202,13 @@ export default function Welcome() {
                     >
                       <td
                         className="py-3.5 pl-5 pr-3 font-semibold"
-                        style={{ fontSize: 16, color: '#0f172a', width: '44%', verticalAlign: 'middle' }}
+                        style={{ fontSize: 18, color: '#1e293b', width: '44%', verticalAlign: 'middle' }}
                       >
                         {label}
                       </td>
                       <td
                         className="py-3.5 pr-5 text-right font-bold"
-                        style={{ fontSize: 16, color: '#15803d', verticalAlign: 'middle' }}
+                        style={{ fontSize: 18, color: '#15803d', verticalAlign: 'middle' }}
                       >
                         {value}
                       </td>
@@ -221,7 +221,7 @@ export default function Welcome() {
                   type="button"
                   onClick={() => ctaSignup('free_tier')}
                   className="w-full px-8 py-3.5 rounded-xl font-bold"
-                  style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+                  style={{ background: '#0f172a', color: '#fff', fontSize: 19 }}
                 >
                   Create Free Account
                 </button>
@@ -257,15 +257,15 @@ export default function Welcome() {
                   className="rounded-xl p-4 mb-3 last:mb-0"
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
                 >
-                  <strong className="block font-bold mb-1" style={{ fontSize: 17, color: '#fff' }}>{f.title}</strong>
-                  <span style={{ fontSize: 16, color: '#fff', lineHeight: 1.45 }}>{f.detail}</span>
+                  <strong className="block font-bold mb-1" style={{ fontSize: 19, color: '#fff' }}>{f.title}</strong>
+                  <span style={{ fontSize: 18, color: '#e2e8f0', lineHeight: 1.45 }}>{f.detail}</span>
                 </div>
               ))}
               <Link
                 to="/premium"
                 onClick={() => trackEvent('welcome_cta', { action: 'premium' })}
                 className="block w-full mt-4 py-3.5 rounded-lg text-center font-extrabold"
-                style={{ background: '#f59e0b', color: '#0f172a', fontSize: 17 }}
+                style={{ background: '#f59e0b', color: '#0f172a', fontSize: 19 }}
               >
                 Upgrade to Premium
               </Link>
@@ -280,7 +280,7 @@ export default function Welcome() {
             <div className="grid sm:grid-cols-2 gap-5">
               {POWERS.map(p => (
                 <div key={p.title}>
-                  <h3 className="font-bold mb-1" style={{ ...BODY, fontSize: 17 }}>
+                  <h3 className="font-bold mb-1" style={{ ...BODY, fontSize: 19 }}>
                     {p.title}
                     <span
                       className="ml-2 text-xs font-bold uppercase"
@@ -322,7 +322,7 @@ export default function Welcome() {
                 { label: 'Graded', val: gradedLabel, color: '#b45309' },
               ].map(({ label, val, color }) => (
                 <div key={label} className="text-center">
-                  <span className="block font-bold uppercase mb-1" style={{ fontSize: 14, color: '#0f172a', letterSpacing: '0.1em' }}>
+                  <span className="block font-bold uppercase mb-1" style={{ fontSize: 16, color: '#0f172a', letterSpacing: '0.1em' }}>
                     {label}
                   </span>
                   <span className="font-black text-2xl" style={{ fontFamily: TEAM_FONT, color }}>
@@ -360,16 +360,16 @@ export default function Welcome() {
                   </span>
                 </div>
                 <div className="p-6 text-white" style={{ background: '#0f172a' }}>
-                  <p className="mb-2 uppercase tracking-wide" style={{ fontFamily: TEAM_FONT, fontSize: 17, fontWeight: 600, color: '#fff' }}>
+                  <p className="mb-2 uppercase tracking-wide" style={{ fontFamily: TEAM_FONT, fontSize: 19, fontWeight: 600, color: '#fff' }}>
                     {pick.game}
                   </p>
                   <p className="font-bold mb-2 uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 22, letterSpacing: '0.02em' }}>
                     {pick.pick}
                   </p>
-                  <p className="mb-3" style={{ fontSize: 17, color: '#fff', lineHeight: 1.45 }}>
+                  <p className="mb-3" style={{ fontSize: 19, color: '#fff', lineHeight: 1.45 }}>
                     {briefEdgeSummary(pick.edge)}
                   </p>
-                  <p className="font-semibold" style={{ fontSize: 17, color: '#fbbf24', fontFamily: TEAM_FONT }}>{pick.bet}</p>
+                  <p className="font-semibold" style={{ fontSize: 19, color: '#fbbf24', fontFamily: TEAM_FONT }}>{pick.bet}</p>
                 </div>
               </div>
             )}
@@ -377,13 +377,13 @@ export default function Welcome() {
             {!pickLoading && !pick && (
               <div className="rounded-xl p-6 mb-3 text-center w-full" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
                 <p className="font-semibold mb-1" style={BODY}>Picks publish every morning</p>
-                <Link to="/login" className="font-bold" style={{ fontSize: 17, color: '#2563eb' }}>Sign up for the free newsletter →</Link>
+                <Link to="/login" className="font-bold" style={{ fontSize: 19, color: '#2563eb' }}>Sign up for the free newsletter →</Link>
               </div>
             )}
 
           </section>
 
-          <p className="text-center leading-relaxed pb-12" style={{ fontSize: 17, color: '#0f172a' }}>
+          <p className="text-center leading-relaxed pb-12" style={{ fontSize: 19, color: '#0f172a' }}>
             Already have an account?{' '}
             <Link to="/login" className="font-semibold" style={{ color: '#2563eb' }}>Sign in</Link>
             {' · '}
