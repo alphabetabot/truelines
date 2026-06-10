@@ -5,6 +5,7 @@ import { verifyUnsubscribeToken } from './newsletter-utils.js'
 import { handleBillingRequest, isBillingAction } from './_billing-handlers.js'
 import { pacificDateKey } from './date-utils.js'
 import { repairPickOrderFromText } from './store-picks.js'
+import { isStaleNewsletterClaim } from './newsletter-send-guard.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -142,6 +143,74 @@ function verifyCronSecret(req) {
   return token && token === process.env.CRON_SECRET
 }
 
+async function fetchNewsletterSendStatus(supabase, dateKey) {
+  const { data, error } = await supabase
+    .from('newsletter_daily_sends')
+    .select('date,sent_at,subscriber_count,started_at,cron_schedule')
+    .eq('date', dateKey)
+    .maybeSingle()
+
+  if (error && !/newsletter_daily_sends/i.test(error.message || '')) {
+    throw error
+  }
+
+  if (!data) {
+    return { date: dateKey, status: 'not_started' }
+  }
+
+  if (data.sent_at && data.subscriber_count != null && data.subscriber_count >= 0) {
+    return {
+      date: dateKey,
+      status: 'sent',
+      sent_at: data.sent_at,
+      subscriber_count: data.subscriber_count,
+      cron_schedule: data.cron_schedule,
+    }
+  }
+
+  if (isStaleNewsletterClaim(data)) {
+    return {
+      date: dateKey,
+      status: 'stale_in_progress',
+      started_at: data.started_at,
+      cron_schedule: data.cron_schedule,
+      hint: 'Claim is older than 15 minutes with no sent_at — cron may have timed out or crashed',
+    }
+  }
+
+  return {
+    date: dateKey,
+    status: 'in_progress',
+    started_at: data.started_at,
+    cron_schedule: data.cron_schedule,
+  }
+}
+
+async function handleNewsletterRecovery(req, res) {
+  if (!verifyCronSecret(req)) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  const siteOrigin = process.env.SITE_URL || 'https://www.trueoddsiq.com'
+  const recovery = await fetch(`${siteOrigin.replace(/\/$/, '')}/api/cron-newsletter?force=true`, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
+  })
+
+  const text = await recovery.text()
+  let body
+  try {
+    body = JSON.parse(text)
+  } catch {
+    body = { raw: text.slice(0, 500) }
+  }
+
+  return res.status(recovery.status).json({
+    ok: recovery.ok,
+    recovery: body,
+  })
+}
+
 async function fetchStoredNewsletterText(supabase, dateKey) {
   const { data, error } = await supabase
     .from('newsletter_daily_sends')
@@ -242,13 +311,20 @@ export default async function handler(req, res) {
       return handleRepairPickOrder(req, res)
     }
 
+    if (req.query?.action === 'newsletter-recovery') {
+      return handleNewsletterRecovery(req, res)
+    }
+
     const today = req.query?.date || isoDate(new Date())
     const yesterday = req.query?.previousDate || isoDate(addDays(new Date(`${today}T00:00:00.000Z`), -1))
+    const pacificToday = pacificDateKey()
 
-    const [todayRows, yesterdayRows, recentGraded] = await Promise.all([
+    const supabase = getSupabase()
+    const [todayRows, yesterdayRows, recentGraded, newsletter] = await Promise.all([
       fetchPicksByDate(today),
       fetchPicksByDate(yesterday),
       fetchRecentGraded(),
+      fetchNewsletterSendStatus(supabase, pacificToday),
     ])
 
     return res.json({
@@ -257,9 +333,11 @@ export default async function handler(req, res) {
       dates: {
         today,
         yesterday,
+        pacificToday,
       },
       today: summarizeRows(todayRows),
       yesterday: summarizeRows(yesterdayRows),
+      newsletter,
       tracker: {
         recentGradedCount: recentGraded.length,
         latestGradedDate: recentGraded[0]?.date || null,

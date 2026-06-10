@@ -8,6 +8,15 @@ export function getPacificDateKey(date = new Date()) {
   }).format(date)
 }
 
+/** Claims older than this with no sent_at are treated as crashed/timed-out runs. */
+export const STALE_NEWSLETTER_CLAIM_MS = 15 * 60 * 1000
+
+export function isStaleNewsletterClaim(row, now = Date.now()) {
+  if (!row?.started_at || row.sent_at) return false
+  const started = new Date(row.started_at).getTime()
+  return Number.isFinite(started) && now - started > STALE_NEWSLETTER_CLAIM_MS
+}
+
 function isMissingTableError(error) {
   return (
     error?.code === '42P01' ||
@@ -20,7 +29,7 @@ function isMissingTableError(error) {
  * Atomically reserve today's send before Claude/email work.
  * Prevents two cron invocations from both passing a late "already sent?" check.
  */
-export async function claimDailyNewsletterSend(supabase, dateKey, { cronSchedule } = {}) {
+export async function claimDailyNewsletterSend(supabase, dateKey, { cronSchedule, _retried = false } = {}) {
   const { error } = await supabase.from('newsletter_daily_sends').insert({
     date: dateKey,
     sent_at: null,
@@ -64,6 +73,12 @@ export async function claimDailyNewsletterSend(supabase, dateKey, { cronSchedule
       sentAt: row.sent_at,
       cronSchedule: row.cron_schedule,
     }
+  }
+
+  if (!_retried && isStaleNewsletterClaim(row)) {
+    console.warn(`Releasing stale newsletter claim for ${dateKey} (started ${row.started_at})`)
+    await supabase.from('newsletter_daily_sends').delete().eq('date', dateKey)
+    return claimDailyNewsletterSend(supabase, dateKey, { cronSchedule, _retried: true })
   }
 
   return {
