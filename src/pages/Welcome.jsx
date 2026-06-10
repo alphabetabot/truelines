@@ -13,16 +13,11 @@ const SECTION_LABEL = { fontSize: 14, fontWeight: 800, color: '#0f172a', letterS
 const CONTENT_PAD = 'px-5 sm:px-8 lg:px-12'
 const CONTENT_MAX = 'max-w-4xl mx-auto w-full'
 
-const FREE_INCLUDES = [
-  'Morning newsletter — one top pick with full write-up',
-  'Homepage top-pick preview every day',
-  'Live odds, line compare, and public tracker',
-]
-
-const PREMIUM_BULLETS = [
-  'Full AI Picks tab — all 3 daily picks with write-ups',
-  'Unlimited AI analysis on any game',
-  'Injury, weather, and advanced stats depth',
+const FREE_TIER_ROWS = [
+  { label: 'Daily newsletter', value: '1 top pick' },
+  { label: 'Homepage', value: 'Top pick preview' },
+  { label: 'Tools', value: 'Odds · Compare' },
+  { label: 'Track record', value: 'Public tracker' },
 ]
 
 const PREMIUM_FEATURES = [
@@ -179,45 +174,62 @@ export default function Welcome() {
 
       <div className={`w-full ${CONTENT_PAD}`}>
         <div className={CONTENT_MAX}>
-          <section id="what-you-get" className="py-10">
-            <p className="mb-3" style={SECTION_LABEL}>Free account — $0</p>
+          <section id="what-you-get" className="pt-10 pb-6">
             <div
-              className="rounded-2xl p-5 mb-8"
+              className="rounded-2xl overflow-hidden"
               style={{ background: '#f0fdf4', border: '2px solid #16a34a' }}
             >
-              <h2 className="font-black text-xl mb-3 uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
-                Newsletter &amp; Tools Stay Free
-              </h2>
-              <ul className="space-y-3 mb-4">
-                {FREE_INCLUDES.map(item => (
-                  <li key={item} className="flex gap-3" style={BODY}>
-                    <span style={{ color: '#16a34a', fontWeight: 800 }}>✓</span>
-                    <span>{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() => ctaSignup('free_tier')}
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl font-bold"
-                style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+              <div
+                className="px-5 py-3.5"
+                style={{ background: '#dcfce7', borderBottom: '2px solid #86efac' }}
               >
-                Create Free Account
-              </button>
+                <h2
+                  className="font-black text-lg uppercase tracking-wide"
+                  style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+                >
+                  Free account · $0
+                </h2>
+              </div>
+              <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                <tbody>
+                  {FREE_TIER_ROWS.map(({ label, value }, i) => (
+                    <tr
+                      key={label}
+                      style={{
+                        background: i % 2 === 0 ? '#f0fdf4' : '#ecfdf5',
+                        borderBottom: i < FREE_TIER_ROWS.length - 1 ? '1px solid #bbf7d0' : 'none',
+                      }}
+                    >
+                      <td
+                        className="py-3.5 pl-5 pr-3 font-semibold"
+                        style={{ fontSize: 16, color: '#0f172a', width: '44%', verticalAlign: 'middle' }}
+                      >
+                        {label}
+                      </td>
+                      <td
+                        className="py-3.5 pr-5 text-right font-bold"
+                        style={{ fontSize: 16, color: '#15803d', verticalAlign: 'middle' }}
+                      >
+                        {value}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div className="px-5 py-4" style={{ background: '#dcfce7', borderTop: '2px solid #86efac' }}>
+                <button
+                  type="button"
+                  onClick={() => ctaSignup('free_tier')}
+                  className="w-full px-8 py-3.5 rounded-xl font-bold"
+                  style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+                >
+                  Create Free Account
+                </button>
+              </div>
             </div>
-
-            <p className="mb-3" style={SECTION_LABEL}>Premium — {PREMIUM_PRICE_DISPLAY}</p>
-            <ul className="space-y-3 mb-2">
-              {PREMIUM_BULLETS.map(item => (
-                <li key={item} className="flex gap-3" style={BODY}>
-                  <span style={{ color: '#f59e0b', fontWeight: 800 }}>✓</span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
           </section>
 
-          <section className="py-4 pb-10">
+          <section className="pb-10">
             <div
               className="rounded-2xl p-5 relative w-full"
               style={{
