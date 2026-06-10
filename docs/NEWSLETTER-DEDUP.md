@@ -57,4 +57,4 @@ Use only when the morning send failed. `force=true` skips the daily claim and cl
 
 ## If cron keeps skipping (`send_in_progress`)
 
-A failed run used to leave `newsletter_daily_sends` with `sent_at` null, blocking the rest of the day. The guard now auto-releases claims older than **15 minutes** and releases claims on all failure paths. `api/cron-newsletter` also has **maxDuration: 300** on Vercel (Claude + odds + email need more than the default 10s).
+A failed run used to leave `newsletter_daily_sends` with `sent_at` null, blocking the rest of the day. The guard now auto-releases claims older than **15 minutes** and releases claims on all failure paths. `api/cron-newsletter` also has **maxDuration: 60** on Vercel (same as `log-results`; values above your plan limit fail deployment).

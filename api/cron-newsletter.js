@@ -28,6 +28,11 @@ import {
   loadSportContextBundle,
 } from './sport-context.js'
 
+/** Match vercel.json — Hobby/Pro deploy rejects values above plan limit (e.g. 300). */
+export const config = {
+  maxDuration: 60,
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 const BOOKMAKERS = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365'
