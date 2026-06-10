@@ -28,6 +28,11 @@ import {
   loadSportContextBundle,
 } from './sport-context.js'
 
+/** Match vercel.json — Hobby/Pro deploy rejects values above plan limit (e.g. 300). */
+export const config = {
+  maxDuration: 60,
+}
+
 const resend = new Resend(process.env.RESEND_API_KEY)
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 const BOOKMAKERS = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365'
@@ -539,8 +544,17 @@ export default async function handler(req, res) {
 
   const todayKey = getPacificDateKey(new Date())
   const cronSchedule = req.headers['x-vercel-cron-schedule'] || null
+  const supabase = getSupabase()
   let claimedSend = false
   let emailsDelivered = 0
+
+  async function abortNewsletter(body, status = 200) {
+    if (claimedSend && emailsDelivered === 0) {
+      await releaseNewsletterClaim(supabase, todayKey)
+      claimedSend = false
+    }
+    return res.status(status).json(body)
+  }
 
   // Block cron-job.org / manual hits — only Vercel 0 14 UTC (or ?force=true for recovery).
   if (!forceSend && !isVercelCron) {
@@ -566,8 +580,12 @@ export default async function handler(req, res) {
     })
   }
 
+  if (forceSend) {
+    await releaseNewsletterClaim(supabase, todayKey)
+  }
+
   if (!forceSend) {
-    const claim = await claimDailyNewsletterSend(getSupabase(), todayKey, { cronSchedule })
+    const claim = await claimDailyNewsletterSend(supabase, todayKey, { cronSchedule })
     if (!claim.claimed) {
       const message =
         claim.reason === 'already_sent_today'
@@ -604,7 +622,9 @@ export default async function handler(req, res) {
   try {
     const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
     const games = await getTodaysGames()
-    if (!games.length) return res.json({ sent: 0, message: 'No games today' })
+    if (!games.length) {
+      return abortNewsletter({ sent: 0, message: 'No games today', date: todayKey })
+    }
 
     const generated = await generatePicks(games)
     picksText = typeof generated === 'string' ? generated : generated.picksText
@@ -612,27 +632,33 @@ export default async function handler(req, res) {
 
     if (!picksText || picksText.trim().length < 100) {
       console.warn('No valid picks generated')
-      return res.json({ sent: 0, message: 'No picks generated' })
+      return abortNewsletter({ sent: 0, message: 'No picks generated', date: todayKey })
     }
 
     if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data')) {
       console.warn('Claude refused picks')
-      return res.json({ sent: 0, message: 'Claude refused to generate picks' })
+      return abortNewsletter({ sent: 0, message: 'Claude refused to generate picks', date: todayKey })
     }
 
     const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade)
     const { picks: validated, warnings } = validatePicksAgainstSlate(extracted, slate)
     if (warnings.length) console.warn('Pick validation warnings:', warnings.join(' | '))
 
-    const picks = validated.slice(0, 3)
-    console.log(`Extracted ${extracted.length} picks, ${picks.length} passed metrics validation`)
+    const sourcePicks = validated.length > 0 ? validated : extracted
+    const picks = sourcePicks.slice(0, 3)
+    console.log(`Extracted ${extracted.length} picks, ${validated.length} passed metrics validation, using ${picks.length} for store/send`)
+
+    if (picks.length < 1) {
+      console.error('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
+      return abortNewsletter({
+        error: 'No picks extracted from generated newsletter',
+        picksPreview: picksText.slice(0, 500),
+        date: todayKey,
+      }, 500)
+    }
 
     if (picks.length < 3) {
-      console.error('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
-      return res.status(500).json({
-        error: 'Too few picks extracted from generated newsletter',
-        picksPreview: picksText.slice(0, 500),
-      })
+      console.warn(`Only ${picks.length}/3 picks available — sending top pick email and storing partial slate`)
     }
 
     let storedPicks = []
@@ -640,40 +666,48 @@ export default async function handler(req, res) {
       storedPicks = await storePicks(picks, new Date())
     } catch (storageErr) {
       console.error('Failed to store picks:', storageErr.message)
-      return res.status(500).json({
+      return abortNewsletter({
         error: 'Failed to store generated picks',
         detail: storageErr.message,
         extracted: picks.length,
-      })
+        date: todayKey,
+      }, 500)
     }
 
     if (storedPicks.length === 0) {
       console.error('Store completed without returning saved pick rows')
-      return res.status(500).json({
+      return abortNewsletter({
         error: 'Generated picks were not stored',
         extracted: picks.length,
         stored: 0,
-      })
+        date: todayKey,
+      }, 500)
     }
-    
-    const { data: subscribers, error } = await getSupabase()
+
+    const { data: subscribers, error } = await supabase
       .from('newsletter_subscribers')
       .select('email')
       .eq('active', true)
 
     if (error) throw error
     if (!subscribers?.length) {
-      if (claimedSend) await releaseNewsletterClaim(getSupabase(), todayKey)
-      return res.json({ sent: 0, message: 'No subscribers yet', picks: picksText, stored: storedPicks.length })
+      return abortNewsletter({
+        sent: 0,
+        message: 'No subscribers yet',
+        picks: picksText,
+        stored: storedPicks.length,
+        date: todayKey,
+      })
     }
 
     const topPickText = extractTopPickSection(picksText)
     if (!topPickText || topPickText.length < 40) {
       console.error('Top pick section too short for newsletter email')
-      return res.status(500).json({
+      return abortNewsletter({
         error: 'Could not extract top pick for newsletter email',
         picksPreview: picksText.slice(0, 500),
-      })
+        date: todayKey,
+      }, 500)
     }
 
     const emails = uniqueSubscriberEmails(subscribers)
@@ -699,7 +733,7 @@ export default async function handler(req, res) {
     }
 
     if (emailsDelivered > 0) {
-      const recorded = await completeNewsletterSend(getSupabase(), todayKey, sent, picksText)
+      const recorded = await completeNewsletterSend(supabase, todayKey, sent, picksText)
       claimedSend = false
       if (!recorded) {
         console.error('Newsletter sent but newsletter_daily_sends update failed — dedup may break tomorrow')
@@ -708,7 +742,8 @@ export default async function handler(req, res) {
 
     if (sendErrors.length) {
       if (claimedSend && emailsDelivered === 0) {
-        await releaseNewsletterClaim(getSupabase(), todayKey)
+        await releaseNewsletterClaim(supabase, todayKey)
+        claimedSend = false
       }
       return res.status(502).json({
         error: 'One or more newsletter emails failed to send',
@@ -751,9 +786,9 @@ export default async function handler(req, res) {
     return res.json({ sent, date: todayKey, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
   } catch (err) {
     if (claimedSend && emailsDelivered === 0) {
-      await releaseNewsletterClaim(getSupabase(), todayKey)
+      await releaseNewsletterClaim(supabase, todayKey)
     } else if (emailsDelivered > 0) {
-      await completeNewsletterSend(getSupabase(), todayKey, emailsDelivered, picksText)
+      await completeNewsletterSend(supabase, todayKey, emailsDelivered, picksText)
     }
     console.error('Newsletter error:', err)
     return res.status(500).json({ error: err.message, emailsDelivered })
