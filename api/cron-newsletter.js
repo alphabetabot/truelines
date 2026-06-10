@@ -28,12 +28,14 @@ import {
   loadSportContextBundle,
 } from './sport-context.js'
 
-/** Match vercel.json — Hobby/Pro deploy rejects values above plan limit (e.g. 300). */
-export const config = {
-  maxDuration: 60,
-}
+let resendClient = null
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  if (!resendClient) {
+    resendClient = new Resend(process.env.RESEND_API_KEY)
+  }
+  return resendClient
+}
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 const BOOKMAKERS = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365'
 const BOOK_LABELS = {
@@ -718,7 +720,7 @@ export default async function handler(req, res) {
       const unsub = unsubscribeUrl(email)
       try {
         await sendNewsletterEmail({
-          resend,
+          resend: getResend(),
           to: email,
           subject: `TrueOddsIQ Top Pick — ${date}`,
           html: buildNewsletterEmailHtml(topPickText, date, unsub),
