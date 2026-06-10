@@ -45,8 +45,8 @@ export default function RecentlyViewedGames({ page, sportKey, onSelect }) {
   return (
     <div className="mb-4">
       <div className="flex items-center gap-1.5 mb-2">
-        <Clock size={13} style={{ color: '#94a3b8' }} />
-        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#94a3b8' }}>
+        <Clock size={13} style={{ color: '#64748b' }} />
+        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#64748b' }}>
           Recently viewed
         </span>
       </div>

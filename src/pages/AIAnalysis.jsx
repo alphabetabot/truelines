@@ -130,7 +130,7 @@ export default function AIAnalysis() {
           <Brain size={22} style={{ color: '#2563eb' }} />
           <div>
             <h1 className="text-xl font-bold" style={{ color: '#0f172a' }}>Vega AI Analysis</h1>
-            <p className="text-sm" style={{ color: '#64748b' }}>
+            <p className="text-sm" style={{ color: '#475569' }}>
               Upcoming games for the next 7 days with live lines. Books drop started games — switch sport if the slate looks empty.
             </p>
           </div>
@@ -176,7 +176,7 @@ export default function AIAnalysis() {
       )}
 
       <div className="mb-5">
-        <label className="block text-xs font-semibold mb-2" style={{ color: '#64748b' }}>
+        <label className="block text-xs font-semibold mb-2" style={{ color: '#475569' }}>
           SELECT UPCOMING GAME {games.length > 0 ? `(${games.length} this week)` : ''}
         </label>
         <div className="relative">
@@ -184,7 +184,7 @@ export default function AIAnalysis() {
             value={selectedGame?.id || ''}
             onChange={e => handleGameSelect(e.target.value)}
             className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
-            style={{ background: '#fff', border: '1px solid #e2e8f0', color: selectedGame ? '#0f172a' : '#94a3b8' }}
+            style={{ background: '#fff', border: '1px solid #e2e8f0', color: selectedGame ? '#0f172a' : '#64748b' }}
           >
             <option value="">{isLoading ? 'Loading...' : games.length === 0 ? 'No upcoming games' : '— Choose a game —'}</option>
             {gameGroups.map(group => (
@@ -197,7 +197,7 @@ export default function AIAnalysis() {
               </optgroup>
             ))}
           </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#94a3b8' }} />
+          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: '#64748b' }} />
         </div>
       </div>
 
@@ -216,7 +216,7 @@ export default function AIAnalysis() {
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
           style={{
             background: selectedGame && !claudeLoading && !authLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#f1f5f9',
-            color: selectedGame && !claudeLoading && !authLoading ? '#fff' : '#94a3b8',
+            color: selectedGame && !claudeLoading && !authLoading ? '#fff' : '#64748b',
             cursor: selectedGame && !claudeLoading && !authLoading ? 'pointer' : 'not-allowed',
             boxShadow: selectedGame && !claudeLoading && !authLoading ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
           }}
@@ -232,7 +232,7 @@ export default function AIAnalysis() {
           className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
           style={{
             background: selectedGame && !gptLoading && !authLoading ? 'linear-gradient(135deg, #16a34a, #15803d)' : '#f1f5f9',
-            color: selectedGame && !gptLoading && !authLoading ? '#fff' : '#94a3b8',
+            color: selectedGame && !gptLoading && !authLoading ? '#fff' : '#64748b',
             cursor: selectedGame && !gptLoading && !authLoading ? 'pointer' : 'not-allowed',
             boxShadow: selectedGame && !gptLoading && !authLoading ? '0 4px 14px rgba(22,163,74,0.3)' : 'none',
           }}
@@ -258,8 +258,8 @@ export default function AIAnalysis() {
 
       {!claudeData && !gptData && !claudeLoading && !gptLoading && !claudeError && !gptError && (
         <div className="text-center py-12">
-          <Brain size={36} className="mx-auto mb-3 opacity-20" style={{ color: '#64748b' }} />
-          <p className="text-sm" style={{ color: '#94a3b8' }}>Select a game then choose your AI</p>
+          <Brain size={36} className="mx-auto mb-3 opacity-20" style={{ color: '#475569' }} />
+          <p className="text-sm" style={{ color: '#64748b' }}>Select a game then choose your AI</p>
         </div>
       )}
     </div>

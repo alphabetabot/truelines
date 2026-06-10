@@ -57,11 +57,11 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
       </div>
 
       {loading ? (
-        <p className="text-sm text-center py-6" style={{ color: '#94a3b8' }}>Loading record…</p>
+        <p className="text-sm text-center py-6" style={{ color: '#64748b' }}>Loading record…</p>
       ) : error ? (
         <div className="flex items-start gap-2 px-4 py-4">
           <AlertTriangle size={16} style={{ color: '#dc2626' }} className="shrink-0 mt-0.5" />
-          <p className="text-xs" style={{ color: '#64748b' }}>{error}</p>
+          <p className="text-xs" style={{ color: '#475569' }}>{error}</p>
         </div>
       ) : (
         <div className="grid grid-cols-3 gap-0">
@@ -75,15 +75,15 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
               className="text-center py-4 px-2"
               style={{ borderRight: i < 2 ? '1px solid #f1f5f9' : 'none' }}
             >
-              <p className="text-xs font-semibold mb-1" style={{ color: '#94a3b8' }}>{label}</p>
+              <p className="text-xs font-semibold mb-1" style={{ color: '#64748b' }}>{label}</p>
               <p className="text-xl font-black" style={{ color: '#0f172a' }}>{value}</p>
-              <p className="text-xs mt-0.5" style={{ color: '#64748b' }}>{sub}</p>
+              <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{sub}</p>
             </div>
           ))}
         </div>
       )}
 
-      <p className="text-xs text-center px-4 py-2.5" style={{ color: '#94a3b8', borderTop: '1px solid #f1f5f9' }}>
+      <p className="text-xs text-center px-4 py-2.5" style={{ color: '#64748b', borderTop: '1px solid #f1f5f9' }}>
         Graded to the game on each pick&apos;s date · Past results don&apos;t guarantee future performance
       </p>
     </section>

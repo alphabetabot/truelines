@@ -67,7 +67,7 @@ export default function DailyPickTeaser() {
           <div className="min-w-0">
             <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Today&apos;s AI Pick</p>
             <p className="text-sm font-bold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
-            <p className="text-xs truncate" style={{ color: '#64748b' }}>{pick.game}</p>
+            <p className="text-xs truncate" style={{ color: '#475569' }}>{pick.game}</p>
           </div>
         </div>
         <span className="flex items-center gap-0.5 text-xs font-bold shrink-0" style={{ color: '#0f172a' }}>

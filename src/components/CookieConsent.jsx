@@ -55,7 +55,7 @@ export default function CookieConsent() {
             type="button"
             onClick={decline}
             className="px-4 py-2 rounded-lg text-sm font-semibold"
-            style={{ background: 'transparent', color: '#94a3b8', border: '1px solid #475569' }}
+            style={{ background: 'transparent', color: '#64748b', border: '1px solid #475569' }}
           >
             Decline analytics
           </button>

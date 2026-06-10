@@ -141,7 +141,7 @@ export default function Premium() {
             </em>
           </h1>
 
-          <p className="text-base mb-6" style={{ color: 'rgba(255,255,255,0.72)', maxWidth: 520 }}>
+          <p className="mb-6" style={{ fontSize: 18, color: 'rgba(255,255,255,0.92)', maxWidth: 520 }}>
             Full daily card, deep matchup reports, and uncapped Vega research —{' '}
             <strong style={{ color: '#fde68a' }}>{PREMIUM_PRICE_DISPLAY}</strong>.
           </p>
@@ -216,7 +216,7 @@ export default function Premium() {
           </div>
 
           {!authLoading && !user && (
-            <p className="text-xs mt-4" style={{ color: 'rgba(255,255,255,0.5)' }}>
+            <p className="mt-4" style={{ fontSize: 16, color: 'rgba(255,255,255,0.82)' }}>
               Sign in to subscribe. Free accounts keep odds, newsletter, and the public tracker.
             </p>
           )}
@@ -251,13 +251,13 @@ export default function Premium() {
               className="rounded-xl p-3.5 mb-2.5 last:mb-0"
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
             >
-              <strong className="block text-sm font-bold text-white mb-1">{f.title}</strong>
-              <span className="text-xs italic leading-relaxed" style={{ color: 'rgba(255,255,255,0.72)' }}>
+              <strong className="block font-bold text-white mb-1" style={{ fontSize: 19 }}>{f.title}</strong>
+              <span className="italic leading-relaxed" style={{ fontSize: 18, color: '#e2e8f0' }}>
                 {f.detail}
               </span>
             </div>
           ))}
-          <p className="text-xs mt-4 leading-relaxed" style={{ color: 'rgba(255,255,255,0.55)' }}>
+            <p className="mt-4 leading-relaxed" style={{ fontSize: 16, color: 'rgba(255,255,255,0.82)' }}>
             Odds, newsletter, and the public tracker stay free. Cancel Premium anytime from billing settings.
           </p>
         </section>

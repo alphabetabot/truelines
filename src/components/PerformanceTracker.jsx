@@ -74,8 +74,8 @@ function PerformanceTrackerBody({
               {unavailable ? 'Unavailable' : '● Tracked'}
             </span>
             {expanded
-              ? <ChevronUp size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
-              : <ChevronDown size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
+              ? <ChevronUp size={14} style={{ color: 'rgba(255,255,255,0.78)' }} />
+              : <ChevronDown size={14} style={{ color: 'rgba(255,255,255,0.78)' }} />
             }
           </div>
         </div>
@@ -89,7 +89,7 @@ function PerformanceTrackerBody({
             <div key={label} className="text-center" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
               <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
               <p className="text-base font-black text-white">{record}</p>
-              <p className="text-xs font-semibold" style={{ color: '#94a3b8' }}>{units}</p>
+              <p className="text-xs font-semibold" style={{ color: '#64748b' }}>{units}</p>
             </div>
           ))}
         </div>
@@ -98,19 +98,19 @@ function PerformanceTrackerBody({
       {expanded && (
         <div className="px-4 pt-3 pb-3">
           {loading ? (
-            <p className="text-xs text-center py-4" style={{ color: '#94a3b8' }}>Loading results…</p>
+            <p className="text-xs text-center py-4" style={{ color: '#64748b' }}>Loading results…</p>
           ) : unavailable ? (
             <div className="flex items-start gap-3 py-4">
               <AlertTriangle size={18} style={{ color: '#dc2626' }} className="shrink-0 mt-0.5" />
               <div>
                 <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>Tracker temporarily unavailable</p>
-                <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>{error}</p>
+                <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>{error}</p>
               </div>
             </div>
           ) : isNew ? (
             <div className="text-center py-4">
               <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>No graded picks yet</p>
-              <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>
+              <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>
                 Vega sends daily picks in the morning. Results appear here after games finish and the grading job runs.
               </p>
             </div>
@@ -126,14 +126,14 @@ function PerformanceTrackerBody({
                     </span>
                     <div className="min-w-0">
                       <p className="text-xs font-semibold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
-                      <p className="text-xs truncate" style={{ color: '#94a3b8' }}>
+                      <p className="text-xs truncate" style={{ color: '#64748b' }}>
                         {formatDate(pick.date)} · {pick.game}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                     {formatOdds(pick.displayOdds ?? pick.odds) && (
-                      <span className="text-xs" style={{ color: '#94a3b8' }}>
+                      <span className="text-xs" style={{ color: '#64748b' }}>
                         {formatOdds(pick.displayOdds ?? pick.odds)}
                       </span>
                     )}
@@ -149,7 +149,7 @@ function PerformanceTrackerBody({
               ))}
             </div>
           )}
-          <p className="text-xs text-center mt-3" style={{ color: '#94a3b8' }}>
+          <p className="text-xs text-center mt-3" style={{ color: '#64748b' }}>
             Results matched to the game on each pick&apos;s date · Re-verified after every scores cron · Past results don&apos;t guarantee future performance
           </p>
         </div>

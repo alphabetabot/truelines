@@ -107,8 +107,8 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>👆 Swipe odds →</span>
-            <button className="text-xs font-medium" style={{ color: '#94a3b8' }}
+            <span style={{ color: 'rgba(255,255,255,0.78)', fontSize: 11 }}>👆 Swipe odds →</span>
+            <button className="text-xs font-medium" style={{ color: '#64748b' }}
               onClick={e => { e.stopPropagation(); onSelect && onSelect(game) }}>
               Details →
             </button>
@@ -121,7 +121,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       {/* Fade + arrow overlay on right edge */}
       <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-20 flex items-center justify-end pr-2"
         style={{ width: 48, background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.95))' }}>
-        <span style={{ color: '#94a3b8', fontSize: 20, fontWeight: 700 }}>›</span>
+        <span style={{ color: '#64748b', fontSize: 20, fontWeight: 700 }}>›</span>
       </div>
       <div className="flex" style={{ overflowX: 'auto', overflowY: 'visible', paddingBottom: 2, scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
 
@@ -133,7 +133,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
           <div className="flex flex-col justify-center px-2.5 sm:px-3" style={{ height: rowH, borderBottom: '1px solid #f1f5f9' }}>
             <span className="font-bold leading-tight" style={{ color: '#0f172a', fontSize: teamFont }}>{game.away}</span>
             {isMLB && (
-              <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
+              <span className="text-xs mt-0.5" style={{ color: '#475569' }}>
                 {(() => { const p = pitchers[game.away] || Object.entries(pitchers).find(([k]) => game.away.includes(k) || k.includes(game.away.split(' ').slice(-1)[0]))?.[1]; return p ? `${p.name} (${p.wins}-${p.losses}, ${p.era} ERA)` : 'P: TBD' })()}
               </span>
             )}
@@ -142,7 +142,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
           <div className="flex flex-col justify-center px-2.5 sm:px-3" style={{ height: rowH }}>
             <span className="font-bold leading-tight" style={{ color: '#0f172a', fontSize: teamFont }}>{game.home}</span>
             {isMLB && (
-              <span className="text-xs mt-0.5" style={{ color: '#64748b' }}>
+              <span className="text-xs mt-0.5" style={{ color: '#475569' }}>
                 {(() => { const p = pitchers[game.home] || Object.entries(pitchers).find(([k]) => game.home.includes(k) || k.includes(game.home.split(' ').slice(-1)[0]))?.[1]; return p ? `${p.name} (${p.wins}-${p.losses}, ${p.era} ERA)` : 'P: TBD' })()}
               </span>
             )}
@@ -153,7 +153,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
         <div className="flex" style={{ minWidth: 0 }}>
           {bookRows.length === 0 ? (
             <div className="flex items-center px-6 py-4">
-              <span className="text-sm" style={{ color: '#94a3b8' }}>No {selectedLabel} odds available</span>
+              <span className="text-sm" style={{ color: '#64748b' }}>No {selectedLabel} odds available</span>
             </div>
           ) : bookRows.map(row => {
             const isBestAway = row.awayNum === bestAwayNum && row.awayNum != null && isFinite(row.awayNum)
@@ -163,7 +163,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
               <div key={row.book} className="flex flex-col shrink-0" style={{ width: bookColW, borderRight: '1px solid #f1f5f9' }}>
                 {/* Book name + Bet Now button */}
                 <div className="flex flex-col items-center justify-center" style={{ height: bookHeaderH, borderBottom: '1px solid #f1f5f9', background: '#f8fafc', gap: 2 }}>
-                  <span className="font-black" style={{ color: SPORTSBOOK_COLORS[row.book] || '#64748b', fontSize: 10, letterSpacing: '-0.2px' }}>
+                  <span className="font-black" style={{ color: SPORTSBOOK_COLORS[row.book] || '#475569', fontSize: 10, letterSpacing: '-0.2px' }}>
                     {SPORTSBOOK_LABELS[row.book] || row.book}
                   </span>
                   <a
@@ -197,7 +197,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                     {row.awayVal ?? '—'}
                   </span>
                   {row.awayOdds != null && (
-                    <span style={{ color: isBestAway ? '#16a34a' : '#94a3b8', fontSize: 12, fontWeight: 600 }}>
+                    <span style={{ color: isBestAway ? '#16a34a' : '#64748b', fontSize: 12, fontWeight: 600 }}>
                       {formatOdds(row.awayOdds)}
                     </span>
                   )}
@@ -210,7 +210,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
                     {row.homeVal ?? '—'}
                   </span>
                   {row.homeOdds != null && (
-                    <span style={{ color: isBestHome ? '#16a34a' : '#94a3b8', fontSize: 12, fontWeight: 600 }}>
+                    <span style={{ color: isBestHome ? '#16a34a' : '#64748b', fontSize: 12, fontWeight: 600 }}>
                       {formatOdds(row.homeOdds)}
                     </span>
                   )}
@@ -226,15 +226,15 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       {/* Swipe hint */}
       <div className="flex flex-col items-center gap-0.5 py-1"
         style={{ borderTop: '1px solid #f1f5f9', background: '#fafafa' }}>
-        <span style={{ color: '#94a3b8', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
-        <span style={{ color: '#94a3b8', fontSize: 10 }}>{SPORTSBOOK_LINK_FOOTER_NOTE}</span>
+        <span style={{ color: '#64748b', fontSize: 11 }}>← Swipe to see all sportsbooks →</span>
+        <span style={{ color: '#64748b', fontSize: 10 }}>{SPORTSBOOK_LINK_FOOTER_NOTE}</span>
       </div>
 
       {/* Implied probability bar */}
       <PremiumFeatureSlot feature="bettingSplits" />
       <div className="px-3 py-2 sm:px-4 sm:py-2.5" style={{ borderTop: '1px solid #f1f5f9' }}>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs font-semibold" style={{ color: '#94a3b8', fontSize: 10 }}>IMPLIED WIN PROBABILITY</span>
+          <span className="text-xs font-semibold" style={{ color: '#64748b', fontSize: 10 }}>IMPLIED WIN PROBABILITY</span>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs font-bold w-8 text-right" style={{ color: '#f59e0b' }}>{awayImpliedPct}%</span>
@@ -245,8 +245,8 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
           <span className="text-xs font-bold w-8" style={{ color: '#3b82f6' }}>{homeImpliedPct}%</span>
         </div>
         <div className="flex justify-between mt-1">
-          <span className="text-xs truncate" style={{ color: '#94a3b8', maxWidth: 140 }}>{game.away}</span>
-          <span className="text-xs truncate text-right" style={{ color: '#94a3b8', maxWidth: 140 }}>{game.home}</span>
+          <span className="text-xs truncate" style={{ color: '#64748b', maxWidth: 140 }}>{game.away}</span>
+          <span className="text-xs truncate text-right" style={{ color: '#64748b', maxWidth: 140 }}>{game.home}</span>
         </div>
       </div>
     </div>

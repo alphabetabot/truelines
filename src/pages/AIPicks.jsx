@@ -19,7 +19,7 @@ import { useSportSelection } from '../hooks/useSportSelection'
 import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
 import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#64748b' }
+const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#475569' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
 
 function isFadePick(pick) {
@@ -43,7 +43,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-2">
           <span className="text-xs px-2 py-0.5 rounded font-bold"
-            style={{ background: (sportColor[pick.sport] || '#64748b') + '20', color: sportColor[pick.sport] || '#64748b' }}>
+            style={{ background: (sportColor[pick.sport] || '#475569') + '20', color: sportColor[pick.sport] || '#475569' }}>
             {pick.sport}
           </span>
           <span className="text-xs font-bold" style={{ color: 'var(--gold)' }}>{label}</span>

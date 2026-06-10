@@ -18,7 +18,7 @@ export default function PremiumGate({
   if (authLoading || subLoading) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm" style={{ color: '#64748b' }}>Loading…</p>
+        <p className="text-sm" style={{ color: '#475569' }}>Loading…</p>
       </div>
     )
   }
@@ -47,7 +47,7 @@ export default function PremiumGate({
         Premium subscribers only
       </p>
       <h1 className="text-2xl font-black mb-3" style={{ color: '#0f172a' }}>{title}</h1>
-      <p className="text-sm leading-relaxed mb-6" style={{ color: '#64748b' }}>
+      <p className="text-sm leading-relaxed mb-6" style={{ color: '#475569' }}>
         {description}
       </p>
       <p className="text-sm font-bold mb-6" style={{ color: '#0f172a' }}>
@@ -85,7 +85,7 @@ export default function PremiumGate({
         </Link>
       </div>
 
-      <p className="text-xs mt-8" style={{ color: '#94a3b8' }}>
+      <p className="text-xs mt-8" style={{ color: '#64748b' }}>
         Free account still includes live odds, line compare, newsletter email, and the public tracker.
       </p>
     </div>

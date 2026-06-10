@@ -4,11 +4,11 @@ export default function About() {
   return (
     <div className="max-w-2xl mx-auto py-8 px-4">
       <h1 className="mb-2" style={{ color: '#0f172a' }}>About TrueOddsIQ</h1>
-      <p className="mb-8 text-sm" style={{ color: '#64748b' }}>Built by bettors, for bettors.</p>
+      <p className="mb-8 text-sm" style={{ color: '#475569' }}>Built by bettors, for bettors.</p>
 
       <div className="p-5 rounded-2xl mb-6" style={{ background: '#0f172a' }}>
         <h2 className="text-white mb-3" style={{ fontSize: '1.1rem' }}>Our Mission</h2>
-        <p className="leading-relaxed" style={{ color: 'rgba(255,255,255,0.75)', fontSize: 14 }}>
+        <p className="leading-relaxed" style={{ color: 'rgba(255,255,255,0.92)', fontSize: 16 }}>
           TrueOddsIQ was built out of frustration. Jumping between multiple sportsbook tabs to find the best line
           wastes time — and that time costs money. We built one tool for real-time odds comparison, AI-assisted
           research, and a daily picks newsletter. Free to browse odds; Premium unlocks the full AI Picks and Analysis tabs.
@@ -48,7 +48,7 @@ export default function About() {
               </div>
               <div>
                 <p className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>{title}</p>
-                <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>{desc}</p>
+                <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>{desc}</p>
               </div>
             </div>
           )})}
@@ -57,7 +57,7 @@ export default function About() {
 
       <div className="p-5 rounded-2xl mb-6" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
         <h2 className="mb-3" style={{ color: '#0f172a', fontSize: '1.1rem' }}>What We Actually Feed the AI</h2>
-        <p className="text-sm leading-relaxed mb-3" style={{ color: '#64748b' }}>
+        <p className="text-sm leading-relaxed mb-3" style={{ color: '#475569' }}>
           We are transparent about inputs. Today the models receive:
         </p>
         <ul className="space-y-2 mb-3">
@@ -66,13 +66,13 @@ export default function About() {
             'MLB probable pitcher records (ERA, WHIP, W-L) when the schedule API lists them',
             'Sport-specific prompts for NBA, NHL, NFL, etc. (general situational factors — not proprietary injury or sharp-money feeds)',
           ].map(item => (
-            <li key={item} className="flex items-start gap-2 text-sm" style={{ color: '#64748b' }}>
+            <li key={item} className="flex items-start gap-2 text-sm" style={{ color: '#475569' }}>
               <span style={{ color: '#2563eb', marginTop: 2 }}>•</span>
               {item}
             </li>
           ))}
         </ul>
-        <p className="text-sm leading-relaxed" style={{ color: '#64748b' }}>
+        <p className="text-sm leading-relaxed" style={{ color: '#475569' }}>
           We do <strong>not</strong> currently ingest private injury reports, verified sharp-money signals, or historical line-movement databases.
           Any mention of those factors in AI output is model inference from public odds — treat it accordingly.
         </p>

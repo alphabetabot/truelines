@@ -11,7 +11,7 @@ export default function OddsGuestStrip() {
       className="mb-3 px-3 py-2 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
       style={{ background: '#fff', border: '1px solid #e2e8f0' }}
     >
-      <p className="text-xs leading-snug" style={{ color: '#64748b' }}>
+      <p className="text-xs leading-snug" style={{ color: '#475569' }}>
         Compare live sportsbook odds, AI picks, and line movement.{' '}
         <Link to="/login" className="font-semibold" style={{ color: '#2563eb' }}>
           Create a free account

@@ -75,7 +75,7 @@ export default function Auth({ onAuth = () => {} }) {
       {/* Logo */}
       <div className="mb-8 text-center">
         <LogoLink height={48} maxWidth={280} style={{ margin: '0 auto 12px', justifyContent: 'center' }} />
-        <p className="text-sm" style={{ color: '#64748b' }}>
+        <p className="text-sm" style={{ color: '#475569' }}>
           {mode === 'login'
             ? 'Sign in for odds, newsletter, and tracker — Premium unlocks AI Picks & Analysis'
             : 'Free account — live odds, newsletter email, and public tracker'}
@@ -93,7 +93,7 @@ export default function Auth({ onAuth = () => {} }) {
               className="flex-1 py-2.5 text-sm font-bold transition-all"
               style={{
                 background: mode === m ? '#0f172a' : '#fff',
-                color: mode === m ? '#fff' : '#64748b',
+                color: mode === m ? '#fff' : '#475569',
               }}>
               {m === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
@@ -131,7 +131,7 @@ export default function Auth({ onAuth = () => {} }) {
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
-                style={{ color: '#94a3b8' }}>
+                style={{ color: '#64748b' }}>
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
@@ -146,7 +146,7 @@ export default function Auth({ onAuth = () => {} }) {
                   className="mt-0.5 w-4 h-4 accent-blue-600" />
                 <span className="text-xs leading-relaxed" style={{ color: '#475569' }}>
                   ✉️ Yes! Send me the daily top pick newsletter with full analysis and line value alerts.
-                <span className="block mt-1" style={{ fontSize: 11, color: '#94a3b8' }}>📧 Using Outlook or Hotmail? Add picks@trueoddsiq.com to your contacts to ensure delivery.</span>
+                <span className="block mt-1" style={{ fontSize: 13, color: '#475569' }}>📧 Using Outlook or Hotmail? Add picks@trueoddsiq.com to your contacts to ensure delivery.</span>
                 </span>
               </label>
 
@@ -181,7 +181,7 @@ export default function Auth({ onAuth = () => {} }) {
             className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
             style={{
               background: loading ? '#e2e8f0' : '#0f172a',
-              color: loading ? '#94a3b8' : '#fff',
+              color: loading ? '#64748b' : '#fff',
               cursor: loading ? 'not-allowed' : 'pointer',
             }}>
             {loading && <Loader2 size={15} className="animate-spin" />}
@@ -202,7 +202,7 @@ export default function Auth({ onAuth = () => {} }) {
         )}
       </div>
 
-      <p className="text-xs mt-6 text-center" style={{ color: '#94a3b8' }}>
+      <p className="text-xs mt-6 text-center" style={{ color: '#64748b' }}>
         Must be 21+ · For informational use only · <a href="/disclaimer" style={{ color: '#2563eb' }}>Disclaimer</a>
         {' '}· <a href="/privacy" style={{ color: '#2563eb' }}>Privacy</a>
         {' '}· <a href="/terms" style={{ color: '#2563eb' }}>Terms</a>
