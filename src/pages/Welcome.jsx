@@ -155,7 +155,7 @@ export default function Welcome() {
               className="w-full sm:flex-1 px-8 py-4 rounded-xl font-bold"
               style={{ background: '#f59e0b', color: '#0f172a', fontSize: 17 }}
             >
-              Get Free Newsletter
+              Free Newsletter + 1 Daily Pick
             </button>
             <button
               type="button"
