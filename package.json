@@ -12,7 +12,6 @@
     "test:grading": "node scripts/pick-grading.test.js",
     "test:pick-metrics": "node scripts/pick-metrics.test.js",
     "test:store-picks": "node scripts/store-picks.test.js",
-    "test:newsletter-guard": "node scripts/newsletter-send-guard.test.js",
     "test:sport-context": "node scripts/sport-context.test.js",
     "test:billing": "node scripts/billing-utils.test.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
