@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { isStaleNewsletterClaim, STALE_NEWSLETTER_CLAIM_MS } from '../api/newsletter-send-guard.js'
+import { isStaleNewsletterClaim, STALE_NEWSLETTER_CLAIM_MS } from '../api/_newsletter-send-guard.js'
 
 const now = Date.parse('2026-06-10T14:30:00.000Z')
 

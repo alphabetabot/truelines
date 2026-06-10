@@ -1,5 +1,5 @@
 // Store daily picks in Supabase
-import { getSupabase } from './supabase-client.js'
+import { getSupabase } from './_supabase-client.js'
 import {
   extractMatchup,
   cleanPickHeadline,
@@ -8,8 +8,8 @@ import {
   resolvePickSport,
   parseAmericanOdds,
   formatConfidence,
-} from './pick-utils.js'
-import { pacificDateKey } from './date-utils.js'
+} from './_pick-utils.js'
+import { pacificDateKey } from './_date-utils.js'
 
 /**
  * Parse picks from Claude's response text

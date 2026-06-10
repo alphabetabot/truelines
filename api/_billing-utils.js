@@ -1,5 +1,5 @@
 import Stripe from 'stripe'
-import { getSupabase } from './supabase-client.js'
+import { getSupabase } from './_supabase-client.js'
 
 export const PREMIUM_PRICE_DISPLAY = '$19.95/mo'
 export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing'])

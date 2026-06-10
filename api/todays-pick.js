@@ -1,8 +1,8 @@
 // Returns today's top pick or full pick list (?all=1) from Supabase
 
-import { requirePremiumUser } from './auth-utils.js'
-import { pacificDateKey } from './date-utils.js'
-import { isFadePick } from './pick-utils.js'
+import { requirePremiumUser } from './_auth-utils.js'
+import { pacificDateKey } from './_date-utils.js'
+import { isFadePick } from './_pick-utils.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY

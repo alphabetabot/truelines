@@ -1,6 +1,6 @@
 // Fetch picks with results from Supabase for the performance tracker
 
-import { profitUnits, parseAmericanOdds, resolvePickSport } from './pick-utils.js'
+import { profitUnits, parseAmericanOdds, resolvePickSport } from './_pick-utils.js'
 
 function formatPickRow(p) {
   const sport = resolvePickSport(p)

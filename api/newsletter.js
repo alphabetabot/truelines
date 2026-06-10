@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import { verifyUnsubscribeToken } from './newsletter-utils.js'
+import { verifyUnsubscribeToken } from './_newsletter-utils.js'
 
 const supabase = createClient(
   process.env.VITE_SUPABASE_URL,

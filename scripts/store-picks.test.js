@@ -3,7 +3,7 @@ import {
   extractPicksFromResponse,
   extractTopPickSection,
   repairPickOrderFromText,
-} from '../api/store-picks.js'
+} from '../api/_store-picks.js'
 
 const SAMPLE = `TOP PICK OF THE DAY
 Pirates @ Rockies

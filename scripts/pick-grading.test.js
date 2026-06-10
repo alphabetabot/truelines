@@ -8,7 +8,7 @@ import {
   resolvePickGrade,
   resolvePickSport,
   stripAmericanOddsFromText,
-} from '../api/pick-utils.js'
+} from '../api/_pick-utils.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)

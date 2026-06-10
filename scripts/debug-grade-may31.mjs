@@ -7,8 +7,8 @@ import {
   gradePickResult,
   resolvePickGrade,
   gameMatchesPickDate,
-} from '../api/pick-utils.js'
-import { getMLBGamesInRange } from '../api/grading-scores.js'
+} from '../api/_pick-utils.js'
+import { getMLBGamesInRange } from '../api/_grading-scores.js'
 
 const PICKS = [
   { date: '2026-05-31', game: 'Atlanta Braves @ Cincinnati Reds', pick: 'Atlanta Braves ML', bet_type: 'ML', odds: -125 },
