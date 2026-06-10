@@ -41,6 +41,10 @@ curl -sS "https://www.trueoddsiq.com/api/picks-status" | jq '.newsletter, .dates
 
 ## Manual resend (recovery only)
 
+**Easiest:** Vercel → Project → **Cron Jobs** → `/api/cron-newsletter` → **Run** (add `?force=true` if the UI allows query params).
+
+Or from terminal:
+
 ```bash
 curl -sS "https://www.trueoddsiq.com/api/cron-newsletter?force=true" \
   -H "Authorization: Bearer $CRON_SECRET"
@@ -57,4 +61,6 @@ Use only when the morning send failed. `force=true` skips the daily claim and cl
 
 ## If cron keeps skipping (`send_in_progress`)
 
-A failed run used to leave `newsletter_daily_sends` with `sent_at` null, blocking the rest of the day. The guard now auto-releases claims older than **15 minutes** and releases claims on all failure paths. Stuck claims were the main retry blocker; do not add `cron-newsletter` to `vercel.json` `functions` (causes preview/production deploy failures on this project).
+A failed run used to leave `newsletter_daily_sends` with `sent_at` null, blocking the rest of the day. The guard now auto-releases claims older than **15 minutes** and releases claims on all failure paths.
+
+**Do not** add `cron-newsletter` to `vercel.json` → `functions` — that caused production deploy failures on this project.
