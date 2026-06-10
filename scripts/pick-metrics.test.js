@@ -7,7 +7,7 @@ import {
   hasActionableOdds,
   scoreGameDataQuality,
   validatePicksAgainstSlate,
-} from '../api/pick-metrics.js'
+} from '../api/_pick-metrics.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)

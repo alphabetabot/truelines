@@ -8,7 +8,7 @@ import {
   isPremiumStatus,
   STRIPE_PRICE_IDS,
   subscriptionPayload,
-} from '../api/billing-utils.js'
+} from '../api/_billing-utils.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)

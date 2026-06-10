@@ -1,8 +1,8 @@
 // Grade pending picks, verify recent graded picks (integrity pass), store W/L + units
 
-import { requireJobAuth } from './auth-utils.js'
-import { parseAmericanOdds, profitUnits, resolvePickGrade } from './pick-utils.js'
-import { addDays, fetchFinalGamesForPicks } from './grading-scores.js'
+import { requireJobAuth } from './_auth-utils.js'
+import { parseAmericanOdds, profitUnits, resolvePickGrade } from './_pick-utils.js'
+import { addDays, fetchFinalGamesForPicks } from './_grading-scores.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY

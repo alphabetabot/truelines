@@ -1,4 +1,4 @@
-import { requireSupabaseUser } from './auth-utils.js'
+import { requireSupabaseUser } from './_auth-utils.js'
 import {
   getSiteUrl,
   getStripe,
@@ -9,7 +9,7 @@ import {
   subscriptionPayload,
   syncFromCheckoutSession,
   upsertFromStripeSubscription,
-} from './billing-utils.js'
+} from './_billing-utils.js'
 
 async function readRawBody(req) {
   if (Buffer.isBuffer(req.body)) return req.body

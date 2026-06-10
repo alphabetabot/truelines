@@ -1,13 +1,13 @@
 import { Resend } from 'resend'
-import { postTweet } from './post-to-x.js'
-import { getSupabase } from './supabase-client.js'
-import { extractPicksFromResponse, extractTopPickSection, storePicks } from './store-picks.js'
+import { postTweet } from './_post-to-x.js'
+import { getSupabase } from './_supabase-client.js'
+import { extractPicksFromResponse, extractTopPickSection, storePicks } from './_store-picks.js'
 import {
   sendNewsletterEmail,
   unsubscribeUrl,
   buildNewsletterEmailHtml,
   buildNewsletterEmailPlainText,
-} from './newsletter-utils.js'
+} from './_newsletter-utils.js'
 import {
   NEWSLETTER_CRON_SCHEDULE,
   claimDailyNewsletterSend,
@@ -15,18 +15,18 @@ import {
   getPacificDateKey,
   releaseNewsletterClaim,
   uniqueSubscriberEmails,
-} from './newsletter-send-guard.js'
+} from './_newsletter-send-guard.js'
 import {
   PICK_METRICS_PROMPT_RULES,
   filterBettableGames,
   rankGamesByDataQuality,
   validatePicksAgainstSlate,
-} from './pick-metrics.js'
+} from './_pick-metrics.js'
 import {
   appendGameStatsBlock,
   applySportContext,
   loadSportContextBundle,
-} from './sport-context.js'
+} from './_sport-context.js'
 
 let resendClient = null
 

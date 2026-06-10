@@ -1,7 +1,7 @@
 // Unified social media cron - posts NBA games midday and NBA+NHL in evening
 // Midday: 12pm PT (NBA) | Evening: 6pm PT (NBA + NHL)
 
-import { postTweet } from './post-to-x.js'
+import { postTweet } from './_post-to-x.js'
 
 const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
 

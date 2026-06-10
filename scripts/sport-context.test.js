@@ -6,7 +6,7 @@ import {
   formatMlbWeatherReport,
   formatNbaStandingLine,
   teamNameMatches,
-} from '../api/sport-context.js'
+} from '../api/_sport-context.js'
 
 function assert(condition, message) {
   if (!condition) throw new Error(message)

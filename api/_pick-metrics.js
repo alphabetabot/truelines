@@ -1,6 +1,6 @@
 /** Slate quality, odds gates, and pick validation for Vega daily picks. */
 
-import { parseAmericanOdds } from './pick-utils.js'
+import { parseAmericanOdds } from './_pick-utils.js'
 
 const HEAVY_CHALK = -180
 

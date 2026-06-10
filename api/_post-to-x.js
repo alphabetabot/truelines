@@ -59,20 +59,3 @@ export async function postTweet(text) {
   if (!res.ok) throw new Error(`X API error: ${JSON.stringify(data)}`)
   return data
 }
-
-export default async function handler(req, res) {
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' })
-
-  const secret = req.headers['x-newsletter-secret']
-  if (secret !== process.env.NEWSLETTER_SECRET) return res.status(401).json({ error: 'Unauthorized' })
-
-  const { text } = req.body
-  if (!text) return res.status(400).json({ error: 'text required' })
-
-  try {
-    const result = await postTweet(text)
-    return res.json({ success: true, tweet: result })
-  } catch (err) {
-    return res.status(500).json({ error: err.message })
-  }
-}

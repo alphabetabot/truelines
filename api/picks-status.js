@@ -1,11 +1,11 @@
 // Health/status endpoint for the daily picks pipeline.
 
-import { getSupabase } from './supabase-client.js'
-import { verifyUnsubscribeToken } from './newsletter-utils.js'
+import { getSupabase } from './_supabase-client.js'
+import { verifyUnsubscribeToken } from './_newsletter-utils.js'
 import { handleBillingRequest, isBillingAction } from './_billing-handlers.js'
-import { pacificDateKey } from './date-utils.js'
-import { repairPickOrderFromText } from './store-picks.js'
-import { isStaleNewsletterClaim } from './newsletter-send-guard.js'
+import { pacificDateKey } from './_date-utils.js'
+import { repairPickOrderFromText } from './_store-picks.js'
+import { isStaleNewsletterClaim } from './_newsletter-send-guard.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
