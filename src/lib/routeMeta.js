@@ -37,7 +37,7 @@ export const ROUTE_META = {
   },
   '/parlay': {
     title: 'Parlay Builder',
-    description: 'Stack up to six legs from today\'s best lines and see illustrative combined odds. Free account required.',
+    description: 'Stack up to ten legs from today\'s best lines and see illustrative combined odds. Free account required.',
   },
   '/analysis': {
     title: 'AI Game Analysis',

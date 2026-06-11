@@ -13,7 +13,7 @@ import OddsLoadError from '../components/OddsLoadError'
 import { getOddsGameTimeLabel } from '../lib/gameStatus'
 import { sortGamesByTime } from '../lib/gameNavigation'
 
-const MAX_LEGS = 6
+const MAX_LEGS = 10
 const STAKE_OPTIONS = [10, 25, 100]
 
 function legKey(gameId, market, side) {
@@ -261,7 +261,7 @@ export default function Parlay() {
                 Tap lines above to build your parlay — one pick per game.
               </p>
             ) : (
-              <ul className="space-y-2 mb-4 max-h-36 overflow-y-auto">
+              <ul className="space-y-2 mb-4 max-h-52 overflow-y-auto">
                 {legs.map(leg => (
                   <li
                     key={leg.key}
