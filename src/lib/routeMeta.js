@@ -35,6 +35,10 @@ export const ROUTE_META = {
     title: 'Line Comparison Across Sportsbooks',
     description: 'Side-by-side moneyline, spread, and total lines from DraftKings, FanDuel, BetMGM, Caesars, Pinnacle, and Bet365.',
   },
+  '/parlay': {
+    title: 'Parlay Builder',
+    description: 'Stack up to six legs from today\'s best lines and see illustrative combined odds. Free account required.',
+  },
   '/analysis': {
     title: 'AI Game Analysis',
     description: 'Run Claude and ChatGPT analysis on live odds snapshots. MLB includes probable pitcher context when available.',

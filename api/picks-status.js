@@ -143,6 +143,16 @@ function verifyCronSecret(req) {
   return token && token === process.env.CRON_SECRET
 }
 
+/** After 14:30 UTC on Pacific today, flag a missing newsletter row as likely missed cron. */
+function newsletterMissedCronHint(dateKey) {
+  const pacificToday = pacificDateKey()
+  if (dateKey !== pacificToday) return null
+  const now = new Date()
+  const utcMinutes = now.getUTCHours() * 60 + now.getUTCMinutes()
+  if (utcMinutes < 14 * 60 + 30) return null
+  return 'No newsletter run recorded today after 14:30 UTC. In Vercel → Cron Jobs, run /api/cron-newsletter?force=true (or GET /api/picks-status?action=newsletter-recovery with Authorization: Bearer CRON_SECRET).'
+}
+
 async function fetchNewsletterSendStatus(supabase, dateKey) {
   const { data, error } = await supabase
     .from('newsletter_daily_sends')
@@ -155,7 +165,10 @@ async function fetchNewsletterSendStatus(supabase, dateKey) {
   }
 
   if (!data) {
-    return { date: dateKey, status: 'not_started' }
+    const hint = newsletterMissedCronHint(dateKey)
+    return hint
+      ? { date: dateKey, status: 'not_started', hint }
+      : { date: dateKey, status: 'not_started' }
   }
 
   if (data.sent_at && data.subscriber_count != null && data.subscriber_count >= 0) {
@@ -174,7 +187,8 @@ async function fetchNewsletterSendStatus(supabase, dateKey) {
       status: 'stale_in_progress',
       started_at: data.started_at,
       cron_schedule: data.cron_schedule,
-      hint: 'Claim is older than 15 minutes with no sent_at — cron may have timed out or crashed',
+      hint:
+        'Claim is older than 15 minutes with no sent_at — cron may have timed out. Run /api/cron-newsletter?force=true in Vercel Cron Jobs (or picks-status?action=newsletter-recovery with CRON_SECRET).',
     }
   }
 

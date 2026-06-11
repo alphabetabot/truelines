@@ -22,6 +22,8 @@ import Welcome from './pages/Welcome'
 import Premium from './pages/Premium'
 import Plans from './pages/Plans'
 import PremiumGate from './components/PremiumGate'
+import AuthGate from './components/AuthGate'
+import Parlay from './pages/Parlay'
 import { SeoLandingRoutes } from './seo/seoRoutes'
 
 const queryClient = new QueryClient({
@@ -47,6 +49,18 @@ export default function App() {
               <Route path="/plans" element={<Plans />} />
               <Route path="/premium" element={<Premium />} />
               <Route path="/compare" element={<LineCompare />} />
+              <Route
+                path="/parlay"
+                element={(
+                  <AuthGate
+                    title="Parlay Builder"
+                    description="Create a free account to stack lines and see combined parlay odds. Includes the daily newsletter and public tracker."
+                    from="/parlay"
+                  >
+                    <Parlay />
+                  </AuthGate>
+                )}
+              />
               <Route
                 path="/analysis"
                 element={(

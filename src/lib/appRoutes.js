@@ -1,8 +1,8 @@
 /** App workspace routes — hide SEO nav bar; keep SEO links in footer. */
 
-const APP_WORKSPACE_PATHS = new Set(['/odds', '/compare', '/analysis', '/picks'])
+const APP_WORKSPACE_PATHS = new Set(['/odds', '/compare', '/parlay', '/analysis', '/picks'])
 
-const COLLAPSIBLE_TICKER_PATHS = new Set(['/compare', '/analysis', '/picks'])
+const COLLAPSIBLE_TICKER_PATHS = new Set(['/compare', '/parlay', '/analysis', '/picks'])
 
 /** Guest marketing landing — no tool nav or score ticker (features stay on other routes). */
 export function isMarketingHomepage(pathname) {
