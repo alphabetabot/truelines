@@ -5,6 +5,7 @@ export const SPORTS = [
   { key: 'basketball_ncaab', label: 'NCAAB', icon: '🏀' },
   { key: 'baseball_mlb', label: 'MLB', icon: '⚾' },
   { key: 'icehockey_nhl', label: 'NHL', icon: '🏒' },
+  { key: 'soccer_fifa_world_cup', label: 'World Cup', icon: '🏆' },
   { key: 'soccer_epl', label: 'EPL', icon: '⚽' },
   { key: 'soccer_usa_mls', label: 'MLS', icon: '⚽' },
   { key: 'tennis_atp_french_open', label: 'Tennis', icon: '🎾' },

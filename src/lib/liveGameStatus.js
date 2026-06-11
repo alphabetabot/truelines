@@ -9,6 +9,7 @@ const ESPN_SPORT_PATH = {
   icehockey_nhl: 'hockey/nhl',
   americanfootball_nfl: 'football/nfl',
   americanfootball_ncaaf: 'football/college-football',
+  soccer_fifa_world_cup: 'soccer/fifa.world',
   soccer_epl: 'soccer/eng.1',
   soccer_usa_mls: 'soccer/usa.1',
 }
