@@ -36,8 +36,8 @@ export const ROUTE_META = {
     description: 'Side-by-side moneyline, spread, and total lines from DraftKings, FanDuel, BetMGM, Caesars, Pinnacle, and Bet365.',
   },
   '/parlay': {
-    title: 'Parlay Builder',
-    description: 'Stack up to ten legs from today\'s best lines and see illustrative combined odds. Free account required.',
+    title: 'AI Parlay Builder',
+    description: 'Choose sport and leg count — Vega suggests a parlay from today\'s odds slate. Free account required. Illustrative only.',
   },
   '/analysis': {
     title: 'AI Game Analysis',

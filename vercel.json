@@ -4,7 +4,7 @@
       "maxDuration": 60
     },
     "api/picks-status.js": {
-      "maxDuration": 30
+      "maxDuration": 60
     },
     "api/cron-newsletter.js": {
       "maxDuration": 60

@@ -5,7 +5,7 @@ export async function getAuthHeaders() {
   const token = session?.access_token
 
   if (!token) {
-    throw new Error('Please sign in to use AI analysis.')
+    throw new Error('Please sign in to continue.')
   }
 
   return { Authorization: `Bearer ${token}` }

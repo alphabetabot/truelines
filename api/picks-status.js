@@ -6,6 +6,8 @@ import { handleBillingRequest, isBillingAction } from './_billing-handlers.js'
 import { pacificDateKey } from './_date-utils.js'
 import { repairPickOrderFromText } from './_store-picks.js'
 import { isStaleNewsletterClaim } from './_newsletter-send-guard.js'
+import { requireSupabaseUser } from './_auth-utils.js'
+import { buildAiParlayTicket } from './_parlay-builder.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -274,6 +276,39 @@ async function handleRepairPickOrder(req, res) {
   }
 }
 
+async function handleAiParlay(req, res) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' })
+  }
+
+  const user = await requireSupabaseUser(req, res)
+  if (!user) return
+
+  const sport = String(req.body?.sport || '').trim()
+  const legs = Number(req.body?.legs)
+  const regenerate = Boolean(req.body?.regenerate)
+  const previousMatchups = Array.isArray(req.body?.previousMatchups)
+    ? req.body.previousMatchups.map(m => String(m).trim()).filter(Boolean)
+    : []
+
+  if (!sport) {
+    return res.status(400).json({ error: 'sport is required' })
+  }
+
+  try {
+    const ticket = await buildAiParlayTicket({
+      sportKey: sport,
+      legCount: legs,
+      previousMatchups,
+      regenerate,
+    })
+    return res.json({ ok: true, ...ticket })
+  } catch (err) {
+    console.error('ai-parlay error:', err.message)
+    return res.status(400).json({ error: err.message || 'Could not build parlay' })
+  }
+}
+
 async function handleUnsubscribe(req, res) {
   const email = String(req.query?.email || req.body?.email || '').trim().toLowerCase()
   const token = String(req.query?.token || req.body?.token || '')
@@ -327,6 +362,14 @@ export default async function handler(req, res) {
 
     if (req.query?.action === 'newsletter-recovery') {
       return handleNewsletterRecovery(req, res)
+    }
+
+    if (req.query?.action === 'ai-parlay') {
+      return handleAiParlay(req, res)
+    }
+
+    if (req.method === 'POST') {
+      return res.status(400).json({ error: 'Unknown action' })
     }
 
     const today = req.query?.date || isoDate(new Date())
