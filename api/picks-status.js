@@ -8,6 +8,7 @@ import { repairPickOrderFromText } from './_store-picks.js'
 import { isStaleNewsletterClaim } from './_newsletter-send-guard.js'
 import { requireSupabaseUser } from './_auth-utils.js'
 import { buildAiParlayTicket } from './_parlay-builder.js'
+import { consumeParlayBuild, getParlayUsage, PARLAY_DAILY_LIMIT, refundParlayBuild } from './_parlay-usage.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -276,6 +277,17 @@ async function handleRepairPickOrder(req, res) {
   }
 }
 
+async function handleParlayUsage(req, res, user) {
+  const supabase = getSupabase()
+  try {
+    const usage = await getParlayUsage(supabase, user.id)
+    return res.json({ ok: true, usage, limit: PARLAY_DAILY_LIMIT })
+  } catch (err) {
+    console.error('parlay-usage error:', err.message)
+    return res.status(500).json({ error: err.message })
+  }
+}
+
 async function handleAiParlay(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -295,17 +307,40 @@ async function handleAiParlay(req, res) {
     return res.status(400).json({ error: 'sport is required' })
   }
 
+  const supabase = getSupabase()
+
   try {
-    const ticket = await buildAiParlayTicket({
-      sportKey: sport,
-      legCount: legs,
-      previousMatchups,
-      regenerate,
-    })
-    return res.json({ ok: true, ...ticket })
+    const slot = await consumeParlayBuild(supabase, user.id)
+    if (!slot.allowed) {
+      return res.status(429).json({
+        error: `Daily limit reached — ${PARLAY_DAILY_LIMIT} AI parlays per day. Try again tomorrow.`,
+        code: 'parlay_daily_limit',
+        usage: slot.usage,
+      })
+    }
+
+    let ticket
+    try {
+      ticket = await buildAiParlayTicket({
+        sportKey: sport,
+        legCount: legs,
+        previousMatchups,
+        regenerate,
+      })
+    } catch (buildErr) {
+      const refunded = await refundParlayBuild(supabase, user.id)
+      console.error('ai-parlay error:', buildErr.message)
+      const status = buildErr.code === 'table_missing' ? 503 : 400
+      return res.status(status).json({
+        error: buildErr.message || 'Could not build parlay',
+        usage: refunded,
+      })
+    }
+    return res.json({ ok: true, ...ticket, usage: slot.usage })
   } catch (err) {
     console.error('ai-parlay error:', err.message)
-    return res.status(400).json({ error: err.message || 'Could not build parlay' })
+    const status = err.code === 'table_missing' ? 503 : 500
+    return res.status(status).json({ error: err.message || 'Could not build parlay' })
   }
 }
 
@@ -366,6 +401,12 @@ export default async function handler(req, res) {
 
     if (req.query?.action === 'ai-parlay') {
       return handleAiParlay(req, res)
+    }
+
+    if (req.method === 'GET' && req.query?.action === 'parlay-usage') {
+      const user = await requireSupabaseUser(req, res)
+      if (!user) return
+      return handleParlayUsage(req, res, user)
     }
 
     if (req.method === 'POST') {

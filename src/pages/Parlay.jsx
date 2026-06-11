@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Layers, Loader2, RefreshCw, Sparkles } from 'lucide-react'
-import { buildAiParlay } from '../lib/parlayApi'
+import { buildAiParlay, fetchParlayUsage, PARLAY_DAILY_LIMIT } from '../lib/parlayApi'
 import {
   combineParlayAmericanOdds,
   formatAmericanOdds,
@@ -37,8 +37,25 @@ export default function Parlay() {
   const [ticket, setTicket] = useState(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [usage, setUsage] = useState(null)
+  const [usageLoading, setUsageLoading] = useState(true)
+
+  useEffect(() => {
+    let cancelled = false
+    fetchParlayUsage()
+      .then(u => { if (!cancelled) setUsage(u) })
+      .catch(() => { if (!cancelled) setUsage(null) })
+      .finally(() => { if (!cancelled) setUsageLoading(false) })
+    return () => { cancelled = true }
+  }, [])
+
+  const atDailyLimit = usage != null && usage.remaining <= 0
 
   async function runBuild(regenerate = false) {
+    if (atDailyLimit) {
+      setError(`You've used all ${PARLAY_DAILY_LIMIT} AI parlays for today. Come back tomorrow.`)
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -52,7 +69,9 @@ export default function Parlay() {
         previousMatchups,
       })
       setTicket(result)
+      if (result.usage) setUsage(result.usage)
     } catch (err) {
+      if (err.usage) setUsage(err.usage)
       setError(err.message || 'Could not build parlay')
     } finally {
       setLoading(false)
@@ -87,14 +106,36 @@ export default function Parlay() {
             Parlay Builder
           </h1>
         </div>
-        <p className="font-semibold leading-relaxed" style={{ fontSize: 18, color: '#0f172a' }}>
+        <p className="font-semibold leading-relaxed mb-4" style={{ fontSize: 18, color: '#0f172a' }}>
           Vega builds a parlay from today&apos;s real odds — for fun and research only.
         </p>
+        <div
+          className="rounded-xl px-4 py-3"
+          style={{
+            background: atDailyLimit ? '#fef2f2' : '#fffbeb',
+            border: `2px solid ${atDailyLimit ? '#fecaca' : '#fcd34d'}`,
+          }}
+        >
+          <p className="font-bold" style={{ fontSize: 16, color: '#0f172a' }}>
+            Free limit: {PARLAY_DAILY_LIMIT} AI parlays per day
+          </p>
+          <p className="font-semibold mt-1" style={{ fontSize: 15, color: atDailyLimit ? '#b91c1c' : '#475569' }}>
+            {usageLoading && "Checking today's remaining builds…"}
+            {!usageLoading && usage != null && (
+              atDailyLimit
+                ? 'No parlays left today — resets tomorrow (Pacific time).'
+                : `${usage.remaining} of ${usage.limit} remaining today`
+            )}
+            {!usageLoading && usage == null && (
+              `${PARLAY_DAILY_LIMIT} builds per day per account`
+            )}
+          </p>
+        </div>
       </div>
 
       <div
         className="rounded-2xl p-6 sm:p-8 mb-6"
-        style={{ background: '#fff', border: '2px solid #f59e0b' }}
+        style={{ background: '#fff', border: '2px solid #f59e0b', opacity: atDailyLimit ? 0.72 : 1 }}
       >
         <label className="block mb-2 font-bold uppercase text-sm" style={{ color: '#0f172a', letterSpacing: '0.08em' }}>
           Sport
@@ -125,13 +166,13 @@ export default function Parlay() {
         <button
           type="button"
           onClick={() => runBuild(false)}
-          disabled={loading}
+          disabled={loading || atDailyLimit || usageLoading}
           className="w-full py-4 rounded-xl font-extrabold flex items-center justify-center gap-2"
           style={{
-            background: loading ? '#e2e8f0' : '#f59e0b',
-            color: loading ? '#64748b' : '#0f172a',
+            background: loading || atDailyLimit ? '#e2e8f0' : '#f59e0b',
+            color: loading || atDailyLimit ? '#64748b' : '#0f172a',
             fontSize: 18,
-            cursor: loading ? 'not-allowed' : 'pointer',
+            cursor: loading || atDailyLimit ? 'not-allowed' : 'pointer',
           }}
         >
           {loading ? (
@@ -222,14 +263,15 @@ export default function Parlay() {
             <button
               type="button"
               onClick={() => runBuild(true)}
-              disabled={loading}
+              disabled={loading || atDailyLimit}
               className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
               style={{
                 background: '#fff',
                 color: '#0f172a',
                 border: '2px solid #0f172a',
                 fontSize: 17,
-                opacity: loading ? 0.6 : 1,
+                opacity: loading || atDailyLimit ? 0.6 : 1,
+                cursor: loading || atDailyLimit ? 'not-allowed' : 'pointer',
               }}
             >
               <RefreshCw size={18} />
