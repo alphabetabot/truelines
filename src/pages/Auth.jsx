@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { TrendingUp, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { trackEvent } from '../lib/analytics'
@@ -7,7 +7,11 @@ import LogoLink from '../components/LogoLink'
 
 export default function Auth({ onAuth = () => {} }) {
   const navigate = useNavigate()
-  const [mode, setMode] = useState('login') // 'login' | 'signup'
+  const location = useLocation()
+  const initialMode = location.state?.mode === 'signup' || new URLSearchParams(location.search).has('signup')
+    ? 'signup'
+    : 'login'
+  const [mode, setMode] = useState(initialMode) // 'login' | 'signup'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)

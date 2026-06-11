@@ -78,9 +78,11 @@ export default function Welcome() {
     return () => { cancelled = true }
   }, [])
 
-  function ctaSignup(source) {
-    trackEvent('welcome_cta', { action: 'signup', source })
-    navigate('/login')
+  function ctaSignup(source, { premium = false } = {}) {
+    trackEvent('welcome_cta', { action: premium ? 'premium' : 'signup', source })
+    navigate('/login', {
+      state: premium ? { mode: 'signup', from: '/premium' } : { mode: 'signup' },
+    })
   }
 
   const recordLabel = perf.hasRecord && !perf.error
@@ -261,14 +263,14 @@ export default function Welcome() {
                   <span style={{ fontSize: 18, color: '#e2e8f0', lineHeight: 1.45 }}>{f.detail}</span>
                 </div>
               ))}
-              <Link
-                to="/premium"
-                onClick={() => trackEvent('welcome_cta', { action: 'premium' })}
+              <button
+                type="button"
+                onClick={() => ctaSignup('premium_tier', { premium: true })}
                 className="block w-full mt-4 py-3.5 rounded-lg text-center font-extrabold"
                 style={{ background: '#f59e0b', color: '#0f172a', fontSize: 19 }}
               >
                 Upgrade to Premium
-              </Link>
+              </button>
             </div>
           </section>
 
