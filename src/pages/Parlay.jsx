@@ -15,6 +15,7 @@ const PARLAY_SPORTS = [
   { key: 'basketball_nba', label: 'NBA' },
   { key: 'americanfootball_nfl', label: 'NFL' },
   { key: 'icehockey_nhl', label: 'NHL' },
+  { key: 'soccer_fifa_world_cup', label: 'World Cup' },
   { key: 'americanfootball_ncaaf', label: 'NCAAF' },
   { key: 'basketball_ncaab', label: 'NCAA M Basketball' },
 ]

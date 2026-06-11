@@ -9,6 +9,7 @@ const VALID_SPORT_KEYS = new Set([
   'basketball_ncaab',
   'baseball_mlb',
   'icehockey_nhl',
+  'soccer_fifa_world_cup',
   'soccer_epl',
   'soccer_usa_mls',
   'tennis_atp_french_open',
@@ -38,13 +39,28 @@ export function setStoredSport(sportKey) {
   }
 }
 
+/** FIFA World Cup 2026 group stage + knockout window (Pacific calendar dates). */
+function isWorldCup2026Window(date) {
+  const y = date.getFullYear()
+  if (y !== 2026) return false
+  const m = date.getMonth() + 1
+  const d = date.getDate()
+  if (m === 6 && d >= 11) return true
+  if (m === 7 && d <= 20) return true
+  return false
+}
+
 /**
  * Seasonal default when no localStorage value exists.
- * Priority: March Madness → NFL → summer MLB → NBA → NHL → MLB fallback.
+ * Priority: World Cup → March Madness → NFL → summer MLB → NBA → NHL → MLB fallback.
  */
 export function getSeasonalDefaultSport(date = new Date()) {
   const m = date.getMonth() + 1
   const d = date.getDate()
+
+  if (isWorldCup2026Window(date)) {
+    return 'soccer_fifa_world_cup'
+  }
 
   if ((m === 3 && d >= 10) || (m === 4 && d <= 10)) {
     return 'basketball_ncaab'

@@ -33,6 +33,7 @@ export async function analyzeGame(game, pitchers = {}) {
     americanfootball_nfl: `For NFL analyze: offensive/defensive rankings, injury report (especially QB, OL, CB), weather (wind over 15mph kills passing games, cold affects kicking), home field advantage, divisional familiarity, coaching matchup, rest/travel, and recent ATS record.`,
     americanfootball_ncaaf: `For NCAAF analyze: talent gap, home field advantage, key player injuries, weather, coaching matchup, offensive scheme vs defensive scheme, and line movement.`,
     icehockey_nhl: `For NHL analyze: goalie matchup (save%, GAA), power play/penalty kill percentages, home/away splits, back-to-back situations, line combinations, recent form, and team shooting percentages.`,
+    soccer_fifa_world_cup: `For FIFA World Cup analyze: group-stage stakes vs knockout pressure, squad depth and rotation, travel/rest between host cities, key injuries/suspensions, manager tactics, historical nation-vs-nation matchups, and whether lines are regulation-only (90 min). Three-way moneyline (Draw) is common — weigh draw value when totals are low.`,
     soccer_epl: `For EPL analyze: home/away form, key injuries/suspensions, head-to-head record, squad depth, European competition fatigue, manager tactics, and weather.`,
     soccer_usa_mls: `For MLS analyze: home field advantage (travel distances are huge), turf vs grass preference, key player availability, form guide, and conference standings implications.`,
     mma_mixed_martial_arts: `For MMA analyze: fighting styles (striker vs grappler), reach/size advantages, recent form, camp quality, weight cut issues, judges tendencies for the venue, and how the matchup plays stylistically.`,
@@ -187,8 +188,10 @@ function formatGameForAI(game, pitchers = {}) {
     if (h2h) {
       const home = h2h.find(o => o.name === game.home)
       const away = h2h.find(o => o.name === game.away)
+      const draw = h2h.find(o => o.name === 'Draw')
       if (home && away) {
-        lines.push(`  ${book}: ${game.away} ${away.price > 0 ? '+' : ''}${away.price} / ${game.home} ${home.price > 0 ? '+' : ''}${home.price}`)
+        const drawLine = draw ? ` / Draw ${draw.price > 0 ? '+' : ''}${draw.price}` : ''
+        lines.push(`  ${book}: ${game.away} ${away.price > 0 ? '+' : ''}${away.price} / ${game.home} ${home.price > 0 ? '+' : ''}${home.price}${drawLine}`)
       }
     }
   })

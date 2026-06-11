@@ -18,6 +18,7 @@ export const PARLAY_SPORT_OPTIONS = [
   { key: 'basketball_nba', label: 'NBA' },
   { key: 'americanfootball_nfl', label: 'NFL' },
   { key: 'icehockey_nhl', label: 'NHL' },
+  { key: 'soccer_fifa_world_cup', label: 'World Cup' },
   { key: 'americanfootball_ncaaf', label: 'NCAAF' },
   { key: 'basketball_ncaab', label: 'NCAA M Basketball' },
 ]
@@ -172,15 +173,19 @@ async function callClaudeForParlay({ sportLabel, legCount, slateText, avoidMatch
 
   const sportRules = multiSport
     ? `- Legs may mix ANY sports shown (e.g. MLB + NBA + NFL in one ticket)
-- Include a "sport" field on each leg (MLB, NBA, NFL, NHL, NCAAF, or NCAA M Basketball)`
+- Include a "sport" field on each leg (MLB, NBA, NFL, NHL, World Cup, NCAAF, or NCAA M Basketball)`
     : `- All legs must be from ${sportLabel}`
+
+  const soccerHint = sportLabel === 'World Cup'
+    ? '\n- World Cup: 3-way moneyline (Draw) is allowed; use regulation (90 min) lines only'
+    : ''
 
   const prompt = `You are Vega, TrueOddsIQ's sports betting analyst. Build an illustrative ${legCount}-leg parlay for ${sportLabel} using ONLY the games and lines below. Use real teams and realistic odds from the slate — do not invent games.
 
 RULES:
 - Exactly ${legCount} legs, each from a DIFFERENT game/matchup
 ${sportRules}
-- Mix of moneyline, spread, or total is fine
+- Mix of moneyline, spread, or total is fine${soccerHint}
 - Each leg must cite a sportsbook from the slate
 - Entertainment/research only — no guarantees
 ${avoidLine}${regenLine}
@@ -235,7 +240,7 @@ export async function buildAiParlayTicket({ sportKey, legCount, previousMatchups
     throw new Error(
       bettable.length === 0
         ? multiSport
-          ? 'No bettable games on today\'s slate across MLB, NBA, NFL, NHL, NCAAF, and NCAA M Basketball.'
+          ? 'No bettable games on today\'s slate across MLB, NBA, NFL, NHL, World Cup, NCAAF, and NCAA M Basketball.'
           : `No bettable ${sportLabel} games on today's slate.`
         : `Only ${bettable.length} game${bettable.length === 1 ? '' : 's'} available — choose ${bettable.length} or fewer legs.`,
     )
