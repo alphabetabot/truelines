@@ -9,7 +9,12 @@ export const ROUTE_META = {
   '/': {
     title: 'Daily AI Picks & Live Odds Comparison',
     description:
-      'Vega\'s daily top pick, public track record, and live odds from six sportsbooks. Premium unlocks the full three-pick slate and AI Analysis.',
+      'Vega\'s daily top pick, public track record, and live odds from six sportsbooks. Compare free vs Premium and sign up in minutes.',
+  },
+  '/plans': {
+    title: 'Compare Free vs Premium',
+    description:
+      'Free account: morning newsletter with one top pick, live odds, and public tracker. Premium: full three-pick slate and unlimited AI analysis.',
   },
   '/odds': {
     title: 'Live Sports Betting Odds Comparison',
@@ -17,9 +22,9 @@ export const ROUTE_META = {
       'Compare current odds from six major sportsbooks in real time. MLB, NBA, and NHL with live scores.',
   },
   '/welcome': {
-    title: 'Welcome — Free Pick Preview & Live Odds',
+    title: 'Welcome — Graded Picks & Live Odds',
     description:
-      'See today\'s top AI pick, compare odds across six sportsbooks, and upgrade to Premium for the full daily card.',
+      'Public track record, daily newsletter, and live odds from six sportsbooks. Compare free vs Premium plans.',
   },
   '/premium': {
     title: 'Premium Analysis — $19.95/mo',
