@@ -1,332 +1,254 @@
-import { useMemo, useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
-import { Layers, Trash2, X } from 'lucide-react'
-import { useSportSelection } from '../hooks/useSportSelection'
-import { getOdds, parseOddsForComparison, formatOdds, SPORTSBOOK_LABELS } from '../lib/oddsApi'
+import { useState } from 'react'
+import { Layers, Loader2, RefreshCw, Sparkles } from 'lucide-react'
+import { buildAiParlay } from '../lib/parlayApi'
 import {
   combineParlayAmericanOdds,
   formatAmericanOdds,
   parlayPayout,
 } from '../lib/parlayMath'
-import SportSelector from '../components/SportSelector'
-import OddsLoadError from '../components/OddsLoadError'
-import { getOddsGameTimeLabel } from '../lib/gameStatus'
-import { sortGamesByTime } from '../lib/gameNavigation'
 
-const MAX_LEGS = 10
-const STAKE_OPTIONS = [10, 25, 100]
+const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
 
-function legKey(gameId, market, side) {
-  return `${gameId}:${market}:${side}`
-}
+const PARLAY_SPORTS = [
+  { key: 'baseball_mlb', label: 'MLB' },
+  { key: 'basketball_nba', label: 'NBA' },
+  { key: 'americanfootball_nfl', label: 'NFL' },
+  { key: 'icehockey_nhl', label: 'NHL' },
+  { key: 'americanfootball_ncaaf', label: 'NCAAF' },
+  { key: 'basketball_ncaab', label: 'NCAA M Basketball' },
+]
 
-function buildLegOptions(game) {
-  const options = []
-  const matchup = `${game.away} @ ${game.home}`
+const LEG_OPTIONS = Array.from({ length: 9 }, (_, i) => i + 2)
 
-  const h2h = game.best?.h2h
-  if (h2h?.away?.price != null) {
-    options.push({
-      key: legKey(game.id, 'h2h', 'away'),
-      gameId: game.id,
-      market: 'h2h',
-      label: `${game.away} ML`,
-      american: h2h.away.price,
-      book: h2h.away.book,
-      matchup,
-    })
-  }
-  if (h2h?.home?.price != null) {
-    options.push({
-      key: legKey(game.id, 'h2h', 'home'),
-      gameId: game.id,
-      market: 'h2h',
-      label: `${game.home} ML`,
-      american: h2h.home.price,
-      book: h2h.home.book,
-      matchup,
-    })
-  }
-
-  const spread = game.best?.spread
-  if (spread?.away?.price != null) {
-    const pt = spread.away.point
-    options.push({
-      key: legKey(game.id, 'spreads', 'away'),
-      gameId: game.id,
-      market: 'spreads',
-      label: `${game.away} ${pt > 0 ? '+' : ''}${pt}`,
-      american: spread.away.price,
-      book: spread.away.book,
-      matchup,
-    })
-  }
-  if (spread?.home?.price != null) {
-    const pt = spread.home.point
-    options.push({
-      key: legKey(game.id, 'spreads', 'home'),
-      gameId: game.id,
-      market: 'spreads',
-      label: `${game.home} ${pt > 0 ? '+' : ''}${pt}`,
-      american: spread.home.price,
-      book: spread.home.book,
-      matchup,
-    })
-  }
-
-  const total = game.best?.total
-  if (total?.over?.price != null) {
-    options.push({
-      key: legKey(game.id, 'totals', 'over'),
-      gameId: game.id,
-      market: 'totals',
-      label: `Over ${total.over.point}`,
-      american: total.over.price,
-      book: total.over.book,
-      matchup,
-    })
-  }
-  if (total?.under?.price != null) {
-    options.push({
-      key: legKey(game.id, 'totals', 'under'),
-      gameId: game.id,
-      market: 'totals',
-      label: `Under ${total.under.point}`,
-      american: total.under.price,
-      book: total.under.book,
-      matchup,
-    })
-  }
-
-  return options
+const selectStyle = {
+  width: '100%',
+  padding: '14px 16px',
+  borderRadius: 12,
+  border: '2px solid #e2e8f0',
+  background: '#fff',
+  color: '#0f172a',
+  fontSize: 18,
+  fontWeight: 700,
 }
 
 export default function Parlay() {
-  const [sport, setSport] = useSportSelection('parlay')
-  const [legs, setLegs] = useState([])
-  const [stake, setStake] = useState(25)
+  const [sport, setSport] = useState('baseball_mlb')
+  const [legs, setLegs] = useState(3)
+  const [ticket, setTicket] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
 
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['odds', sport],
-    queryFn: () => getOdds(sport),
-    staleTime: 30_000,
-  })
-
-  const games = useMemo(
-    () => sortGamesByTime(data ? parseOddsForComparison(data) : []),
-    [data],
-  )
-
-  const legGameIds = useMemo(() => new Set(legs.map(l => l.gameId)), [legs])
-
-  const combinedAmerican = combineParlayAmericanOdds(legs.map(l => l.american))
-  const payout = parlayPayout(stake, legs.map(l => l.american))
-
-  function addLeg(option) {
-    if (legs.length >= MAX_LEGS) return
-    if (legs.some(l => l.key === option.key)) return
-    if (legGameIds.has(option.gameId)) return
-    setLegs(prev => [...prev, option])
+  async function runBuild(regenerate = false) {
+    setLoading(true)
+    setError('')
+    try {
+      const previousMatchups = regenerate && ticket?.legs
+        ? ticket.legs.map(l => l.matchup)
+        : []
+      const result = await buildAiParlay({
+        sport,
+        legs,
+        regenerate,
+        previousMatchups,
+      })
+      setTicket(result)
+    } catch (err) {
+      setError(err.message || 'Could not build parlay')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  function removeLeg(key) {
-    setLegs(prev => prev.filter(l => l.key !== key))
-  }
+  const combined = ticket?.legs ? combineParlayAmericanOdds(ticket.legs.map(l => l.american)) : null
+  const payout25 = ticket?.legs ? parlayPayout(25, ticket.legs.map(l => l.american)) : 0
+  const ticketDate = ticket?.generatedAt
+    ? new Date(ticket.generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : ''
 
-  function clearSlip() {
-    setLegs([])
+  function copyParlay() {
+    if (!ticket?.legs?.length) return
+    const lines = ticket.legs.map((leg, i) => `${i + 1}. ${leg.pick} — ${leg.matchup} (${leg.bet})`)
+    const text = [
+      `TrueOddsIQ ${ticket.legCount}-Leg ${ticket.sport} Parlay`,
+      ...lines,
+      combined != null ? `Combined (est.): ${formatAmericanOdds(combined)}` : '',
+      '',
+      'Illustrative only — not a bet slip.',
+    ].filter(Boolean).join('\n')
+    navigator.clipboard?.writeText(text)
   }
 
   return (
-    <div className="pb-44 sm:pb-36">
-      <div className="mb-6">
+    <div className="max-w-xl mx-auto pb-12">
+      <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <Layers size={22} style={{ color: '#f59e0b' }} />
-          <h1 className="text-2xl font-bold" style={{ color: 'var(--text-primary)' }}>
+          <Layers size={24} style={{ color: '#f59e0b' }} />
+          <h1 className="text-2xl font-black uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
             Parlay Builder
           </h1>
         </div>
-        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
-          Stack up to {MAX_LEGS} legs from today&apos;s best lines. Combined odds are illustrative — actual parlay prices vary by sportsbook.
+        <p className="font-semibold leading-relaxed" style={{ fontSize: 18, color: '#0f172a' }}>
+          Vega builds a parlay from today&apos;s real odds — for fun and research only.
         </p>
       </div>
 
-      <SportSelector selected={sport} onChange={setSport} />
-
-      {isError && <OddsLoadError message={error?.message} onRetry={() => refetch()} />}
-
-      {isLoading && (
-        <div className="rounded-xl p-8 text-center shimmer" style={{ border: '1px solid var(--border)' }}>
-          <p className="text-sm font-semibold" style={{ color: 'var(--text-secondary)' }}>Loading games…</p>
-        </div>
-      )}
-
-      {!isLoading && !isError && games.length === 0 && (
-        <div className="rounded-xl p-8 text-center" style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}>
-          <p className="font-semibold" style={{ color: '#0f172a' }}>No games on today&apos;s slate</p>
-        </div>
-      )}
-
-      <div className="space-y-4 mt-4">
-        {games.map(game => {
-          const options = buildLegOptions(game)
-          const timeLabel = getOddsGameTimeLabel(game.commenceTime)
-          const gameBlocked = legGameIds.has(game.id)
-
-          return (
-            <div
-              key={game.id}
-              className="rounded-xl overflow-hidden"
-              style={{ border: '1px solid #e2e8f0', background: '#fff' }}
-            >
-              <div
-                className="px-4 py-3 flex flex-wrap items-center justify-between gap-2"
-                style={{ background: '#1e293b' }}
-              >
-                <div>
-                  <p className="text-xs font-bold uppercase" style={{ color: '#f59e0b' }}>{timeLabel}</p>
-                  <p className="font-bold text-white text-sm sm:text-base">
-                    {game.away} <span style={{ color: '#94a3b8' }}>@</span> {game.home}
-                  </p>
-                </div>
-                {gameBlocked && (
-                  <span className="text-xs font-bold px-2 py-1 rounded-md" style={{ background: 'rgba(245,158,11,0.2)', color: '#fbbf24' }}>
-                    In parlay
-                  </span>
-                )}
-              </div>
-              <div className="p-4 flex flex-wrap gap-2">
-                {options.map(opt => {
-                  const selected = legs.some(l => l.key === opt.key)
-                  const disabled = selected || gameBlocked || legs.length >= MAX_LEGS
-                  return (
-                    <button
-                      key={opt.key}
-                      type="button"
-                      disabled={disabled}
-                      onClick={() => addLeg(opt)}
-                      className="px-3 py-2 rounded-lg text-left transition-opacity"
-                      style={{
-                        background: selected ? '#dcfce7' : '#f8fafc',
-                        border: `1.5px solid ${selected ? '#16a34a' : '#e2e8f0'}`,
-                        opacity: disabled && !selected ? 0.45 : 1,
-                        cursor: disabled ? 'not-allowed' : 'pointer',
-                        minWidth: 140,
-                      }}
-                    >
-                      <span className="block text-xs font-bold" style={{ color: '#0f172a' }}>{opt.label}</span>
-                      <span className="block text-sm font-black" style={{ color: '#16a34a' }}>
-                        {formatOdds(opt.american)} · {SPORTSBOOK_LABELS[opt.book] || opt.book}
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Slip */}
       <div
-        className="fixed left-0 right-0 z-30 px-4 pb-4"
-        style={{ bottom: 'max(1rem, env(safe-area-inset-bottom))' }}
+        className="rounded-2xl p-6 sm:p-8 mb-6"
+        style={{ background: '#fff', border: '2px solid #f59e0b' }}
       >
-        <div
-          className="max-w-5xl mx-auto rounded-2xl overflow-hidden shadow-lg"
-          style={{ border: '2px solid #f59e0b', background: '#0f172a', color: '#fff' }}
+        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: '#0f172a', letterSpacing: '0.08em' }}>
+          Sport
+        </label>
+        <select
+          value={sport}
+          onChange={e => { setSport(e.target.value); setTicket(null); setError('') }}
+          style={{ ...selectStyle, marginBottom: 20 }}
         >
+          {PARLAY_SPORTS.map(s => (
+            <option key={s.key} value={s.key}>{s.label}</option>
+          ))}
+        </select>
+
+        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: '#0f172a', letterSpacing: '0.08em' }}>
+          How many legs?
+        </label>
+        <select
+          value={legs}
+          onChange={e => { setLegs(Number(e.target.value)); setTicket(null); setError('') }}
+          style={{ ...selectStyle, marginBottom: 24 }}
+        >
+          {LEG_OPTIONS.map(n => (
+            <option key={n} value={n}>{n} legs</option>
+          ))}
+        </select>
+
+        <button
+          type="button"
+          onClick={() => runBuild(false)}
+          disabled={loading}
+          className="w-full py-4 rounded-xl font-extrabold flex items-center justify-center gap-2"
+          style={{
+            background: loading ? '#e2e8f0' : '#f59e0b',
+            color: loading ? '#64748b' : '#0f172a',
+            fontSize: 18,
+            cursor: loading ? 'not-allowed' : 'pointer',
+          }}
+        >
+          {loading ? (
+            <>
+              <Loader2 size={20} className="animate-spin" />
+              Building your {legs}-leg parlay…
+            </>
+          ) : (
+            <>
+              <Sparkles size={20} />
+              Build Parlay with AI
+            </>
+          )}
+        </button>
+      </div>
+
+      {error && (
+        <div
+          className="rounded-xl p-4 mb-6 font-semibold text-sm"
+          style={{ background: '#fef2f2', border: '1px solid #fecaca', color: '#b91c1c' }}
+        >
+          {error}
+        </div>
+      )}
+
+      {!ticket && !loading && !error && (
+        <p className="text-center font-semibold" style={{ fontSize: 17, color: '#475569' }}>
+          Choose a sport and leg count, then tap Build Parlay with AI.
+        </p>
+      )}
+
+      {ticket?.legs?.length > 0 && (
+        <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid #0f172a' }}>
           <div
-            className="px-4 sm:px-6 py-3 flex items-center justify-between"
-            style={{ background: '#f59e0b', color: '#0f172a' }}
+            className="px-5 sm:px-6 py-4 flex items-center justify-between gap-3"
+            style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
           >
-            <span className="font-black uppercase text-sm sm:text-base" style={{ fontFamily: "'Oswald', sans-serif" }}>
-              Your parlay · {legs.length}/{MAX_LEGS}
-            </span>
-            {legs.length > 0 && (
-              <button
-                type="button"
-                onClick={clearSlip}
-                className="flex items-center gap-1 text-xs font-bold"
-                style={{ color: '#0f172a' }}
-              >
-                <Trash2 size={14} /> Clear
-              </button>
-            )}
+            <h2 className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 20, color: '#0f172a' }}>
+              Your {ticket.legCount}-leg parlay
+            </h2>
+            <span className="text-sm font-bold" style={{ color: '#0f172a' }}>{ticketDate}</span>
           </div>
 
-          <div className="px-4 sm:px-6 py-4">
-            {legs.length === 0 ? (
-              <p className="text-sm font-semibold" style={{ color: '#e2e8f0' }}>
-                Tap lines above to build your parlay — one pick per game.
-              </p>
-            ) : (
-              <ul className="space-y-2 mb-4 max-h-52 overflow-y-auto">
-                {legs.map(leg => (
-                  <li
-                    key={leg.key}
-                    className="flex items-start justify-between gap-2 text-sm"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 8 }}
+          <div className="px-5 sm:px-6 py-5" style={{ background: '#0f172a', color: '#fff' }}>
+            <p className="text-xs font-bold uppercase mb-4" style={{ color: '#fbbf24' }}>
+              {ticket.sport}
+            </p>
+            <ol className="space-y-5">
+              {ticket.legs.map((leg, i) => (
+                <li key={`${leg.matchup}-${leg.pick}`} className="flex gap-4">
+                  <span
+                    className="font-black shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ background: '#f59e0b', color: '#0f172a', fontSize: 16 }}
                   >
-                    <div>
-                      <span className="font-bold block">{leg.label}</span>
-                      <span className="text-xs" style={{ color: '#94a3b8' }}>{leg.matchup}</span>
-                    </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="font-black" style={{ color: '#4ade80' }}>{formatOdds(leg.american)}</span>
-                      <button
-                        type="button"
-                        onClick={() => removeLeg(leg.key)}
-                        aria-label="Remove leg"
-                        style={{ color: '#94a3b8' }}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="font-bold text-lg">{leg.pick}</p>
+                    <p className="text-sm font-semibold mt-0.5" style={{ color: '#cbd5e1' }}>{leg.matchup}</p>
+                    <p className="text-sm font-bold mt-1" style={{ color: '#4ade80' }}>{leg.bet}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
 
-            {legs.length >= 2 && (
-              <div className="grid sm:grid-cols-2 gap-4 items-end">
+            {combined != null && (
+              <div
+                className="mt-6 pt-5 grid sm:grid-cols-2 gap-4"
+                style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
+              >
                 <div>
-                  <p className="text-xs font-bold uppercase mb-1" style={{ color: '#fbbf24' }}>Combined odds</p>
-                  <p className="text-3xl font-black" style={{ fontFamily: "'Oswald', sans-serif", color: '#4ade80' }}>
-                    {formatAmericanOdds(combinedAmerican)}
+                  <p className="text-xs font-bold uppercase mb-1" style={{ color: '#fbbf24' }}>Combined (est.)</p>
+                  <p className="text-3xl font-black" style={{ color: '#4ade80', fontFamily: TEAM_FONT }}>
+                    {formatAmericanOdds(combined)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase mb-2" style={{ color: '#fbbf24' }}>Payout if all hit</p>
-                  <div className="flex flex-wrap gap-2">
-                    {STAKE_OPTIONS.map(amount => (
-                      <button
-                        key={amount}
-                        type="button"
-                        onClick={() => setStake(amount)}
-                        className="px-3 py-2 rounded-lg text-sm font-bold"
-                        style={{
-                          background: stake === amount ? '#f59e0b' : 'rgba(255,255,255,0.08)',
-                          color: stake === amount ? '#0f172a' : '#fff',
-                          border: '1px solid rgba(255,255,255,0.12)',
-                        }}
-                      >
-                        ${amount} → ${parlayPayout(amount, legs.map(l => l.american)).toFixed(2)}
-                      </button>
-                    ))}
-                  </div>
+                  <p className="text-xs font-bold uppercase mb-1" style={{ color: '#fbbf24' }}>$25 pays</p>
+                  <p className="text-3xl font-black" style={{ color: '#4ade80', fontFamily: TEAM_FONT }}>
+                    ${payout25.toFixed(2)}
+                  </p>
                 </div>
               </div>
             )}
+          </div>
 
-            {legs.length === 1 && (
-              <p className="text-sm font-semibold mt-2" style={{ color: '#fde68a' }}>
-                Add at least one more leg to see combined odds.
-              </p>
-            )}
+          <div className="px-5 sm:px-6 py-5 space-y-3" style={{ background: '#fffbeb' }}>
+            <button
+              type="button"
+              onClick={() => runBuild(true)}
+              disabled={loading}
+              className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
+              style={{
+                background: '#fff',
+                color: '#0f172a',
+                border: '2px solid #0f172a',
+                fontSize: 17,
+                opacity: loading ? 0.6 : 1,
+              }}
+            >
+              <RefreshCw size={18} />
+              Generate New Parlay
+            </button>
+            <button
+              type="button"
+              onClick={copyParlay}
+              className="w-full py-3 rounded-xl font-semibold"
+              style={{ background: 'transparent', color: '#2563eb', fontSize: 15 }}
+            >
+              Copy parlay text
+            </button>
+            <p className="text-center text-sm font-semibold leading-relaxed" style={{ color: '#475569' }}>
+              Illustrative odds only — not a real bet slip. Place wagers at a licensed sportsbook. 21+
+            </p>
           </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

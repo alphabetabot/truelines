@@ -9,7 +9,7 @@ const PAGE_MAX = 'max-w-4xl mx-auto w-full'
 const FREE_FEATURES = [
   { label: 'Daily newsletter', value: '1 top pick' },
   { label: 'Odds tools', value: 'Live odds · Compare' },
-  { label: 'Parlay builder', value: 'Stack lines · see odds' },
+  { label: 'AI parlay builder', value: 'Vega-built tickets' },
   { label: 'Track record', value: 'Public tracker' },
 ]
 

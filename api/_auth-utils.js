@@ -71,7 +71,7 @@ export async function requirePremiumUser(req, res) {
   if (!user) return null
 
   try {
-    const { getSubscriptionRow, isPremiumRow } = await import('./billing-utils.js')
+    const { getSubscriptionRow, isPremiumRow } = await import('./_billing-utils.js')
     const row = await getSubscriptionRow(user.id)
     if (!isPremiumRow(row)) {
       res.status(402).json({

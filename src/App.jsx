@@ -54,7 +54,7 @@ export default function App() {
                 element={(
                   <AuthGate
                     title="Parlay Builder"
-                    description="Create a free account to stack lines and see combined parlay odds. Includes the daily newsletter and public tracker."
+                    description="Create a free account and Vega will build parlay tickets from today's odds. Includes the newsletter, live odds, and public tracker."
                     from="/parlay"
                   >
                     <Parlay />

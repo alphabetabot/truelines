@@ -5,7 +5,7 @@ import { useAuth } from '../lib/AuthContext'
 export default function AuthGate({
   children,
   title = 'Free account required',
-  description = 'Create a free account to use this tool. You get live odds, the morning newsletter, and our public tracker.',
+  description = 'Create a free account to build AI parlays. You also get the morning newsletter, live odds, and our public tracker.',
   from = '/parlay',
 }) {
   const { user, loading } = useAuth()
