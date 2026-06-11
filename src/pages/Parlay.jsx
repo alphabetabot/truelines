@@ -10,6 +10,7 @@ import {
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
 
 const PARLAY_SPORTS = [
+  { key: 'all', label: 'ALL' },
   { key: 'baseball_mlb', label: 'MLB' },
   { key: 'basketball_nba', label: 'NBA' },
   { key: 'americanfootball_nfl', label: 'NFL' },
@@ -32,7 +33,7 @@ const selectStyle = {
 }
 
 export default function Parlay() {
-  const [sport, setSport] = useState('baseball_mlb')
+  const [sport, setSport] = useState('all')
   const [legs, setLegs] = useState(3)
   const [ticket, setTicket] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -159,7 +160,7 @@ export default function Parlay() {
 
       {!ticket && !loading && !error && (
         <p className="text-center font-semibold" style={{ fontSize: 17, color: '#475569' }}>
-          Choose a sport and leg count, then tap Build Parlay with AI.
+          Choose a sport (or ALL for mixed-sport parlays), pick leg count, then tap Build Parlay with AI.
         </p>
       )}
 
@@ -189,6 +190,14 @@ export default function Parlay() {
                     {i + 1}
                   </span>
                   <div>
+                    {leg.sport && (
+                      <span
+                        className="inline-block text-xs font-bold uppercase px-2 py-0.5 rounded mb-1"
+                        style={{ background: 'rgba(245,158,11,0.2)', color: '#fbbf24' }}
+                      >
+                        {leg.sport}
+                      </span>
+                    )}
                     <p className="font-bold text-lg">{leg.pick}</p>
                     <p className="text-sm font-semibold mt-0.5" style={{ color: '#cbd5e1' }}>{leg.matchup}</p>
                     <p className="text-sm font-bold mt-1" style={{ color: '#4ade80' }}>{leg.bet}</p>
