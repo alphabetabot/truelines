@@ -8,8 +8,20 @@ const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
 const CONTENT_PAD = 'px-6 sm:px-10 lg:px-12'
 const CONTENT_MAX = 'max-w-4xl mx-auto w-full'
 
-const SITE_BIO =
-  'TrueOddsIQ helps bettors make smarter decisions with real odds data and AI analysis — not hype. Every morning we publish picks and grade them in public so you can see exactly how we perform.'
+const WHAT_WE_DO_ROWS = [
+  {
+    label: 'Our approach',
+    value: 'Real odds data + AI analysis — not hype',
+  },
+  {
+    label: 'Every morning',
+    value: 'Daily picks published & graded in public',
+  },
+  {
+    label: 'Full transparency',
+    value: 'See exactly how we perform',
+  },
+]
 
 export default function Welcome() {
   const navigate = useNavigate()
@@ -126,8 +138,8 @@ export default function Welcome() {
               </div>
             </div>
             <p
-              className="mb-8 max-w-2xl"
-              style={{ fontSize: 19, color: '#334155', lineHeight: 1.55 }}
+              className="mb-8 max-w-2xl font-bold"
+              style={{ fontSize: 21, color: '#0f172a', lineHeight: 1.55 }}
             >
               We grade every newsletter pick after games finish — wins, losses, and units tracked openly.
             </p>
@@ -143,7 +155,7 @@ export default function Welcome() {
                 <div key={label} className="text-center px-2">
                   <span
                     className="block font-bold uppercase mb-2"
-                    style={{ fontSize: 14, color: '#0f172a', letterSpacing: '0.1em' }}
+                    style={{ fontSize: 16, color: '#0f172a', letterSpacing: '0.1em' }}
                   >
                     {label}
                   </span>
@@ -164,20 +176,65 @@ export default function Welcome() {
             </div>
           </section>
 
-          {/* ── Short bio ── */}
+          {/* ── What we do ── */}
           <section className="py-12 sm:py-16" style={{ borderTop: '1px solid #e2e8f0' }}>
-            <p
-              className="mb-4 font-extrabold uppercase"
-              style={{ fontSize: 14, color: '#0f172a', letterSpacing: '0.14em' }}
+            <div
+              className="rounded-2xl overflow-hidden w-full"
+              style={{ border: '2px solid #f59e0b' }}
             >
-              What we do
-            </p>
-            <p
-              className="max-w-2xl leading-relaxed pb-4"
-              style={{ fontSize: 19, color: '#334155', lineHeight: 1.6 }}
-            >
-              {SITE_BIO}
-            </p>
+              <div
+                className="px-6 sm:px-8 py-4 text-center"
+                style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+              >
+                <h2
+                  className="font-black text-xl sm:text-2xl uppercase tracking-wide"
+                  style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+                >
+                  What We Do
+                </h2>
+              </div>
+              <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+                <tbody>
+                  {WHAT_WE_DO_ROWS.map(({ label, value }, i) => (
+                    <tr
+                      key={label}
+                      style={{
+                        background: i % 2 === 0 ? '#fffbeb' : '#fef3c7',
+                        borderBottom: i < WHAT_WE_DO_ROWS.length - 1 ? '1px solid #fcd34d' : 'none',
+                      }}
+                    >
+                      <td
+                        className="py-4 sm:py-5 pl-6 sm:pl-8 pr-4 font-bold uppercase"
+                        style={{
+                          fontFamily: TEAM_FONT,
+                          fontSize: 19,
+                          color: '#0f172a',
+                          width: '42%',
+                          verticalAlign: 'middle',
+                          letterSpacing: '0.04em',
+                        }}
+                      >
+                        {label}
+                      </td>
+                      <td
+                        className="py-4 sm:py-5 pr-6 sm:pr-8 font-bold"
+                        style={{ fontSize: 21, color: '#0f172a', verticalAlign: 'middle', lineHeight: 1.45 }}
+                      >
+                        {value}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div
+                className="px-6 sm:px-8 py-5 text-center"
+                style={{ background: '#f59e0b', borderTop: '2px solid #d97706' }}
+              >
+                <p className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 21, color: '#0f172a' }}>
+                  TrueOddsIQ — data-driven picks, graded in public
+                </p>
+              </div>
+            </div>
           </section>
         </div>
       </div>
