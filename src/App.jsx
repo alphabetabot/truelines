@@ -20,6 +20,7 @@ import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
 import Welcome from './pages/Welcome'
 import Premium from './pages/Premium'
+import Plans from './pages/Plans'
 import PremiumGate from './components/PremiumGate'
 import { SeoLandingRoutes } from './seo/seoRoutes'
 
@@ -43,6 +44,7 @@ export default function App() {
               {SeoLandingRoutes()}
               <Route path="/odds" element={<LiveOdds />} />
               <Route path="/welcome" element={<Welcome />} />
+              <Route path="/plans" element={<Plans />} />
               <Route path="/premium" element={<Premium />} />
               <Route path="/compare" element={<LineCompare />} />
               <Route
