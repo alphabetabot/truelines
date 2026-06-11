@@ -5,6 +5,9 @@
     },
     "api/picks-status.js": {
       "maxDuration": 30
+    },
+    "api/cron-newsletter.js": {
+      "maxDuration": 60
     }
   },
   "redirects": [
