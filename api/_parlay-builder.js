@@ -13,6 +13,7 @@ const BOOK_LABELS = {
 }
 
 export const PARLAY_SPORT_OPTIONS = [
+  { key: 'all', label: 'ALL' },
   { key: 'baseball_mlb', label: 'MLB' },
   { key: 'basketball_nba', label: 'NBA' },
   { key: 'americanfootball_nfl', label: 'NFL' },
@@ -21,6 +22,7 @@ export const PARLAY_SPORT_OPTIONS = [
   { key: 'basketball_ncaab', label: 'NCAA M Basketball' },
 ]
 
+const SINGLE_SPORT_OPTIONS = PARLAY_SPORT_OPTIONS.filter(s => s.key !== 'all')
 const ALLOWED_SPORT_KEYS = new Set(PARLAY_SPORT_OPTIONS.map(s => s.key))
 
 function formatAmerican(price) {
@@ -97,14 +99,26 @@ async function fetchSportOdds(sportKey) {
   if (!Array.isArray(data)) throw new Error('Unexpected odds API response')
   return data.map(g => ({
     ...g,
-    sport: PARLAY_SPORT_OPTIONS.find(s => s.key === sportKey)?.label || sportKey,
+    sport: SINGLE_SPORT_OPTIONS.find(s => s.key === sportKey)?.label || sportKey,
   }))
 }
 
-function buildSlatePrompt(games) {
+async function fetchAllSportOdds() {
+  const results = await Promise.allSettled(
+    SINGLE_SPORT_OPTIONS.map(s => fetchSportOdds(s.key)),
+  )
+  const merged = []
+  for (const result of results) {
+    if (result.status === 'fulfilled') merged.push(...result.value)
+  }
+  return merged
+}
+
+function buildSlatePrompt(games, multiSport = false) {
   return games.map((game, i) => {
     const { matchup, lines } = summarizeGame(game)
-    return `${i + 1}. ${matchup}\n   ${lines.join('\n   ')}`
+    const prefix = multiSport && game.sport ? `[${game.sport}] ` : ''
+    return `${i + 1}. ${prefix}${matchup}\n   ${lines.join('\n   ')}`
   }).join('\n\n')
 }
 
@@ -129,7 +143,8 @@ function normalizeLegs(rawLegs, legCount) {
     if (!pick || !matchup || !bet || !Number.isFinite(american)) {
       throw new Error(`Leg ${i + 1} is incomplete in AI response`)
     }
-    return { pick, matchup, bet, american }
+    const sport = String(leg.sport || '').trim() || null
+    return sport ? { pick, matchup, bet, american, sport } : { pick, matchup, bet, american }
   })
 
   if (legs.length !== legCount) {
@@ -144,7 +159,7 @@ function normalizeLegs(rawLegs, legCount) {
   return legs
 }
 
-async function callClaudeForParlay({ sportLabel, legCount, slateText, avoidMatchups, regenerate }) {
+async function callClaudeForParlay({ sportLabel, legCount, slateText, avoidMatchups, regenerate, multiSport = false }) {
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured')
 
@@ -155,20 +170,26 @@ async function callClaudeForParlay({ sportLabel, legCount, slateText, avoidMatch
     ? '\nThis is a regeneration — pick a different combination of games and bet types than before.'
     : ''
 
+  const sportRules = multiSport
+    ? `- Legs may mix ANY sports shown (e.g. MLB + NBA + NFL in one ticket)
+- Include a "sport" field on each leg (MLB, NBA, NFL, NHL, NCAAF, or NCAA M Basketball)`
+    : `- All legs must be from ${sportLabel}`
+
   const prompt = `You are Vega, TrueOddsIQ's sports betting analyst. Build an illustrative ${legCount}-leg parlay for ${sportLabel} using ONLY the games and lines below. Use real teams and realistic odds from the slate — do not invent games.
 
 RULES:
 - Exactly ${legCount} legs, each from a DIFFERENT game/matchup
+${sportRules}
 - Mix of moneyline, spread, or total is fine
 - Each leg must cite a sportsbook from the slate
 - Entertainment/research only — no guarantees
 ${avoidLine}${regenLine}
 
-TODAY'S ${sportLabel} SLATE:
+TODAY'S SLATE:
 ${slateText}
 
 Respond with ONLY valid JSON (no markdown):
-{"legs":[{"pick":"Team ML","matchup":"Away @ Home","bet":"ML · -142 · DraftKings","american":-142}]}`
+{"legs":[{"pick":"Team ML","matchup":"Away @ Home","bet":"ML · -142 · DraftKings","american":-142${multiSport ? ',"sport":"MLB"' : ''}}]}`
 
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
@@ -200,27 +221,35 @@ export async function buildAiParlayTicket({ sportKey, legCount, previousMatchups
   }
 
   const legs = Math.min(10, Math.max(2, Number(legCount) || 3))
-  const sportLabel = PARLAY_SPORT_OPTIONS.find(s => s.key === sportKey)?.label || sportKey
+  const multiSport = sportKey === 'all'
+  const sportLabel = multiSport
+    ? 'All Sports'
+    : (SINGLE_SPORT_OPTIONS.find(s => s.key === sportKey)?.label || sportKey)
 
-  const rawGames = await fetchSportOdds(sportKey)
+  const rawGames = multiSport
+    ? await fetchAllSportOdds()
+    : await fetchSportOdds(sportKey)
   const bettable = filterBettableGames(rawGames)
 
   if (bettable.length < legs) {
     throw new Error(
       bettable.length === 0
-        ? `No bettable ${sportLabel} games on today's slate.`
-        : `Only ${bettable.length} ${sportLabel} game${bettable.length === 1 ? '' : 's'} available — choose ${bettable.length} or fewer legs.`,
+        ? multiSport
+          ? 'No bettable games on today\'s slate across MLB, NBA, NFL, NHL, NCAAF, and NCAA M Basketball.'
+          : `No bettable ${sportLabel} games on today's slate.`
+        : `Only ${bettable.length} game${bettable.length === 1 ? '' : 's'} available — choose ${bettable.length} or fewer legs.`,
     )
   }
 
-  const slateGames = bettable.slice(0, 20)
-  const slateText = buildSlatePrompt(slateGames)
+  const slateGames = bettable.slice(0, 30)
+  const slateText = buildSlatePrompt(slateGames, multiSport)
   const ticketLegs = await callClaudeForParlay({
     sportLabel,
     legCount: legs,
     slateText,
     avoidMatchups: previousMatchups,
     regenerate,
+    multiSport,
   })
 
   return {
