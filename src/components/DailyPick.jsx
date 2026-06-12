@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Zap, ChevronRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../lib/AuthContext'
+import { useSubscription } from '../hooks/useSubscription'
 import { briefEdgeSummary } from '../lib/pickText'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
@@ -14,7 +14,7 @@ export default function DailyPick() {
   const [pick, setPick] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
-  const { user } = useAuth()
+  const { isPremium } = useSubscription()
 
   useEffect(() => {
     async function fetchPick() {
@@ -55,7 +55,7 @@ export default function DailyPick() {
 
   if (!pick) return null
 
-  const edgeDisplay = user ? pick.edge : briefEdgeSummary(pick.edge)
+  const edgeDisplay = isPremium ? pick.edge : briefEdgeSummary(pick.edge)
 
   return (
     <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '2px solid #f59e0b', background: '#0f172a' }}>
@@ -65,7 +65,7 @@ export default function DailyPick() {
             <Zap size={12} style={{ color: '#0f172a' }} />
           </div>
           <span className="text-xs font-black" style={{ color: '#f59e0b' }}>
-            {user ? "VEGA'S TOP PICK TODAY" : "TODAY'S TOP PICK PREVIEW"}
+            {isPremium ? "VEGA'S TOP PICK TODAY" : "TODAY'S TOP PICK PREVIEW"}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
@@ -94,7 +94,7 @@ export default function DailyPick() {
             💡 {edgeDisplay}
           </p>
         )}
-        {!user && pick.edge && edgeDisplay !== pick.edge && (
+        {!isPremium && pick.edge && edgeDisplay !== pick.edge && (
           <p className="text-xs mb-3" style={{ color: 'rgba(245,158,11,0.85)' }}>
             Premium unlocks full write-ups for all 3 picks plus injury, weather &amp; stat deep dives
           </p>
@@ -108,14 +108,14 @@ export default function DailyPick() {
             className="flex items-center gap-1 text-xs font-bold"
             style={{ color: '#f59e0b' }}
           >
-            {user ? 'Unlock all 3 picks' : 'Get Premium picks'} <ChevronRight size={13} />
+            {isPremium ? 'View all picks' : 'Unlock all 3 picks'} <ChevronRight size={13} />
           </button>
         </div>
       </div>
 
       <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
         <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
-          {user
+          {isPremium
             ? 'For informational purposes only · Always bet responsibly · 21+'
             : 'Public preview — brief edge only · Premium = full card · 21+'}
         </p>

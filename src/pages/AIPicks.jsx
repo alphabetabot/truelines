@@ -13,11 +13,11 @@ import { getAuthHeaders } from '../lib/authHeaders'
 import { FREE_PUBLIC_PICK_COUNT, DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 import { briefEdgeSummary } from '../lib/pickText'
 import PerformanceTracker from '../components/PerformanceTracker'
-import DailyPick from '../components/DailyPick'
 import PickPerformanceHero from '../components/PickPerformanceHero'
 import { useSportSelection } from '../hooks/useSportSelection'
 import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
 import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
+import { useSubscription } from '../hooks/useSubscription'
 
 const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#475569' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
@@ -61,7 +61,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         )}
         {isPublicPreview && pick.edge && edgeText !== pick.edge && (
           <p className="text-xs mt-2" style={{ color: 'var(--gold)' }}>
-            Sign in for the full edge on all picks. Premium adds unlimited AI analysis and deeper injury/weather breakdowns.
+            Premium unlocks full write-ups for all {DAILY_NEWSLETTER_PICK_COUNT} daily picks plus deeper injury and weather breakdowns.
           </p>
         )}
         {pick.result && (
@@ -154,6 +154,7 @@ function PickCard({ game, pitchers = {} }) {
 
 export default function AIPicks() {
   const { user } = useAuth()
+  const { isPremium, loading: subLoading } = useSubscription()
   const navigate = useNavigate()
   const [sport, setSport] = useSportSelection('picks')
   const [view, setView] = useState('newsletter')
@@ -165,7 +166,7 @@ export default function AIPicks() {
     queryKey: ['odds', sport],
     queryFn: () => getOdds(sport),
     staleTime: 30_000,
-    enabled: view === 'individual' && Boolean(user),
+    enabled: view === 'individual' && Boolean(user) && isPremium,
   })
 
   const games = data ? parseOddsForComparison(data) : []
@@ -174,23 +175,27 @@ export default function AIPicks() {
   const { data: pitchers = {} } = useQuery({
     queryKey: ['mlb-pitchers'],
     queryFn: getTodayProbablePitchers,
-    enabled: isMLB && view === 'individual' && Boolean(user),
+    enabled: isMLB && view === 'individual' && Boolean(user) && isPremium,
     staleTime: 300_000,
     refetchOnMount: true,
   })
 
   useEffect(() => {
+    if (subLoading) return undefined
     let cancelled = false
 
     async function loadStoredPicks() {
       setStoredLoading(true)
       setStoredError(null)
       try {
-        if (user) {
+        if (isPremium) {
           const headers = await getAuthHeaders()
           const res = await fetch('/api/todays-pick?all=1', { headers })
           if (res.status === 401) {
             throw new Error("Please sign in again to load today's picks.")
+          }
+          if (res.status === 402) {
+            throw new Error('Premium subscription required for the full daily slate.')
           }
           if (!res.ok) {
             const err = await res.json().catch(() => ({}))
@@ -222,13 +227,24 @@ export default function AIPicks() {
 
     loadStoredPicks()
     return () => { cancelled = true }
-  }, [user])
+  }, [isPremium, subLoading])
 
-  const subtitle = user
+  useEffect(() => {
+    if (storedLoading || window.location.hash !== '#todays-slate') return undefined
+    const timer = window.setTimeout(() => {
+      document.getElementById('todays-slate')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 100)
+    return () => window.clearTimeout(timer)
+  }, [storedLoading, storedPicks.length])
+
+  const subtitle = isPremium
     ? 'Your full Premium daily slate · Updated each morning (Pacific)'
-    : `Today's top pick preview · Premium unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks + full write-ups`
+    : `Today's top pick · Premium unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks with full write-ups`
 
-  const lockedCount = Math.max(0, DAILY_NEWSLETTER_PICK_COUNT - (user ? storedPicks.length : FREE_PUBLIC_PICK_COUNT))
+  const lockedCount = Math.max(
+    0,
+    DAILY_NEWSLETTER_PICK_COUNT - (isPremium ? storedPicks.length : FREE_PUBLIC_PICK_COUNT),
+  )
   const performance = usePickPerformanceData()
 
   return (
@@ -248,17 +264,17 @@ export default function AIPicks() {
         </div>
       </div>
 
-      {!user && (
+      {!isPremium && (
         <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
           style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
           <p className="text-sm" style={{ color: '#92400e' }}>
-            Today&apos;s top pick with a short summary below. Premium unlocks all {DAILY_NEWSLETTER_PICK_COUNT} picks,
-            full write-ups, and deep injury, weather, and stat analysis.
+            Today&apos;s top pick with a short summary below. Premium unlocks all {DAILY_NEWSLETTER_PICK_COUNT} picks
+            with full write-ups, plus unlimited AI analysis on every game.
           </p>
           <button type="button" onClick={() => navigate('/premium')}
             className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"
             style={{ background: '#f59e0b', color: '#0f172a' }}>
-            Upgrade to Premium
+            {user ? 'Upgrade to Premium' : 'Sign in · Premium'}
           </button>
         </div>
       )}
@@ -282,21 +298,26 @@ export default function AIPicks() {
           <Star size={13} />
           Today&apos;s Picks
         </button>
-        <button type="button" onClick={() => (user ? setView('individual') : navigate('/login'))}
+        <button type="button" onClick={() => {
+          if (!isPremium) {
+            navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })
+            return
+          }
+          setView('individual')
+        }}
           className="px-4 py-2 rounded-lg text-sm font-medium transition-all"
           style={{
             background: view === 'individual' ? 'var(--accent)' : 'var(--bg-card)',
             color: view === 'individual' ? '#fff' : 'var(--text-secondary)',
             border: `1px solid ${view === 'individual' ? 'var(--accent)' : 'var(--border)'}`,
-            opacity: user ? 1 : 0.85,
+            opacity: isPremium ? 1 : 0.85,
           }}>
-          On-Demand Picks{!user ? ' (account)' : ''}
+          On-Demand Picks{!isPremium ? ' (Premium)' : ''}
         </button>
       </div>
 
       {view === 'newsletter' && (
         <div>
-          <DailyPick />
           <PremiumFeatureSlot feature="premiumAIPicks" />
           <PremiumFeatureSlot feature="historicalPickPerformance" />
 
@@ -326,20 +347,20 @@ export default function AIPicks() {
           )}
 
           {!storedLoading && storedPicks.length > 0 && (
-            <div className="grid gap-3">
+            <div id="todays-slate" className="grid gap-3">
               {storedPicks.map((pick, i) => (
                 <StoredPickCard
                   key={pick.id || i}
                   pick={pick}
                   index={i}
-                  isPublicPreview={!user && i === 0}
+                  isPublicPreview={!isPremium}
                 />
               ))}
-              {!user && Array.from({ length: lockedCount }).map((_, i) => (
+              {!isPremium && Array.from({ length: lockedCount }).map((_, i) => (
                 <LockedPickCard
                   key={`locked-${i + FREE_PUBLIC_PICK_COUNT}`}
                   index={i + FREE_PUBLIC_PICK_COUNT}
-                  onUnlock={() => navigate('/premium')}
+                  onUnlock={() => navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })}
                 />
               ))}
             </div>
@@ -361,16 +382,16 @@ export default function AIPicks() {
 
       {view === 'individual' && (
         <div>
-          {!user ? (
+          {!isPremium ? (
             <div className="text-center py-12 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
-              <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Sign in for on-demand picks</p>
+              <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Premium feature</p>
               <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
-                Generate a custom AI pick for any game on the slate (separate from the daily newsletter picks).
+                On-demand AI picks for any game on the slate are included with Premium.
               </p>
-              <button type="button" onClick={() => navigate('/login')}
+              <button type="button" onClick={() => navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })}
                 className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"
                 style={{ background: '#0f172a' }}>
-                Sign in
+                {user ? 'Upgrade to Premium' : 'Sign in'}
               </button>
             </div>
           ) : (
