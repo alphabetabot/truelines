@@ -22,17 +22,21 @@
     { "source": "/sitemap.xml", "destination": "/api/sitemap" },
     { "source": "/api/cron-midday-post", "destination": "/api/cron-posts" },
     { "source": "/api/cron-evening-post", "destination": "/api/cron-posts?evening=true" },
+    { "source": "/api/cron-blogs-weekly", "destination": "/api/cron-blogs?weekly=true" },
+    { "source": "/api/cron-grade-early", "destination": "/api/log-results" },
+    { "source": "/api/cron-grade-midday", "destination": "/api/log-results" },
+    { "source": "/api/cron-grade-evening", "destination": "/api/log-results" },
     { "source": "/api/billing", "destination": "/api/picks-status" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [
-    { "path": "/api/log-results", "schedule": "30 12 * * *" },
-    { "path": "/api/log-results", "schedule": "30 18 * * *" },
-    { "path": "/api/log-results", "schedule": "0 5 * * *" },
+    { "path": "/api/cron-newsletter", "schedule": "0 14 * * *" },
     { "path": "/api/cron-blogs", "schedule": "0 7 * * *" },
-    { "path": "/api/cron-blogs?weekly=true", "schedule": "0 8 * * 1" },
-    { "path": "/api/cron-posts", "schedule": "0 12 * * *" },
-    { "path": "/api/cron-posts?evening=true", "schedule": "0 18 * * *" },
-    { "path": "/api/cron-newsletter", "schedule": "0 14 * * *" }
+    { "path": "/api/cron-blogs-weekly", "schedule": "0 8 * * 1" },
+    { "path": "/api/cron-midday-post", "schedule": "0 12 * * *" },
+    { "path": "/api/cron-evening-post", "schedule": "0 18 * * *" },
+    { "path": "/api/cron-grade-early", "schedule": "0 5 * * *" },
+    { "path": "/api/cron-grade-midday", "schedule": "30 12 * * *" },
+    { "path": "/api/cron-grade-evening", "schedule": "30 18 * * *" }
   ]
 }
