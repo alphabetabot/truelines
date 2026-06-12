@@ -3,18 +3,20 @@ import { postTweet } from './_post-to-x.js'
 import { getSupabase } from './_supabase-client.js'
 import { extractPicksFromResponse, extractTopPickSection, storePicks } from './_store-picks.js'
 import {
-  sendNewsletterEmail,
-  unsubscribeUrl,
-  buildNewsletterEmailHtml,
-  buildNewsletterEmailPlainText,
-} from './_newsletter-utils.js'
+  deliverNewsletterEmails,
+  resolveTopPickText,
+} from './_newsletter-deliver.js'
 import {
+  NEWSLETTER_CATCHUP_SCHEDULE,
   NEWSLETTER_CRON_SCHEDULE,
   claimDailyNewsletterSend,
   completeNewsletterSend,
+  fetchNewsletterRow,
   getPacificDateKey,
+  isNewsletterSendComplete,
+  isStaleNewsletterClaim,
+  persistNewsletterDraft,
   releaseNewsletterClaim,
-  uniqueSubscriberEmails,
 } from './_newsletter-send-guard.js'
 import {
   PICK_METRICS_PROMPT_RULES,
@@ -535,10 +537,70 @@ Only pick games with genuine edge. Be specific with stats and reasoning. Output 
   }
 }
 
+async function fetchTopDailyPick(supabase, dateKey) {
+  const { data, error } = await supabase
+    .from('daily_picks')
+    .select('sport,game,pick,bet,confidence,edge,sort_order,created_at')
+    .eq('date', dateKey)
+    .order('sort_order', { ascending: true, nullsFirst: false })
+    .order('created_at', { ascending: true })
+    .limit(1)
+
+  if (error) throw error
+  return data?.[0] || null
+}
+
+async function finishNewsletterEmails({
+  supabase,
+  resend,
+  todayKey,
+  picksText,
+  dailyPickRow,
+  dateLabel,
+}) {
+  const { data: subscribers, error } = await supabase
+    .from('newsletter_subscribers')
+    .select('email')
+    .eq('active', true)
+
+  if (error) throw error
+  if (!subscribers?.length) {
+    return { sent: 0, message: 'No subscribers yet', recipients: 0 }
+  }
+
+  const topPickText = resolveTopPickText(picksText, dailyPickRow)
+  const delivery = await deliverNewsletterEmails({
+    resend,
+    subscribers,
+    topPickText,
+    dateLabel,
+  })
+
+  if (delivery.sent > 0) {
+    const recorded = await completeNewsletterSend(supabase, todayKey, delivery.sent, picksText || null)
+    if (!recorded) {
+      console.error('Newsletter sent but newsletter_daily_sends update failed')
+    }
+  }
+
+  return {
+    sent: delivery.sent,
+    failed: delivery.failed,
+    failures: delivery.failures.slice(0, 10),
+    recipients: delivery.recipients,
+    message:
+      delivery.sent > 0
+        ? `Sent to ${delivery.sent} subscribers`
+        : 'No newsletter emails were delivered',
+  }
+}
+
 export default async function handler(req, res) {
   const secret = req.headers['x-newsletter-secret']
   const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
   const forceSend = req.query?.force === 'true' || req.body?.force === true
+  const catchupSend = req.query?.catchup === 'true' || req.body?.catchup === true
+  const emailsOnly = catchupSend || req.query?.emailsOnly === 'true' || req.body?.emailsOnly === true
 
   if (!isVercelCron && secret !== process.env.NEWSLETTER_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
@@ -549,6 +611,12 @@ export default async function handler(req, res) {
   const supabase = getSupabase()
   let claimedSend = false
   let emailsDelivered = 0
+  const dateLabel = new Date().toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
 
   async function abortNewsletter(body, status = 200) {
     if (claimedSend && emailsDelivered === 0) {
@@ -558,7 +626,7 @@ export default async function handler(req, res) {
     return res.status(status).json(body)
   }
 
-  // Block cron-job.org / manual hits — only Vercel 0 14 UTC (or ?force=true for recovery).
+  // Block cron-job.org / manual hits — only Vercel cron or ?force=true recovery.
   if (!forceSend && !isVercelCron) {
     return res.json({
       sent: 0,
@@ -569,17 +637,84 @@ export default async function handler(req, res) {
     })
   }
 
-  if (isVercelCron && !forceSend && cronSchedule && cronSchedule !== NEWSLETTER_CRON_SCHEDULE) {
+  const expectedSchedule = catchupSend ? NEWSLETTER_CATCHUP_SCHEDULE : NEWSLETTER_CRON_SCHEDULE
+  if (isVercelCron && !forceSend && cronSchedule && cronSchedule !== expectedSchedule) {
     console.warn(`Ignoring newsletter cron on unexpected schedule: ${cronSchedule}`)
     return res.json({
       sent: 0,
       skipped: true,
       reason: 'unexpected_cron_schedule',
       schedule: cronSchedule,
-      expected: NEWSLETTER_CRON_SCHEDULE,
+      expected: expectedSchedule,
       message:
-        'Duplicate or legacy cron schedule blocked (e.g. 0 15 UTC). Delete extra newsletter crons in Vercel → Settings → Cron Jobs.',
+        'Duplicate or legacy cron schedule blocked. Delete extra newsletter crons in Vercel → Settings → Cron Jobs.',
     })
+  }
+
+  const existingRow = await fetchNewsletterRow(supabase, todayKey)
+  if (isNewsletterSendComplete(existingRow)) {
+    return res.json({
+      sent: 0,
+      skipped: true,
+      reason: 'already_sent_today',
+      date: todayKey,
+      sentAt: existingRow.sent_at,
+      subscriber_count: existingRow.subscriber_count,
+    })
+  }
+
+  if (emailsOnly) {
+    if (
+      !forceSend &&
+      existingRow?.started_at &&
+      !existingRow.sent_at &&
+      !isStaleNewsletterClaim(existingRow)
+    ) {
+      return res.json({
+        sent: 0,
+        skipped: true,
+        reason: 'send_in_progress',
+        date: todayKey,
+        started_at: existingRow.started_at,
+        message: 'Main newsletter run still in progress — catch-up will retry after claim goes stale',
+      })
+    }
+
+    const dailyPickRow = await fetchTopDailyPick(supabase, todayKey)
+    const picksText = existingRow?.picks_text || ''
+    if (!picksText && !dailyPickRow) {
+      return res.json({
+        sent: 0,
+        skipped: true,
+        reason: 'no_picks_to_send',
+        date: todayKey,
+        message: 'No stored picks or picks_text for catch-up email',
+      })
+    }
+
+    if (existingRow?.started_at && !existingRow.sent_at && isStaleNewsletterClaim(existingRow)) {
+      console.warn(`Catch-up releasing stale newsletter claim for ${todayKey}`)
+      await releaseNewsletterClaim(supabase, todayKey)
+    }
+
+    try {
+      const result = await finishNewsletterEmails({
+        supabase,
+        resend: getResend(),
+        todayKey,
+        picksText,
+        dailyPickRow,
+        dateLabel,
+      })
+      emailsDelivered = result.sent
+      if (result.sent === 0 && result.failed > 0) {
+        return res.status(502).json({ ...result, date: todayKey, mode: 'catchup' })
+      }
+      return res.json({ ...result, date: todayKey, mode: catchupSend ? 'catchup' : 'emails_only' })
+    } catch (err) {
+      console.error('Newsletter catch-up error:', err)
+      return res.status(500).json({ error: err.message, date: todayKey, mode: 'catchup' })
+    }
   }
 
   if (forceSend) {
@@ -622,7 +757,6 @@ export default async function handler(req, res) {
   let picksText = ''
 
   try {
-    const date = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
     const games = await getTodaysGames()
     if (!games.length) {
       return abortNewsletter({ sent: 0, message: 'No games today', date: todayKey })
@@ -686,75 +820,32 @@ export default async function handler(req, res) {
       }, 500)
     }
 
-    const { data: subscribers, error } = await supabase
-      .from('newsletter_subscribers')
-      .select('email')
-      .eq('active', true)
+    await persistNewsletterDraft(supabase, todayKey, picksText)
 
-    if (error) throw error
-    if (!subscribers?.length) {
-      return abortNewsletter({
-        sent: 0,
-        message: 'No subscribers yet',
-        picks: picksText,
-        stored: storedPicks.length,
-        date: todayKey,
-      })
-    }
+    const delivery = await finishNewsletterEmails({
+      supabase,
+      resend: getResend(),
+      todayKey,
+      picksText,
+      dailyPickRow: storedPicks[0],
+      dateLabel,
+    })
 
-    const topPickText = extractTopPickSection(picksText)
-    if (!topPickText || topPickText.length < 40) {
-      console.error('Top pick section too short for newsletter email')
-      return abortNewsletter({
-        error: 'Could not extract top pick for newsletter email',
-        picksPreview: picksText.slice(0, 500),
-        date: todayKey,
-      }, 500)
-    }
+    emailsDelivered = delivery.sent
+    claimedSend = false
 
-    const emails = uniqueSubscriberEmails(subscribers)
-    let sent = 0
-    const sendErrors = []
-
-    for (const email of emails) {
-      const unsub = unsubscribeUrl(email)
-      try {
-        await sendNewsletterEmail({
-          resend: getResend(),
-          to: email,
-          subject: `TrueOddsIQ Top Pick — ${date}`,
-          html: buildNewsletterEmailHtml(topPickText, date, unsub),
-          text: buildNewsletterEmailPlainText(topPickText, date, unsub),
-        })
-        sent++
-        emailsDelivered++
-      } catch (sendErr) {
-        console.error(`Newsletter send failed for ${email}:`, sendErr.message)
-        sendErrors.push({ email, error: sendErr.message })
-      }
-    }
-
-    if (emailsDelivered > 0) {
-      const recorded = await completeNewsletterSend(supabase, todayKey, sent, picksText)
-      claimedSend = false
-      if (!recorded) {
-        console.error('Newsletter sent but newsletter_daily_sends update failed — dedup may break tomorrow')
-      }
-    }
-
-    if (sendErrors.length) {
-      if (claimedSend && emailsDelivered === 0) {
-        await releaseNewsletterClaim(supabase, todayKey)
-        claimedSend = false
-      }
+    if (delivery.failed > 0 && delivery.sent === 0) {
+      await releaseNewsletterClaim(supabase, todayKey)
       return res.status(502).json({
-        error: 'One or more newsletter emails failed to send',
-        sent,
-        failed: sendErrors.length,
-        failures: sendErrors.slice(0, 10),
+        error: 'Newsletter emails failed to send',
+        ...delivery,
         stored: storedPicks.length,
-        dedupRecorded: emailsDelivered > 0,
+        date: todayKey,
       })
+    }
+
+    if (delivery.failed > 0) {
+      console.warn(`Newsletter partial send: ${delivery.sent} ok, ${delivery.failed} failed`)
     }
 
     const topPickSection = extractTopPickSection(picksText)
@@ -765,7 +856,7 @@ export default async function handler(req, res) {
 
     try {
       if (hasPicks && pickLine) {
-        const tgMessage = `TOP PICK — ${date}\n\n ${pickLine}\n ${betLine}\n\n ${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`
+        const tgMessage = `TOP PICK — ${dateLabel}\n\n ${pickLine}\n ${betLine}\n\n ${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`
         await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -778,14 +869,21 @@ export default async function handler(req, res) {
 
     try {
       if (hasPicks && pickLine) {
-        const tweet = `TOP PICK — ${date}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`.slice(0, 280)
+        const tweet = `TOP PICK — ${dateLabel}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`.slice(0, 280)
         await postTweet(tweet)
       }
     } catch (tweetErr) {
       console.warn('X post failed:', tweetErr.message)
     }
 
-    return res.json({ sent, date: todayKey, message: `Sent to ${sent} subscribers`, picks: picksText, stored: storedPicks.length })
+    return res.json({
+      sent: delivery.sent,
+      date: todayKey,
+      message: delivery.message,
+      picks: picksText,
+      stored: storedPicks.length,
+      failed: delivery.failed,
+    })
   } catch (err) {
     if (claimedSend && emailsDelivered === 0) {
       await releaseNewsletterClaim(supabase, todayKey)

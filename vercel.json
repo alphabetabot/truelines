@@ -7,7 +7,7 @@
       "maxDuration": 60
     },
     "api/cron-newsletter.js": {
-      "maxDuration": 60
+      "maxDuration": 300
     }
   },
   "redirects": [
@@ -23,6 +23,7 @@
     { "source": "/api/cron-midday-post", "destination": "/api/cron-posts" },
     { "source": "/api/cron-evening-post", "destination": "/api/cron-posts?evening=true" },
     { "source": "/api/cron-blogs-weekly", "destination": "/api/cron-blogs?weekly=true" },
+    { "source": "/api/cron-newsletter-catchup", "destination": "/api/cron-newsletter?catchup=true" },
     { "source": "/api/cron-grade-early", "destination": "/api/log-results" },
     { "source": "/api/cron-grade-midday", "destination": "/api/log-results" },
     { "source": "/api/cron-grade-evening", "destination": "/api/log-results" },
@@ -31,6 +32,7 @@
   ],
   "crons": [
     { "path": "/api/cron-newsletter", "schedule": "0 14 * * *" },
+    { "path": "/api/cron-newsletter-catchup", "schedule": "45 14 * * *" },
     { "path": "/api/cron-blogs", "schedule": "0 7 * * *" },
     { "path": "/api/cron-blogs-weekly", "schedule": "0 8 * * 1" },
     { "path": "/api/cron-midday-post", "schedule": "0 12 * * *" },

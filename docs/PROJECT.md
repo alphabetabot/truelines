@@ -93,6 +93,7 @@ Full schedule in `vercel.json`:
 | Schedule (UTC) | Path | Purpose |
 |----------------|------|---------|
 | `0 14 * * *` | `/api/cron-newsletter` | Daily picks email (~7:05 AM Pacific) |
+| `45 14 * * *` | `/api/cron-newsletter-catchup` | Email catch-up if main run timed out (~7:45 AM Pacific) |
 | `0 7 * * *` | `/api/cron-blogs` | Blog generation |
 | `0 8 * * 1` | `/api/cron-blogs-weekly` | Weekly blog (rewrite → `cron-blogs?weekly=true`) |
 | `0 12 * * *` | `/api/cron-midday-post` | Midday X post (rewrite → `cron-posts`) |

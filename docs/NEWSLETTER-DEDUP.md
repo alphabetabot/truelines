@@ -2,8 +2,8 @@
 
 ## Intended schedule
 
-- **Only** Vercel cron: `0 14 * * *` UTC → `/api/cron-newsletter`
-- **~7:00–7:10 AM Pacific** (Resend delivery often shows ~7:05 AM)
+- **Main** Vercel cron: `0 14 * * *` UTC → `/api/cron-newsletter` (~7:00 AM Pacific)
+- **Catch-up** cron: `45 14 * * *` UTC → `/api/cron-newsletter-catchup` (~7:45 AM Pacific) — sends emails if picks were stored but the main run timed out before Resend finished
 
 **Vercel dashboard must show:** `/api/cron-newsletter` with `0 14 * * *` (daily). If it shows `0 8 * * 1` (Mondays only), crons are mis-registered — redeploy `main` after the `vercel.json` fix that uses unique paths (no `?query` on cron paths, no duplicate `/api/log-results` paths).
 
@@ -48,7 +48,7 @@ curl -sS "https://www.trueoddsiq.com/api/picks-status" | jq '.newsletter, .dates
 Or from terminal:
 
 ```bash
-curl -sS "https://www.trueoddsiq.com/api/cron-newsletter?force=true" \
+curl -sS "https://www.trueoddsiq.com/api/cron-newsletter?force=true&emailsOnly=true" \
   -H "Authorization: Bearer $CRON_SECRET"
 ```
 
