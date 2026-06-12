@@ -1,17 +1,22 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Zap, ChevronRight } from 'lucide-react'
+import { useAuth } from '../lib/AuthContext'
+import { useSubscription } from '../hooks/useSubscription'
 import { trackDailyPickTeaserClick } from '../lib/analytics'
+import { DAILY_NEWSLETTER_PICK_COUNT } from '../lib/pickAccess'
 
 function isPlaceholderBet(bet) {
   return !bet || bet.includes('-10000') || bet.includes('-99999')
 }
 
-/** Compact /odds teaser — full pick lives on /picks. */
+/** Compact /odds teaser — one pick for everyone; full slate link for Premium only. */
 export default function DailyPickTeaser() {
   const [pick, setPick] = useState(null)
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { isPremium } = useSubscription()
 
   useEffect(() => {
     let cancelled = false
@@ -42,39 +47,66 @@ export default function DailyPickTeaser() {
 
   if (!pick) return null
 
-  function goToPicks() {
+  function goToTopPickAnalysis() {
     trackDailyPickTeaserClick('odds')
     navigate('/picks')
   }
 
+  function goToFullSlate() {
+    trackDailyPickTeaserClick('odds_premium_slate')
+    navigate('/picks#todays-slate')
+  }
+
   return (
-    <button
-      type="button"
-      onClick={goToPicks}
-      className="w-full text-left rounded-xl mb-4 overflow-hidden transition-opacity hover:opacity-95"
+    <div
+      className="rounded-xl mb-4 overflow-hidden"
       style={{
         background: '#fff',
         border: '1.5px solid #f59e0b',
         boxShadow: '0 2px 8px rgba(245,158,11,0.12)',
       }}
     >
-      <div className="flex items-center justify-between gap-3 px-4 py-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-            style={{ background: '#f59e0b' }}>
-            <Zap size={14} style={{ color: '#0f172a' }} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Today&apos;s AI Pick</p>
-            <p className="text-sm font-bold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
-            <p className="text-xs truncate" style={{ color: '#475569' }}>{pick.game}</p>
-          </div>
+      <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+          style={{ background: '#f59e0b' }}>
+          <Zap size={14} style={{ color: '#0f172a' }} />
         </div>
-        <span className="flex items-center gap-0.5 text-xs font-bold shrink-0" style={{ color: '#0f172a' }}>
-          View full analysis
-          <ChevronRight size={14} />
-        </span>
+        <div className="min-w-0">
+          <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Today&apos;s AI Pick</p>
+          <p className="text-sm font-bold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
+          <p className="text-xs truncate" style={{ color: '#475569' }}>{pick.game}</p>
+        </div>
       </div>
-    </button>
+
+      <div className="px-4 pb-3 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={goToTopPickAnalysis}
+          className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-left font-bold text-sm transition-opacity hover:opacity-90"
+          style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+        >
+          <span>{isPremium ? 'View top pick analysis' : 'View full analysis'}</span>
+          <ChevronRight size={16} />
+        </button>
+
+        {isPremium ? (
+          <button
+            type="button"
+            onClick={goToFullSlate}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-left font-bold text-sm transition-opacity hover:opacity-90"
+            style={{ background: '#f59e0b', color: '#0f172a' }}
+          >
+            <span>All {DAILY_NEWSLETTER_PICK_COUNT} daily picks</span>
+            <ChevronRight size={16} />
+          </button>
+        ) : (
+          <p className="text-xs px-1" style={{ color: '#64748b' }}>
+            {user
+              ? 'Free account: today\'s top pick with a short summary. Premium unlocks all 3 picks with full write-ups.'
+              : 'One pick preview free · Premium unlocks all 3 daily picks with full write-ups.'}
+          </p>
+        )}
+      </div>
+    </div>
   )
 }

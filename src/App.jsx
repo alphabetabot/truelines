@@ -72,17 +72,7 @@ export default function App() {
                   </PremiumGate>
                 )}
               />
-              <Route
-                path="/picks"
-                element={(
-                  <PremiumGate
-                    title="AI Picks"
-                    description="Full daily pick card with write-ups, confidence, and rationale. Premium unlocks the complete slate and on-demand picks."
-                  >
-                    <AIPicks />
-                  </PremiumGate>
-                )}
-              />
+              <Route path="/picks" element={<AIPicks />} />
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />
