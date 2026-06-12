@@ -1,8 +1,10 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { usePickPerformance } from '../hooks/usePickPerformance'
+import { useIsDesktopLayout } from '../hooks/useIsDesktopLayout'
 import { trackEvent } from '../lib/analytics'
 import LogoLink from '../components/LogoLink'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
+import WelcomeDesktop from './WelcomeDesktop'
 
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
 const CONTENT_PAD = 'px-6 sm:px-10 lg:px-12'
@@ -39,6 +41,20 @@ export default function Welcome() {
     ? `${perf.totalUnits > 0 ? '+' : ''}${perf.totalUnits.toFixed(2)}u`
     : '—'
   const gradedLabel = perf.hasRecord && !perf.error ? `${perf.gradedCount} picks` : '—'
+
+  const isDesktop = useIsDesktopLayout()
+
+  if (isDesktop) {
+    return (
+      <WelcomeDesktop
+        onPlans={goToPlans}
+        perf={perf}
+        recordLabel={recordLabel}
+        unitsLabel={unitsLabel}
+        gradedLabel={gradedLabel}
+      />
+    )
+  }
 
   return (
     <div className="w-full" style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif" }}>
