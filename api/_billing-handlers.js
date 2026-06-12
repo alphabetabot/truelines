@@ -84,7 +84,7 @@ async function handleStatus(req, res, user) {
     }
   }
 
-  return res.json(subscriptionPayload(row))
+  return res.json(subscriptionPayload(row, { user }))
 }
 
 async function handleSync(req, res, user) {
@@ -98,7 +98,7 @@ async function handleSync(req, res, user) {
     return res.status(403).json({ error: 'Checkout session does not belong to this user' })
   }
 
-  return res.json(subscriptionPayload(row))
+  return res.json(subscriptionPayload(row, { user }))
 }
 
 async function handleWebhook(req, res) {

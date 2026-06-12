@@ -1,5 +1,6 @@
 import Stripe from 'stripe'
 import { getSupabase } from './_supabase-client.js'
+import { isAdminUser } from './_admin-utils.js'
 
 export const PREMIUM_PRICE_DISPLAY = '$19.95/mo'
 export const ACTIVE_SUBSCRIPTION_STATUSES = new Set(['active', 'trialing'])
@@ -172,13 +173,15 @@ export async function refreshSubscriptionFromStripe(userId) {
   return upsertFromStripeSubscription(subscription, userId, row.stripe_customer_id)
 }
 
-export function subscriptionPayload(row) {
-  const isPremium = isPremiumRow(row)
+export function subscriptionPayload(row, { user } = {}) {
+  const admin = isAdminUser(user)
+  const isPremium = admin || isPremiumRow(row)
   return {
     isPremium,
-    status: row?.status || 'inactive',
-    currentPeriodEnd: row?.current_period_end || null,
-    cancelAtPeriodEnd: Boolean(row?.cancel_at_period_end),
+    isAdmin: admin,
+    status: admin ? 'admin' : (row?.status || 'inactive'),
+    currentPeriodEnd: admin ? null : (row?.current_period_end || null),
+    cancelAtPeriodEnd: admin ? false : Boolean(row?.cancel_at_period_end),
     priceDisplay: PREMIUM_PRICE_DISPLAY,
   }
 }

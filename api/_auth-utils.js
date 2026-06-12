@@ -70,6 +70,9 @@ export async function requirePremiumUser(req, res) {
   const user = await requireSupabaseUser(req, res)
   if (!user) return null
 
+  const { isAdminUser } = await import('./_admin-utils.js')
+  if (isAdminUser(user)) return user
+
   try {
     const { getSubscriptionRow, isPremiumRow } = await import('./_billing-utils.js')
     const row = await getSubscriptionRow(user.id)

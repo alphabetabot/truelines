@@ -15,6 +15,7 @@
     "test:newsletter-guard": "node scripts/newsletter-send-guard.test.js",
     "test:sport-context": "node scripts/sport-context.test.js",
     "test:billing": "node scripts/billing-utils.test.js",
+    "test:admin": "node scripts/admin-utils.test.js",
     "test:parlay": "node scripts/parlay-math.test.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
     "test:default-sport": "node src/lib/defaultSport.test.js",
