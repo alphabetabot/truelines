@@ -5,6 +5,8 @@
 - **Only** Vercel cron: `0 14 * * *` UTC → `/api/cron-newsletter`
 - **~7:00–7:10 AM Pacific** (Resend delivery often shows ~7:05 AM)
 
+**Vercel dashboard must show:** `/api/cron-newsletter` with `0 14 * * *` (daily). If it shows `0 8 * * 1` (Mondays only), crons are mis-registered — redeploy `main` after the `vercel.json` fix that uses unique paths (no `?query` on cron paths, no duplicate `/api/log-results` paths).
+
 ## If you get two emails
 
 1. **Vercel → Project → Settings → Cron Jobs**  

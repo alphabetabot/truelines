@@ -94,10 +94,10 @@ Full schedule in `vercel.json`:
 |----------------|------|---------|
 | `0 14 * * *` | `/api/cron-newsletter` | Daily picks email (~7:05 AM Pacific) |
 | `0 7 * * *` | `/api/cron-blogs` | Blog generation |
-| `0 8 * * 1` | `/api/cron-blogs?weekly=true` | Weekly blog |
-| `0 12 * * *` | `/api/cron-posts` | Midday X post |
-| `0 18 * * *` | `/api/cron-posts?evening=true` | Evening X post |
-| `30 12`, `30 18`, `0 5 * * *` | `/api/log-results` | Grade picks + integrity pass |
+| `0 8 * * 1` | `/api/cron-blogs-weekly` | Weekly blog (rewrite → `cron-blogs?weekly=true`) |
+| `0 12 * * *` | `/api/cron-midday-post` | Midday X post (rewrite → `cron-posts`) |
+| `0 18 * * *` | `/api/cron-evening-post` | Evening X post (rewrite → `cron-posts?evening=true`) |
+| `30 12`, `30 18`, `0 5 * * *` | `/api/cron-grade-midday`, `-evening`, `-early` | Grade picks + integrity pass (rewrites → `log-results`) |
 
 **Legacy rewrites (no extra API files):** `/api/cron-midday-post` → `cron-posts`; `/api/cron-evening-post` → `cron-posts?evening=true`.
 
