@@ -21,7 +21,11 @@ export function useSubscription() {
       return
     }
 
-    setSubscription(prev => ({ ...prev, loading: true }))
+    setSubscription({
+      ...DEFAULT_STATUS,
+      loading: true,
+      isPremium: false,
+    })
     try {
       const data = await fetchSubscriptionStatus()
       setSubscription({
@@ -47,7 +51,13 @@ export function useSubscription() {
         return
       }
 
-      if (!cancelled) setSubscription(prev => ({ ...prev, loading: true }))
+      if (!cancelled) {
+        setSubscription({
+          ...DEFAULT_STATUS,
+          loading: true,
+          isPremium: false,
+        })
+      }
       try {
         const data = await fetchSubscriptionStatus()
         if (!cancelled) {
@@ -67,7 +77,7 @@ export function useSubscription() {
 
     load()
     return () => { cancelled = true }
-  }, [user, authLoading])
+  }, [user?.id, authLoading])
 
   return { ...subscription, refresh }
 }
