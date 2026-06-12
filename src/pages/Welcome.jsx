@@ -5,8 +5,8 @@ import LogoLink from '../components/LogoLink'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
-const CONTENT_PAD = 'px-6 sm:px-10 lg:px-12'
-const CONTENT_MAX = 'max-w-4xl mx-auto w-full'
+/** Match header/footer chrome (max-w-5xl) so the homepage column lines up on desktop. */
+const MARKETING_CONTAINER = 'mx-auto w-full max-w-5xl px-6 sm:px-8 lg:px-10'
 
 const WHAT_WE_DO_ROWS = [
   {
@@ -41,8 +41,8 @@ export default function Welcome() {
   const gradedLabel = perf.hasRecord && !perf.error ? `${perf.gradedCount} picks` : '—'
 
   return (
-    <div className="w-full" style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif" }}>
-      {/* ── Hero ── */}
+    <div className="w-full min-w-0" style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif" }}>
+      {/* ── Hero (full-bleed background, centered content) ── */}
       <header
         className="relative overflow-hidden text-center w-full"
         style={{
@@ -55,7 +55,7 @@ export default function Welcome() {
           padding: '48px 0 64px',
         }}
       >
-        <div className={`${CONTENT_MAX} ${CONTENT_PAD} relative z-10`}>
+        <div className={`${MARKETING_CONTAINER} relative z-10`}>
           <div className="flex justify-center mb-10">
             <LogoLink height={112} maxWidth={520} />
           </div>
@@ -117,127 +117,135 @@ export default function Welcome() {
         </div>
       </header>
 
-      <div className={`w-full ${CONTENT_PAD}`}>
-        <div className={CONTENT_MAX}>
-          {/* ── Picks tracker ── */}
-          <section id="public-record" className="py-12 sm:py-16">
+      {/* ── Picks tracker ── */}
+      <section
+        id="public-record"
+        className="w-full"
+        style={{ background: '#f0f4f8', borderTop: '4px solid #0f172a' }}
+      >
+        <div className={`${MARKETING_CONTAINER} py-12 sm:py-16`}>
+          <div
+            className="rounded-2xl overflow-hidden w-full"
+            style={{ border: '2px solid #f59e0b', background: '#fff' }}
+          >
             <div
-              className="rounded-2xl overflow-hidden w-full mb-8"
-              style={{ border: '2px solid #f59e0b' }}
+              className="px-6 sm:px-8 py-4 text-center"
+              style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
             >
-              <div
-                className="px-6 sm:px-8 py-4 text-center"
-                style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+              <h2
+                className="font-black text-xl sm:text-2xl uppercase tracking-wide"
+                style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
               >
-                <h2
-                  className="font-black text-xl sm:text-2xl uppercase tracking-wide"
-                  style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
-                >
-                  Graded In Public
-                </h2>
-              </div>
+                Graded In Public
+              </h2>
             </div>
-            <p
-              className="mb-8 max-w-2xl font-bold"
-              style={{ fontSize: 21, color: '#0f172a', lineHeight: 1.55 }}
-            >
-              We grade every newsletter pick after games finish — wins, losses, and units tracked openly.
-            </p>
-            <div
-              className="grid grid-cols-3 gap-4 sm:gap-6 rounded-2xl p-6 sm:p-8 w-full mb-8"
-              style={{ background: '#f8fafc', border: '2px solid #0f172a' }}
-            >
-              {[
-                { label: 'Record', val: recordLabel, color: '#16a34a' },
-                { label: 'Units', val: unitsLabel, color: '#16a34a' },
-                { label: 'Graded', val: gradedLabel, color: '#b45309' },
-              ].map(({ label, val, color }) => (
-                <div key={label} className="text-center px-2">
-                  <span
-                    className="block font-bold uppercase mb-2"
-                    style={{ fontSize: 16, color: '#0f172a', letterSpacing: '0.1em' }}
-                  >
-                    {label}
-                  </span>
-                  <span className="font-black text-2xl sm:text-3xl" style={{ fontFamily: TEAM_FONT, color }}>
-                    {perf.loading ? '…' : val}
-                  </span>
-                </div>
-              ))}
-            </div>
-            <div className="text-center">
-              <Link
-                to="/odds?tracker=1#pick-tracker"
-                className="inline-block font-bold px-6 py-3 rounded-xl"
-                style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
-              >
-                View full tracker →
-              </Link>
-            </div>
-          </section>
 
-          {/* ── What we do ── */}
-          <section className="py-12 sm:py-16" style={{ borderTop: '1px solid #e2e8f0' }}>
-            <div
-              className="rounded-2xl overflow-hidden w-full"
-              style={{ border: '2px solid #f59e0b' }}
-            >
-              <div
-                className="px-6 sm:px-8 py-4 text-center"
-                style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+            <div className="p-6 sm:p-8 lg:p-10">
+              <p
+                className="mb-8 mx-auto max-w-2xl text-center font-bold"
+                style={{ fontSize: 21, color: '#0f172a', lineHeight: 1.55 }}
               >
-                <h2
-                  className="font-black text-xl sm:text-2xl uppercase tracking-wide"
-                  style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
-                >
-                  What We Do
-                </h2>
+                We grade every newsletter pick after games finish — wins, losses, and units tracked openly.
+              </p>
+
+              <div
+                className="grid grid-cols-3 gap-4 sm:gap-6 rounded-2xl p-6 sm:p-8 w-full mb-8 max-w-3xl mx-auto"
+                style={{ background: '#f8fafc', border: '2px solid #0f172a' }}
+              >
+                {[
+                  { label: 'Record', val: recordLabel, color: '#16a34a' },
+                  { label: 'Units', val: unitsLabel, color: '#16a34a' },
+                  { label: 'Graded', val: gradedLabel, color: '#b45309' },
+                ].map(({ label, val, color }) => (
+                  <div key={label} className="text-center px-2">
+                    <span
+                      className="block font-bold uppercase mb-2"
+                      style={{ fontSize: 16, color: '#0f172a', letterSpacing: '0.1em' }}
+                    >
+                      {label}
+                    </span>
+                    <span className="font-black text-2xl sm:text-3xl" style={{ fontFamily: TEAM_FONT, color }}>
+                      {perf.loading ? '…' : val}
+                    </span>
+                  </div>
+                ))}
               </div>
-              <table className="w-full" style={{ borderCollapse: 'collapse' }}>
-                <tbody>
-                  {WHAT_WE_DO_ROWS.map(({ label, value }, i) => (
-                    <tr
-                      key={label}
+
+              <div className="text-center">
+                <Link
+                  to="/odds?tracker=1#pick-tracker"
+                  className="inline-block font-bold px-6 py-3 rounded-xl"
+                  style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+                >
+                  View full tracker →
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── What we do ── */}
+      <section className="w-full" style={{ background: '#f1f5f9' }}>
+        <div className={`${MARKETING_CONTAINER} py-12 sm:py-16`}>
+          <div
+            className="rounded-2xl overflow-hidden w-full"
+            style={{ border: '2px solid #f59e0b' }}
+          >
+            <div
+              className="px-6 sm:px-8 py-4 text-center"
+              style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+            >
+              <h2
+                className="font-black text-xl sm:text-2xl uppercase tracking-wide"
+                style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+              >
+                What We Do
+              </h2>
+            </div>
+            <table className="w-full" style={{ borderCollapse: 'collapse' }}>
+              <tbody>
+                {WHAT_WE_DO_ROWS.map(({ label, value }, i) => (
+                  <tr
+                    key={label}
+                    style={{
+                      background: i % 2 === 0 ? '#fffbeb' : '#fef3c7',
+                      borderBottom: i < WHAT_WE_DO_ROWS.length - 1 ? '1px solid #fcd34d' : 'none',
+                    }}
+                  >
+                    <td
+                      className="py-4 sm:py-5 pl-6 sm:pl-8 pr-4 font-bold uppercase sm:w-[38%]"
                       style={{
-                        background: i % 2 === 0 ? '#fffbeb' : '#fef3c7',
-                        borderBottom: i < WHAT_WE_DO_ROWS.length - 1 ? '1px solid #fcd34d' : 'none',
+                        fontFamily: TEAM_FONT,
+                        fontSize: 19,
+                        color: '#0f172a',
+                        verticalAlign: 'middle',
+                        letterSpacing: '0.04em',
                       }}
                     >
-                      <td
-                        className="py-4 sm:py-5 pl-6 sm:pl-8 pr-4 font-bold uppercase"
-                        style={{
-                          fontFamily: TEAM_FONT,
-                          fontSize: 19,
-                          color: '#0f172a',
-                          width: '42%',
-                          verticalAlign: 'middle',
-                          letterSpacing: '0.04em',
-                        }}
-                      >
-                        {label}
-                      </td>
-                      <td
-                        className="py-4 sm:py-5 pr-6 sm:pr-8 font-bold"
-                        style={{ fontSize: 21, color: '#0f172a', verticalAlign: 'middle', lineHeight: 1.45 }}
-                      >
-                        {value}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <div
-                className="px-6 sm:px-8 py-5 text-center"
-                style={{ background: '#f59e0b', borderTop: '2px solid #d97706' }}
-              >
-                <p className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 21, color: '#0f172a' }}>
-                  TrueOddsIQ — data-driven picks, graded in public
-                </p>
-              </div>
+                      {label}
+                    </td>
+                    <td
+                      className="py-4 sm:py-5 pr-6 sm:pr-8 font-bold"
+                      style={{ fontSize: 21, color: '#0f172a', verticalAlign: 'middle', lineHeight: 1.45 }}
+                    >
+                      {value}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div
+              className="px-6 sm:px-8 py-5 text-center"
+              style={{ background: '#f59e0b', borderTop: '2px solid #d97706' }}
+            >
+              <p className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 21, color: '#0f172a' }}>
+                TrueOddsIQ — data-driven picks, graded in public
+              </p>
             </div>
-          </section>
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

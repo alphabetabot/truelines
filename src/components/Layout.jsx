@@ -109,11 +109,10 @@ export default function Layout({ children }) {
       {/* ── Top bar: Logo + Install + Live (logo lives in Welcome hero on marketing home) ── */}
       <div style={{ background: '#0f172a' }}>
         <div
-          className="max-w-5xl mx-auto px-4 flex items-center justify-between"
+          className={`max-w-5xl mx-auto px-4 flex items-center ${marketingHome ? 'justify-end' : 'justify-between'}`}
           style={{ height: marketingHome ? 48 : appWorkspace ? 56 : 68 }}
         >
           {!marketingHome && <LogoLink />}
-          {marketingHome && <div className="w-0 sm:w-auto" aria-hidden />}
 
           <div className="flex items-center gap-3">
             {showInstall && (
@@ -214,7 +213,7 @@ export default function Layout({ children }) {
 
       {/* ── Main content ── */}
       <main
-        className={`flex-1 w-full ${marketingHome ? 'max-w-none px-0 py-0' : `max-w-5xl mx-auto px-4 ${appWorkspace ? 'py-2 sm:py-3' : 'py-5'}`}`}
+        className={`flex-1 w-full min-w-0 ${marketingHome ? 'max-w-none px-0 py-0' : `max-w-5xl mx-auto px-4 ${appWorkspace ? 'py-2 sm:py-3' : 'py-5'}`}`}
         style={marketingHome ? undefined : { paddingLeft: 16, paddingRight: 16 }}
       >
         {children}
