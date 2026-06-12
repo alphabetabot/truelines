@@ -59,7 +59,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         {edgeText && (
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{edgeText}</p>
         )}
-        {isPublicPreview && pick.edge && edgeText !== pick.edge && (
+        {isPublicPreview && pick.edgePreview && (
           <p className="text-xs mt-2" style={{ color: 'var(--gold)' }}>
             Premium unlocks full write-ups for all {DAILY_NEWSLETTER_PICK_COUNT} daily picks plus deeper injury and weather breakdowns.
           </p>
@@ -73,29 +73,6 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
             {pick.result}
           </span>
         )}
-      </div>
-    </div>
-  )
-}
-
-function LockedPickCard({ index, onUnlock }) {
-  const label = PICK_LABELS[index] || `Pick ${index + 1}`
-  return (
-    <div className="rounded-xl overflow-hidden relative" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
-      <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
-        <span className="text-xs font-bold" style={{ color: 'var(--gold)' }}>{label}</span>
-        <Lock size={14} style={{ color: 'var(--text-secondary)' }} />
-      </div>
-      <div className="p-6 text-center">
-        <p className="text-sm font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Premium subscribers only</p>
-        <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-          Picks #{index + 1}–{DAILY_NEWSLETTER_PICK_COUNT} are on the full AI Picks tab with a Premium subscription.
-        </p>
-        <button type="button" onClick={onUnlock}
-          className="px-5 py-2.5 rounded-xl font-bold text-sm"
-          style={{ background: '#f59e0b', color: '#0f172a' }}>
-          View Premium
-        </button>
       </div>
     </div>
   )
@@ -181,14 +158,19 @@ export default function AIPicks() {
   })
 
   useEffect(() => {
-    if (subLoading) return undefined
+    if (subLoading) {
+      setStoredPicks([])
+      setStoredLoading(true)
+      return undefined
+    }
     let cancelled = false
 
     async function loadStoredPicks() {
       setStoredLoading(true)
       setStoredError(null)
+      setStoredPicks([])
       try {
-        if (isPremium) {
+        if (isPremium && user) {
           const headers = await getAuthHeaders()
           const res = await fetch('/api/todays-pick?all=1', { headers })
           if (res.status === 401) {
@@ -227,7 +209,7 @@ export default function AIPicks() {
 
     loadStoredPicks()
     return () => { cancelled = true }
-  }, [isPremium, subLoading])
+  }, [isPremium, subLoading, user?.id])
 
   useEffect(() => {
     if (storedLoading || window.location.hash !== '#todays-slate') return undefined
@@ -243,8 +225,11 @@ export default function AIPicks() {
 
   const lockedCount = Math.max(
     0,
-    DAILY_NEWSLETTER_PICK_COUNT - (isPremium ? storedPicks.length : FREE_PUBLIC_PICK_COUNT),
+    DAILY_NEWSLETTER_PICK_COUNT - FREE_PUBLIC_PICK_COUNT,
   )
+  const visiblePicks = isPremium
+    ? storedPicks
+    : storedPicks.slice(0, FREE_PUBLIC_PICK_COUNT)
   const performance = usePickPerformanceData()
 
   return (
@@ -321,14 +306,14 @@ export default function AIPicks() {
           <PremiumFeatureSlot feature="premiumAIPicks" />
           <PremiumFeatureSlot feature="historicalPickPerformance" />
 
-          {storedLoading && (
+          {(storedLoading || subLoading) && (
             <div className="text-center py-12">
               <RefreshCw size={24} className="mx-auto mb-3 animate-spin" style={{ color: 'var(--gold)' }} />
               <p style={{ color: 'var(--text-secondary)' }}>Loading today&apos;s picks…</p>
             </div>
           )}
 
-          {!storedLoading && storedError && (
+          {!storedLoading && !subLoading && storedError && (
             <div className="text-center py-12 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
               <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>Picks not ready yet</p>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -337,7 +322,7 @@ export default function AIPicks() {
             </div>
           )}
 
-          {!storedLoading && !storedError && storedPicks.length === 0 && (
+          {!storedLoading && !subLoading && !storedError && storedPicks.length === 0 && (
             <div className="text-center py-12 rounded-xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
               <p className="font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No picks for today</p>
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
@@ -346,9 +331,9 @@ export default function AIPicks() {
             </div>
           )}
 
-          {!storedLoading && storedPicks.length > 0 && (
+          {!storedLoading && !subLoading && storedPicks.length > 0 && (
             <div id="todays-slate" className="grid gap-3">
-              {storedPicks.map((pick, i) => (
+              {visiblePicks.map((pick, i) => (
                 <StoredPickCard
                   key={pick.id || i}
                   pick={pick}
@@ -356,13 +341,25 @@ export default function AIPicks() {
                   isPublicPreview={!isPremium}
                 />
               ))}
-              {!isPremium && Array.from({ length: lockedCount }).map((_, i) => (
-                <LockedPickCard
-                  key={`locked-${i + FREE_PUBLIC_PICK_COUNT}`}
-                  index={i + FREE_PUBLIC_PICK_COUNT}
-                  onUnlock={() => navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })}
-                />
-              ))}
+              {!isPremium && lockedCount > 0 && (
+                <div className="rounded-xl p-5 text-center" style={{ background: 'var(--bg-card)', border: '1px dashed var(--border)' }}>
+                  <Lock size={20} className="mx-auto mb-2" style={{ color: 'var(--text-secondary)' }} />
+                  <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
+                    {lockedCount} more pick{lockedCount === 1 ? '' : 's'} today
+                  </p>
+                  <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
+                    Premium unlocks the full {DAILY_NEWSLETTER_PICK_COUNT}-pick daily slate with complete write-ups.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })}
+                    className="px-5 py-2.5 rounded-xl font-bold text-sm"
+                    style={{ background: '#f59e0b', color: '#0f172a' }}
+                  >
+                    {user ? 'Upgrade to Premium' : 'Sign in · Premium'}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -3,6 +3,7 @@
 import { requirePremiumUser } from './_auth-utils.js'
 import { pacificDateKey } from './_date-utils.js'
 import { isFadePick } from './_pick-utils.js'
+import { publicPickPreview } from './_pick-text.js'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -78,7 +79,7 @@ export default async function handler(req, res) {
     const top = actionable[0]
     if (top?.bet && !isPlaceholderBet(top.bet)) {
       res.setHeader('Cache-Control', PICK_CACHE)
-      return res.json(top)
+      return res.json(publicPickPreview(top))
     }
   } catch (err) {
     console.error('todays-pick error:', err)
