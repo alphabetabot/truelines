@@ -1,12 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { usePickPerformance } from '../hooks/usePickPerformance'
+import { useIsDesktopLayout } from '../hooks/useIsDesktopLayout'
 import { trackEvent } from '../lib/analytics'
 import LogoLink from '../components/LogoLink'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
-const MOBILE_PAD = 'px-6 sm:px-10'
-const DESKTOP_CONTAINER = 'mx-auto w-full max-w-5xl px-8 lg:px-10'
 
 const WHAT_WE_DO_ROWS = [
   {
@@ -23,7 +22,7 @@ const WHAT_WE_DO_ROWS = [
   },
 ]
 
-function WelcomeHero({ onPlans }) {
+function WelcomeHero({ onPlans, isDesktop }) {
   return (
     <header
       className="relative overflow-hidden text-center w-full"
@@ -37,7 +36,9 @@ function WelcomeHero({ onPlans }) {
         padding: '48px 0 64px',
       }}
     >
-      <div className={`w-full ${MOBILE_PAD} relative z-10 mx-auto lg:max-w-5xl lg:px-10`}>
+      <div
+        className={`relative z-10 w-full px-6 sm:px-10 ${isDesktop ? 'mx-auto max-w-5xl' : ''}`}
+      >
         <div className="flex justify-center mb-10">
           <LogoLink height={112} maxWidth={520} />
         </div>
@@ -166,91 +167,94 @@ function WhatWeDoTable({ labelWidth = '42%' }) {
   )
 }
 
-/** Pre–desktop-refresh layout: full-width sections, left-aligned copy, header-only orange bars. */
+/** Original phone layout (pre–desktop refresh). */
 function WelcomeMobileBody({ perf, recordLabel, unitsLabel, gradedLabel }) {
   return (
-    <div className={`w-full ${MOBILE_PAD} lg:hidden`}>
-      <section id="public-record" className="py-12 sm:py-16">
-        <div
-          className="rounded-2xl overflow-hidden w-full mb-8"
-          style={{ border: '2px solid #f59e0b' }}
-        >
+    <div className="w-full px-6 sm:px-10">
+      <div className="w-full">
+        <section id="public-record" className="py-12 sm:py-16">
           <div
-            className="px-6 sm:px-8 py-4 text-center"
-            style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+            className="rounded-2xl overflow-hidden w-full mb-8"
+            style={{ border: '2px solid #f59e0b' }}
           >
-            <h2
-              className="font-black text-xl sm:text-2xl uppercase tracking-wide"
-              style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+            <div
+              className="px-6 sm:px-8 py-4 text-center"
+              style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
             >
-              Graded In Public
-            </h2>
+              <h2
+                className="font-black text-xl sm:text-2xl uppercase tracking-wide"
+                style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+              >
+                Graded In Public
+              </h2>
+            </div>
           </div>
-        </div>
-        <p
-          className="mb-8 max-w-2xl font-bold"
-          style={{ fontSize: 21, color: '#0f172a', lineHeight: 1.55 }}
-        >
-          We grade every newsletter pick after games finish — wins, losses, and units tracked openly.
-        </p>
-        <StatsGrid
-          perf={perf}
-          recordLabel={recordLabel}
-          unitsLabel={unitsLabel}
-          gradedLabel={gradedLabel}
-          className="mb-8"
-        />
-        <div className="text-center">
-          <Link
-            to="/odds?tracker=1#pick-tracker"
-            className="inline-block font-bold px-6 py-3 rounded-xl"
-            style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+          <p
+            className="mb-8 max-w-2xl font-bold"
+            style={{ fontSize: 21, color: '#0f172a', lineHeight: 1.55 }}
           >
-            View full tracker →
-          </Link>
-        </div>
-      </section>
+            We grade every newsletter pick after games finish — wins, losses, and units tracked openly.
+          </p>
+          <StatsGrid
+            perf={perf}
+            recordLabel={recordLabel}
+            unitsLabel={unitsLabel}
+            gradedLabel={gradedLabel}
+            className="mb-8"
+          />
+          <div className="text-center">
+            <Link
+              to="/odds?tracker=1#pick-tracker"
+              className="inline-block font-bold px-6 py-3 rounded-xl"
+              style={{ background: '#0f172a', color: '#fff', fontSize: 17 }}
+            >
+              View full tracker →
+            </Link>
+          </div>
+        </section>
 
-      <section className="py-12 sm:py-16" style={{ borderTop: '1px solid #e2e8f0' }}>
-        <div
-          className="rounded-2xl overflow-hidden w-full"
-          style={{ border: '2px solid #f59e0b' }}
-        >
+        <section className="py-12 sm:py-16" style={{ borderTop: '1px solid #e2e8f0' }}>
           <div
-            className="px-6 sm:px-8 py-4 text-center"
-            style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+            className="rounded-2xl overflow-hidden w-full"
+            style={{ border: '2px solid #f59e0b' }}
           >
-            <h2
-              className="font-black text-xl sm:text-2xl uppercase tracking-wide"
-              style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+            <div
+              className="px-6 sm:px-8 py-4 text-center"
+              style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
             >
-              What We Do
-            </h2>
+              <h2
+                className="font-black text-xl sm:text-2xl uppercase tracking-wide"
+                style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+              >
+                What We Do
+              </h2>
+            </div>
+            <WhatWeDoTable />
+            <div
+              className="px-6 sm:px-8 py-5 text-center"
+              style={{ background: '#f59e0b', borderTop: '2px solid #d97706' }}
+            >
+              <p className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 21, color: '#0f172a' }}>
+                TrueOddsIQ — data-driven picks, graded in public
+              </p>
+            </div>
           </div>
-          <WhatWeDoTable />
-          <div
-            className="px-6 sm:px-8 py-5 text-center"
-            style={{ background: '#f59e0b', borderTop: '2px solid #d97706' }}
-          >
-            <p className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 21, color: '#0f172a' }}>
-              TrueOddsIQ — data-driven picks, graded in public
-            </p>
-          </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   )
 }
 
-/** Desktop-only: centered max-w-5xl column, unified cards, section bands. */
+/** Desktop-only centered layout. */
 function WelcomeDesktopBody({ perf, recordLabel, unitsLabel, gradedLabel }) {
   return (
-    <div className="hidden lg:block">
+    <>
       <section
+        id="public-record"
         className="w-full"
         style={{ background: '#f0f4f8', borderTop: '4px solid #0f172a' }}
       >
-        <div className={`${DESKTOP_CONTAINER} py-16`}>
+        <div className="mx-auto w-full max-w-5xl px-8 py-16">
           <div
             className="rounded-2xl overflow-hidden w-full"
             style={{ border: '2px solid #f59e0b', background: '#fff' }}
@@ -298,7 +302,7 @@ function WelcomeDesktopBody({ perf, recordLabel, unitsLabel, gradedLabel }) {
       </section>
 
       <section className="w-full" style={{ background: '#f1f5f9' }}>
-        <div className={`${DESKTOP_CONTAINER} py-16`}>
+        <div className="mx-auto w-full max-w-5xl px-8 py-16">
           <div
             className="rounded-2xl overflow-hidden w-full"
             style={{ border: '2px solid #f59e0b' }}
@@ -326,13 +330,14 @@ function WelcomeDesktopBody({ perf, recordLabel, unitsLabel, gradedLabel }) {
           </div>
         </div>
       </section>
-    </div>
+    </>
   )
 }
 
 export default function Welcome() {
   const navigate = useNavigate()
   const perf = usePickPerformance()
+  const isDesktop = useIsDesktopLayout()
 
   function goToPlans(source) {
     trackEvent('welcome_cta', { action: 'plans', source })
@@ -351,9 +356,12 @@ export default function Welcome() {
 
   return (
     <div className="w-full min-w-0" style={{ fontFamily: "'Instrument Sans', system-ui, sans-serif" }}>
-      <WelcomeHero onPlans={goToPlans} />
-      <WelcomeMobileBody {...bodyProps} />
-      <WelcomeDesktopBody {...bodyProps} />
+      <WelcomeHero onPlans={goToPlans} isDesktop={isDesktop} />
+      {isDesktop ? (
+        <WelcomeDesktopBody {...bodyProps} />
+      ) : (
+        <WelcomeMobileBody {...bodyProps} />
+      )}
     </div>
   )
 }
