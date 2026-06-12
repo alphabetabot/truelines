@@ -209,10 +209,13 @@ async function handleNewsletterRecovery(req, res) {
   }
 
   const siteOrigin = process.env.SITE_URL || 'https://www.trueoddsiq.com'
-  const recovery = await fetch(`${siteOrigin.replace(/\/$/, '')}/api/cron-newsletter?force=true`, {
-    method: 'GET',
-    headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
-  })
+  const recovery = await fetch(
+    `${siteOrigin.replace(/\/$/, '')}/api/cron-newsletter?force=true&emailsOnly=true`,
+    {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
+    },
+  )
 
   const text = await recovery.text()
   let body
@@ -442,7 +445,8 @@ export default async function handler(req, res) {
         recent: summarizeRows(recentGraded).picks,
       },
       cron: {
-        picksPublish: '0 14 * * * UTC',
+        newsletterMain: '0 14 * * * UTC',
+        newsletterCatchup: '45 14 * * * UTC',
         resultGrading: '30 12 * * * UTC',
       },
     })

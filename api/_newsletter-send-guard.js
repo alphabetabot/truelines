@@ -1,6 +1,9 @@
 /** Only schedule in vercel.json — blocks stray 0 15 UTC duplicate crons on Vercel. */
 export const NEWSLETTER_CRON_SCHEDULE = '0 14 * * *'
 
+/** Safety net if the main run times out after storing picks (~7:45 AM Pacific). */
+export const NEWSLETTER_CATCHUP_SCHEDULE = '45 14 * * *'
+
 /** Pacific calendar date for newsletter idempotency (YYYY-MM-DD). */
 export function getPacificDateKey(date = new Date()) {
   return new Intl.DateTimeFormat('en-CA', {
@@ -88,6 +91,37 @@ export async function claimDailyNewsletterSend(supabase, dateKey, { cronSchedule
     startedAt: row?.started_at,
     cronSchedule: row?.cron_schedule,
   }
+}
+
+/** Save Claude output before Resend loop so catch-up can finish after a timeout. */
+export async function persistNewsletterDraft(supabase, dateKey, picksText) {
+  if (!picksText) return false
+  const { error } = await supabase
+    .from('newsletter_daily_sends')
+    .update({ picks_text: picksText })
+    .eq('date', dateKey)
+
+  if (error) {
+    if (isMissingTableError(error)) return false
+    console.warn('Failed to persist newsletter draft:', error.message)
+    return false
+  }
+  return true
+}
+
+export async function fetchNewsletterRow(supabase, dateKey) {
+  const { data, error } = await supabase
+    .from('newsletter_daily_sends')
+    .select('date,sent_at,subscriber_count,started_at,cron_schedule,picks_text')
+    .eq('date', dateKey)
+    .maybeSingle()
+
+  if (error && !isMissingTableError(error)) throw error
+  return data || null
+}
+
+export function isNewsletterSendComplete(row) {
+  return Boolean(row?.sent_at && row.subscriber_count != null && row.subscriber_count >= 0)
 }
 
 export async function completeNewsletterSend(supabase, dateKey, subscriberCount, picksText = null) {
