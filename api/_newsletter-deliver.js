@@ -29,10 +29,21 @@ export function buildTopPickFromDailyPickRow(row) {
   ].join('\n')
 }
 
+export function isUsableTopPickText(text) {
+  const trimmed = String(text || '').trim()
+  if (trimmed.length < 40) return false
+  if (/- Bet:/i.test(trimmed)) return true
+  if (/\*\*[^*]+Pick:[^*]+\*\*/i.test(trimmed)) return true
+  if (/\bTOP PICK\b/i.test(trimmed) && (/@/.test(trimmed) || /- Edge:/i.test(trimmed))) return true
+  return false
+}
+
 export function resolveTopPickText(picksText, dailyPickRow) {
   const fromClaude = extractTopPickSection(picksText)
-  if (fromClaude && fromClaude.length >= 40) return fromClaude
-  return buildTopPickFromDailyPickRow(dailyPickRow)
+  if (isUsableTopPickText(fromClaude)) return fromClaude
+  const fromRow = buildTopPickFromDailyPickRow(dailyPickRow)
+  if (isUsableTopPickText(fromRow)) return fromRow
+  return fromClaude || fromRow
 }
 
 /**
@@ -51,8 +62,8 @@ export async function deliverNewsletterEmails({
     return { sent: 0, failed: 0, failures: [], recipients: 0 }
   }
 
-  if (!topPickText || topPickText.length < 40) {
-    throw new Error('Top pick text too short for newsletter email')
+  if (!isUsableTopPickText(topPickText)) {
+    throw new Error('Top pick text is missing bet/pick details for newsletter email')
   }
 
   const subject = `TrueOddsIQ Top Pick — ${dateLabel}`
