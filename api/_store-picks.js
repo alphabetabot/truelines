@@ -99,9 +99,31 @@ function splitPickSections(text) {
 }
 
 /** First pick block from Claude/newsletter text — used for the daily email (one pick only). */
+export function isTopPickSection(section) {
+  const s = String(section || '').trim()
+  if (!s) return false
+  if (/^TOP PICK/i.test(s)) return true
+  if (/- Bet:/i.test(s) && /\*\*.+Pick.+\*\*/i.test(s)) return true
+  if (/- Bet:/i.test(s) && /@/.test(s)) return true
+  return false
+}
+
 export function extractTopPickSection(picksText) {
+  const normalized = String(picksText || '').replace(/\r\n/g, '\n').trim()
+  if (!normalized) return ''
+
   const sections = splitPickSections(picksText)
-  return sections[0]?.trim() || String(picksText || '').trim()
+  const pickSection = sections.find(isTopPickSection)
+  if (pickSection) return pickSection.trim()
+
+  const topIdx = normalized.search(/\bTOP PICK\b/i)
+  if (topIdx >= 0) {
+    const slice = normalized.slice(topIdx)
+    const end = slice.search(/\n\s*-{3,}\s*\n|\n\s*PICK\s*#?\d+\b/i)
+    return (end > 0 ? slice.slice(0, end) : slice).trim()
+  }
+
+  return sections[0]?.trim() || normalized
 }
 
 function getField(section, labels) {
