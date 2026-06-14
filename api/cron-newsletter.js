@@ -28,6 +28,7 @@ import {
   filterBettableGames,
   rankGamesByDataQuality,
   validatePicksAgainstSlate,
+  selectPublishablePicks,
 } from './_pick-metrics.js'
 import {
   appendGameStatsBlock,
@@ -807,17 +808,17 @@ async function runNewsletterHandler(req, res) {
     }
 
     const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade)
-    const { picks: validated, warnings } = validatePicksAgainstSlate(extracted, slate)
-    if (warnings.length) console.warn('Pick validation warnings:', warnings.join(' | '))
+    const { picks: publishable, warnings } = selectPublishablePicks(extracted, slate)
+    if (warnings.length) console.warn('Pick quality gates:', warnings.join(' | '))
 
-    const sourcePicks = validated.length > 0 ? validated : extracted
-    const picks = sourcePicks.slice(0, 3)
-    console.log(`Extracted ${extracted.length} picks, ${validated.length} passed metrics validation, using ${picks.length} for store/send`)
+    const picks = publishable.slice(0, 3)
+    console.log(`Extracted ${extracted.length} picks, ${publishable.length} passed quality gates, using ${picks.length} for store/send`)
 
     if (picks.length < 1) {
-      console.error('No picks extracted. Raw response (first 500 chars):', picksText.slice(0, 500))
+      console.error('No picks passed quality gates. Raw response (first 500 chars):', picksText.slice(0, 500))
       return abortNewsletter({
-        error: 'No picks extracted from generated newsletter',
+        error: 'No picks passed quality gates',
+        warnings: warnings.slice(0, 10),
         picksPreview: picksText.slice(0, 500),
         date: todayKey,
       }, 500)

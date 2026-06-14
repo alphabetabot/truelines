@@ -7,7 +7,42 @@ import {
 import { extractTopPickSection } from './_store-picks.js'
 import { uniqueSubscriberEmails } from './_newsletter-send-guard.js'
 
-const DEFAULT_BATCH_SIZE = 20
+const DEFAULT_BATCH_SIZE = 4
+/** Resend allows ~5 requests/sec — stay under with spacing + retries. */
+const RESEND_MIN_INTERVAL_MS = 250
+const RATE_LIMIT_RETRY_MS = 1500
+const MAX_SEND_ATTEMPTS = 4
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function isRateLimitError(err) {
+  const msg = String(err?.message || err?.error || err || '')
+  return /too many requests/i.test(msg) || /rate limit/i.test(msg)
+}
+
+async function sendOneNewsletterEmail({ resend, email, subject, topPickText, dateLabel }) {
+  const unsub = unsubscribeUrl(email)
+  let lastError
+  for (let attempt = 1; attempt <= MAX_SEND_ATTEMPTS; attempt++) {
+    try {
+      await sendNewsletterEmail({
+        resend,
+        to: email,
+        subject,
+        html: buildNewsletterEmailHtml(topPickText, dateLabel, unsub),
+        text: buildNewsletterEmailPlainText(topPickText, dateLabel, unsub),
+      })
+      return email
+    } catch (err) {
+      lastError = err
+      if (!isRateLimitError(err) || attempt === MAX_SEND_ATTEMPTS) throw err
+      await sleep(RATE_LIMIT_RETRY_MS * attempt)
+    }
+  }
+  throw lastError
+}
 
 /** Rebuild a sendable top-pick block when picks_text was lost but daily_picks exist. */
 export function buildTopPickFromDailyPickRow(row) {
@@ -72,27 +107,47 @@ export async function deliverNewsletterEmails({
 
   for (let i = 0; i < emails.length; i += batchSize) {
     const batch = emails.slice(i, i + batchSize)
-    const results = await Promise.allSettled(
-      batch.map(async email => {
-        const unsub = unsubscribeUrl(email)
-        await sendNewsletterEmail({
+    for (let j = 0; j < batch.length; j++) {
+      const email = batch[j]
+      try {
+        await sendOneNewsletterEmail({
           resend,
-          to: email,
+          email,
           subject,
-          html: buildNewsletterEmailHtml(topPickText, dateLabel, unsub),
-          text: buildNewsletterEmailPlainText(topPickText, dateLabel, unsub),
+          topPickText,
+          dateLabel,
         })
-        return email
-      }),
-    )
-
-    for (let j = 0; j < results.length; j++) {
-      const result = results[j]
-      if (result.status === 'fulfilled') {
         sent++
-      } else {
-        failures.push({ email: batch[j], error: result.reason?.message || 'send failed' })
+      } catch (err) {
+        failures.push({ email, error: err?.message || 'send failed' })
       }
+      if (j < batch.length - 1 || i + batchSize < emails.length) {
+        await sleep(RESEND_MIN_INTERVAL_MS)
+      }
+    }
+  }
+
+  // Final retry pass for rate-limited failures only
+  const rateLimited = failures.filter(f => isRateLimitError(f))
+  if (rateLimited.length) {
+    await sleep(RATE_LIMIT_RETRY_MS)
+    const nonRate = failures.filter(f => !isRateLimitError(f))
+    failures.length = 0
+    failures.push(...nonRate)
+    for (const { email } of rateLimited) {
+      try {
+        await sendOneNewsletterEmail({
+          resend,
+          email,
+          subject,
+          topPickText,
+          dateLabel,
+        })
+        sent++
+      } catch (err) {
+        failures.push({ email, error: err?.message || 'send failed' })
+      }
+      await sleep(RESEND_MIN_INTERVAL_MS)
     }
   }
 
