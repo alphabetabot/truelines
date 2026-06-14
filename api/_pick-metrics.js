@@ -3,6 +3,10 @@
 import { parseAmericanOdds } from './_pick-utils.js'
 
 const HEAVY_CHALK = -180
+const MIN_SLATE_QUALITY = 5
+const MIN_PUBLISH_CONFIDENCE = 4
+const MIN_TOP_PICK_CONFIDENCE = 4
+const ODDS_MATCH_TOLERANCE = 15
 
 export function countBooksWithMarket(game, marketKey) {
   return (game.bookmakers || []).filter(book =>
@@ -144,6 +148,54 @@ export function validatePicksAgainstSlate(picks, slateEntries) {
   return { picks: validated, warnings }
 }
 
+/**
+ * Stricter gate before storing/sending picks — rejects thin data, bad odds, low confidence.
+ */
+export function selectPublishablePicks(picks, slateEntries, {
+  minConfidence = MIN_PUBLISH_CONFIDENCE,
+  minTopPickConfidence = MIN_TOP_PICK_CONFIDENCE,
+  minSlateQuality = MIN_SLATE_QUALITY,
+} = {}) {
+  const { picks: matched, warnings } = validatePicksAgainstSlate(picks, slateEntries)
+  const publishable = []
+
+  matched.forEach((pick, index) => {
+    const entry = (slateEntries || []).find(e => pickMatchesGame(pick, e))
+    if (!entry) return
+
+    const pickOdds = pick.odds ?? parseAmericanOdds(pick.bet)
+    const refPrice = bestPriceForPick(pick, entry)
+    const slateQuality = scoreGameDataQuality(entry)
+    const confidence = Number(pick.confidence) || 0
+    const minConf = index === 0 ? minTopPickConfidence : minConfidence
+
+    if (!oddsRoughlyMatch(pickOdds, refPrice, ODDS_MATCH_TOLERANCE)) {
+      warnings.push(`Rejected odds mismatch for ${pick.game} (${pickOdds} vs ${refPrice})`)
+      return
+    }
+    if (pickOdds != null && pickOdds <= HEAVY_CHALK && entry.sport === 'MLB' && !mlbHasPitcherStats(entry)) {
+      warnings.push(`Rejected heavy chalk without pitcher stats: ${pick.game}`)
+      return
+    }
+    if (slateQuality < minSlateQuality) {
+      warnings.push(`Rejected thin data quality (${slateQuality}) for ${pick.game}`)
+      return
+    }
+    if (confidence < minConf) {
+      warnings.push(`Rejected confidence ${confidence} < ${minConf} for ${pick.game}`)
+      return
+    }
+    if (!pick.edge || String(pick.edge).trim().length < 80) {
+      warnings.push(`Rejected short edge write-up for ${pick.game}`)
+      return
+    }
+
+    publishable.push(pick)
+  })
+
+  return { picks: publishable, warnings }
+}
+
 export const PICK_METRICS_PROMPT_RULES = `
 METRICS & CONFIDENCE RULES (strict):
 11. Every Edge MUST cite at least TWO numeric facts from STATS or MATCHUP REFERENCE (ERA, WHIP, K/9, W-L, run diff, odds, spread, total line).
@@ -154,4 +206,6 @@ METRICS & CONFIDENCE RULES (strict):
 16. Bet line odds and book MUST match MATCHUP REFERENCE best price exactly.
 17. NBA picks should reference PPG/OPP PPG or home/road splits when provided; NHL picks should reference GF/GA, goalie names, and injury list when provided.
 18. MLB totals/spreads must weigh weather (wind/temp) and listed injuries when relevant.
+19. Newsletter TOP PICK must be confidence 4+ with complete stats — if no game qualifies, output fewer than 3 picks rather than forcing weak plays.
+20. Prefer underdogs and spreads when odds are -150 or worse; only lay -170+ when the numeric edge in ERA/run diff or point diff is overwhelming.
 `.trim()

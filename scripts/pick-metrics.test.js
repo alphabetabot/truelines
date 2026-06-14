@@ -6,6 +6,7 @@ import {
   filterBettableGames,
   hasActionableOdds,
   scoreGameDataQuality,
+  selectPublishablePicks,
   validatePicksAgainstSlate,
 } from '../api/_pick-metrics.js'
 
@@ -84,5 +85,27 @@ const validation = validatePicksAgainstSlate([
 
 assert(validation.picks.length === 1, 'drops unknown matchup')
 assert(validation.warnings.some(w => w.includes('No slate match')), 'warns on orphan pick')
+
+const publishable = selectPublishablePicks([
+  {
+    game: 'Team A @ Team B',
+    pickSelection: 'Team A ML',
+    bet: 'ML at -108 via DraftKings',
+    odds: -108,
+    confidence: 4,
+    edge: 'Team A starter at 3.20 ERA vs 4.50 ERA opponent. Run differential +15 vs -10. Price holds at -108 with two-book confirmation.',
+  },
+  {
+    game: 'Team A @ Team B',
+    pickSelection: 'Team A ML',
+    bet: 'ML at -250 via DraftKings',
+    odds: -250,
+    confidence: 5,
+    edge: 'Short edge.',
+  },
+], slate)
+
+assert(publishable.picks.length === 1, 'rejects heavy chalk / short edge')
+assert(publishable.warnings.some(w => /Rejected/.test(w)), 'explains rejections')
 
 console.log('pick-metrics.test.js: all assertions passed')
