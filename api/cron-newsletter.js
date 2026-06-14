@@ -7,14 +7,19 @@ import {
   resolveTopPickText,
 } from './_newsletter-deliver.js'
 import {
+  fetchNewsletterRowSafe,
+  fetchTopDailyPickSafe,
+  isSendInProgress,
+  runEmailOnlyDelivery,
+  shouldRecoverEmailDelivery,
+} from './_newsletter-recovery.js'
+import {
   NEWSLETTER_CATCHUP_SCHEDULE,
   NEWSLETTER_CRON_SCHEDULE,
   claimDailyNewsletterSend,
   completeNewsletterSend,
-  fetchNewsletterRow,
   getPacificDateKey,
   isNewsletterSendComplete,
-  isStaleNewsletterClaim,
   persistNewsletterDraft,
   releaseNewsletterClaim,
 } from './_newsletter-send-guard.js'
@@ -538,16 +543,7 @@ Only pick games with genuine edge. Be specific with stats and reasoning. Output 
 }
 
 async function fetchTopDailyPick(supabase, dateKey) {
-  const { data, error } = await supabase
-    .from('daily_picks')
-    .select('sport,game,pick,bet,confidence,edge,sort_order,created_at')
-    .eq('date', dateKey)
-    .order('sort_order', { ascending: true, nullsFirst: false })
-    .order('created_at', { ascending: true })
-    .limit(1)
-
-  if (error) throw error
-  return data?.[0] || null
+  return fetchTopDailyPickSafe(supabase, dateKey)
 }
 
 async function finishNewsletterEmails({
@@ -596,11 +592,30 @@ async function finishNewsletterEmails({
 }
 
 export default async function handler(req, res) {
+  try {
+    return await runNewsletterHandler(req, res)
+  } catch (err) {
+    console.error('Newsletter fatal error:', err)
+    return res.status(500).json({
+      error: err.message || 'Newsletter failed',
+      code: 'newsletter_fatal',
+    })
+  }
+}
+
+function isCronAuthorized(req) {
+  const authHeader = String(req.headers?.authorization || req.headers?.Authorization || '')
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  return Boolean(process.env.CRON_SECRET && token === process.env.CRON_SECRET)
+}
+
+async function runNewsletterHandler(req, res) {
   const secret = req.headers['x-newsletter-secret']
-  const isVercelCron = req.headers['authorization'] === `Bearer ${process.env.CRON_SECRET}`
+  const isVercelCron = isCronAuthorized(req)
   const forceSend = req.query?.force === 'true' || req.body?.force === true
   const catchupSend = req.query?.catchup === 'true' || req.body?.catchup === true
   const emailsOnly = catchupSend || req.query?.emailsOnly === 'true' || req.body?.emailsOnly === true
+  const forceRegenerate = req.query?.regenerate === 'true' || req.body?.regenerate === true
 
   if (!isVercelCron && secret !== process.env.NEWSLETTER_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
@@ -651,8 +666,30 @@ export default async function handler(req, res) {
     })
   }
 
-  const existingRow = await fetchNewsletterRow(supabase, todayKey)
-  if (isNewsletterSendComplete(existingRow)) {
+  const existingRow = await fetchNewsletterRowSafe(supabase, todayKey)
+  const storedTopPick = await fetchTopDailyPickSafe(supabase, todayKey)
+  const recoverEmails = shouldRecoverEmailDelivery(existingRow, { emailsOnly, catchupSend, forceSend })
+    && Boolean(storedTopPick)
+
+  if (recoverEmails && (!forceRegenerate || emailsOnly)) {
+    const result = await runEmailOnlyDelivery({
+      supabase,
+      resend: getResend(),
+      todayKey,
+      dateLabel,
+      picksText: existingRow?.picks_text || '',
+      dailyPickRow: storedTopPick,
+      mode: catchupSend ? 'catchup' : emailsOnly ? 'emails_only' : 'stale_recovery',
+      allowResend: forceSend && emailsOnly,
+    })
+    emailsDelivered = result.sent || 0
+    if (result.sent === 0 && result.failed > 0) {
+      return res.status(502).json(result)
+    }
+    return res.json(result)
+  }
+
+  if (isNewsletterSendComplete(existingRow) && !(forceSend && emailsOnly)) {
     return res.json({
       sent: 0,
       skipped: true,
@@ -664,12 +701,7 @@ export default async function handler(req, res) {
   }
 
   if (emailsOnly) {
-    if (
-      !forceSend &&
-      existingRow?.started_at &&
-      !existingRow.sent_at &&
-      !isStaleNewsletterClaim(existingRow)
-    ) {
+    if (isSendInProgress(existingRow) && !forceSend) {
       return res.json({
         sent: 0,
         skipped: true,
@@ -680,41 +712,39 @@ export default async function handler(req, res) {
       })
     }
 
-    const dailyPickRow = await fetchTopDailyPick(supabase, todayKey)
-    const picksText = existingRow?.picks_text || ''
-    if (!picksText && !dailyPickRow) {
-      return res.json({
-        sent: 0,
-        skipped: true,
-        reason: 'no_picks_to_send',
-        date: todayKey,
-        message: 'No stored picks or picks_text for catch-up email',
-      })
+    const result = await runEmailOnlyDelivery({
+      supabase,
+      resend: getResend(),
+      todayKey,
+      dateLabel,
+      picksText: existingRow?.picks_text || '',
+      dailyPickRow: storedTopPick,
+      mode: catchupSend ? 'catchup' : 'emails_only',
+      allowResend: forceSend,
+    })
+    emailsDelivered = result.sent || 0
+    if (result.sent === 0 && result.failed > 0) {
+      return res.status(502).json({ ...result, date: todayKey, mode: 'catchup' })
     }
+    return res.json({ ...result, date: todayKey, mode: catchupSend ? 'catchup' : 'emails_only' })
+  }
 
-    if (existingRow?.started_at && !existingRow.sent_at && isStaleNewsletterClaim(existingRow)) {
-      console.warn(`Catch-up releasing stale newsletter claim for ${todayKey}`)
-      await releaseNewsletterClaim(supabase, todayKey)
+  if (storedTopPick && !forceRegenerate) {
+    console.log(`Picks already stored for ${todayKey} — sending email recovery instead of regenerating`)
+    const result = await runEmailOnlyDelivery({
+      supabase,
+      resend: getResend(),
+      todayKey,
+      dateLabel,
+      picksText: existingRow?.picks_text || '',
+      dailyPickRow: storedTopPick,
+      mode: 'stored_picks_recovery',
+    })
+    emailsDelivered = result.sent || 0
+    if (result.sent === 0 && result.failed > 0) {
+      return res.status(502).json(result)
     }
-
-    try {
-      const result = await finishNewsletterEmails({
-        supabase,
-        resend: getResend(),
-        todayKey,
-        picksText,
-        dailyPickRow,
-        dateLabel,
-      })
-      emailsDelivered = result.sent
-      if (result.sent === 0 && result.failed > 0) {
-        return res.status(502).json({ ...result, date: todayKey, mode: 'catchup' })
-      }
-      return res.json({ ...result, date: todayKey, mode: catchupSend ? 'catchup' : 'emails_only' })
-    } catch (err) {
-      console.error('Newsletter catch-up error:', err)
-      return res.status(500).json({ error: err.message, date: todayKey, mode: 'catchup' })
-    }
+    return res.json(result)
   }
 
   if (forceSend) {
