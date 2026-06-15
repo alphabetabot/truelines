@@ -135,7 +135,7 @@ async function proxyOddsRequest(req, res) {
 
   const upstream = await fetch(upstreamUrl)
   const text = await upstream.text()
-  res.setHeader('Cache-Control', upstream.ok ? 's-maxage=30, stale-while-revalidate=60' : 'no-store')
+  res.setHeader('Cache-Control', upstream.ok ? 's-maxage=300, stale-while-revalidate=600' : 'no-store')
   res.setHeader('Content-Type', upstream.headers.get('content-type') || 'application/json')
   return res.status(upstream.status).send(text)
 }
