@@ -1,5 +1,11 @@
 import { format, isToday, isTomorrow } from 'date-fns'
 
+/** The Odds API requires YYYY-MM-DDTHH:MM:SSZ (no milliseconds). */
+export function formatOddsApiTimestamp(date = new Date()) {
+  const d = date instanceof Date ? date : new Date(date)
+  return d.toISOString().replace(/\.\d{3}Z$/, 'Z')
+}
+
 /** Games that haven't tipped yet (small buffer for clock skew). */
 export function isUpcomingGame(game, now = new Date(), bufferMs = 3 * 60 * 1000) {
   const commence = new Date(game.commenceTime || game.commence_time)
@@ -16,8 +22,8 @@ export function getAnalysisWindow(now = new Date()) {
   const to = new Date(now)
   to.setDate(to.getDate() + 7)
   return {
-    commenceTimeFrom: from.toISOString(),
-    commenceTimeTo: to.toISOString(),
+    commenceTimeFrom: formatOddsApiTimestamp(from),
+    commenceTimeTo: formatOddsApiTimestamp(to),
   }
 }
 
