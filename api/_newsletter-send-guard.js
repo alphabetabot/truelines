@@ -19,6 +19,7 @@ export const PIPELINE = {
   PICKS_READY: 'pipeline:picks_ready',
   GENERATE_FAILED: 'pipeline:generate_failed',
   SENDING: 'pipeline:sending',
+  EMAIL_SENT: 'pipeline:email_sent',
   SEND_FAILED: 'pipeline:send_failed',
   SOCIAL_DONE: 'pipeline:social_done',
 }
@@ -183,6 +184,7 @@ export async function completeNewsletterSend(supabase, dateKey, subscriberCount,
   const update = {
     sent_at: new Date().toISOString(),
     subscriber_count: subscriberCount,
+    cron_schedule: PIPELINE.EMAIL_SENT,
   }
   if (picksText) update.picks_text = picksText
 

@@ -45,7 +45,20 @@ export default function DailyPickTeaser() {
     )
   }
 
-  if (!pick) return null
+  if (!pick) {
+    return (
+      <div
+        className="rounded-xl mb-4 px-4 py-3"
+        style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+      >
+        <p className="text-sm font-semibold" style={{ color: '#0f172a' }}>Today&apos;s AI picks</p>
+        <p className="text-xs mt-1" style={{ color: '#64748b' }}>
+          No picks published yet today. New picks land every morning (Pacific time).
+          {isPremium ? ' Check /picks for the full slate once they drop.' : ' Premium unlocks all 3 daily picks with full write-ups.'}
+        </p>
+      </div>
+    )
+  }
 
   function goToTopPickAnalysis() {
     trackDailyPickTeaserClick('odds')

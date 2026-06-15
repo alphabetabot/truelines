@@ -167,8 +167,8 @@ export async function runSendStep({
   }
 
   if (!storedTopPick && !(row?.picks_text || '').trim()) {
-    if (catchup) {
-      console.warn('[pipeline:send] catchup: no picks — running generate step first')
+    if (catchup || forceSend) {
+      console.warn(`[pipeline:send] ${catchup ? 'catchup' : 'force'}: no picks — running generate step first`)
       const generated = await runGenerateStep({ supabase, todayKey, forceRegenerate: false })
       if (!generated.ok && !generated.skipped) {
         return { ok: false, step: 'send', reason: 'generate_failed_before_send', generate: generated }
