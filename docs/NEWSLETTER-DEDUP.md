@@ -54,6 +54,11 @@ curl -sS "https://www.trueoddsiq.com/api/picks-status" | jq '.newsletter, .dates
 Or from terminal:
 
 ```bash
+# Full pipeline (generate → send → social). Use this when picks were never stored.
+curl -sS "https://www.trueoddsiq.com/api/cron-newsletter?force=true" \
+  -H "Authorization: Bearer $CRON_SECRET"
+
+# Send-only retry (skips generate). Only use when picks are already in daily_picks.
 curl -sS "https://www.trueoddsiq.com/api/cron-newsletter?force=true&emailsOnly=true" \
   -H "Authorization: Bearer $CRON_SECRET"
 ```

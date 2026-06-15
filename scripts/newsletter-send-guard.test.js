@@ -35,4 +35,14 @@ assert.equal(isNewsletterSendComplete({ sent_at: null, subscriber_count: -1 }), 
 
 assert.equal(getPipelinePhase({ cron_schedule: PIPELINE.GENERATING, started_at: '2026-06-10T14:00:00Z' }), 'generating')
 
+assert.equal(
+  getPipelinePhase({
+    sent_at: '2026-06-10T14:05:00Z',
+    subscriber_count: 6,
+    cron_schedule: PIPELINE.EMAIL_SENT,
+  }),
+  'sent',
+  'email_sent phase with sent_at reports sent',
+)
+
 console.log('newsletter-send-guard.test.js: all passed')
