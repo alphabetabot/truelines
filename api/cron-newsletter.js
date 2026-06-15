@@ -1,41 +1,20 @@
 import { Resend } from 'resend'
-import { postTweet } from './_post-to-x.js'
 import { getSupabase } from './_supabase-client.js'
-import { extractPicksFromResponse, extractTopPickSection, storePicks } from './_store-picks.js'
-import {
-  deliverNewsletterEmails,
-  resolveTopPickText,
-} from './_newsletter-deliver.js'
-import {
-  fetchNewsletterRowSafe,
-  fetchTopDailyPickSafe,
-  isSendInProgress,
-  runEmailOnlyDelivery,
-  shouldRecoverEmailDelivery,
-} from './_newsletter-recovery.js'
 import {
   NEWSLETTER_CATCHUP_SCHEDULE,
-  NEWSLETTER_CRON_SCHEDULE,
-  claimDailyNewsletterSend,
-  completeNewsletterSend,
+  NEWSLETTER_GENERATE_SCHEDULE,
+  NEWSLETTER_SEND_SCHEDULE,
+  NEWSLETTER_SOCIAL_SCHEDULE,
   getPacificDateKey,
-  isNewsletterSendComplete,
-  persistNewsletterDraft,
-  recordNewsletterFailure,
   releaseNewsletterClaim,
 } from './_newsletter-send-guard.js'
 import {
-  PICK_METRICS_PROMPT_RULES,
-  filterBettableGames,
-  rankGamesByDataQuality,
-  validatePicksAgainstSlate,
-  resolvePicksForPublish,
-} from './_pick-metrics.js'
-import {
-  appendGameStatsBlock,
-  applySportContext,
-  loadSportContextBundle,
-} from './_sport-context.js'
+  resolveNewsletterStep,
+  runAllSteps,
+  runGenerateStep,
+  runSendStep,
+  runSocialStep,
+} from './_newsletter-pipeline.js'
 
 let resendClient = null
 
@@ -45,552 +24,18 @@ function getResend() {
   }
   return resendClient
 }
-const ODDS_API_KEY = process.env.ODDS_API_KEY || process.env.VITE_ODDS_API_KEY
-const BOOKMAKERS = 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365'
-const BOOK_LABELS = {
-  draftkings: 'DraftKings',
-  fanduel: 'FanDuel',
-  betmgm: 'BetMGM',
-  williamhill_us: 'Caesars',
-  pinnacle: 'Pinnacle',
-  bet365: 'Bet365',
+
+function isCronAuthorized(req) {
+  const authHeader = String(req.headers?.authorization || req.headers?.Authorization || '')
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
+  return Boolean(process.env.CRON_SECRET && token === process.env.CRON_SECRET)
 }
 
-const BALLPARK_FACTORS = {
-  'Coors Field': 'Extreme hitter-friendly: high altitude and thin air',
-  'Yankee Stadium': 'Slight hitter-friendly: short right-field porch',
-  'Dodger Stadium': 'Slight pitcher-friendly',
-  'Kauffman Stadium': 'Pitcher-friendly: large outfield',
-  'T-Mobile Park': 'Pitcher-friendly: marine layer',
-  'Camden Yards': 'Hitter-friendly: short right-field dimensions',
-  'Wrigley Field': 'Wind-dependent run environment',
-  'American Family Field': 'Neutral retractable-roof environment',
-  'Nationals Park': 'Neutral run environment',
-  'Truist Park': 'Slight hitter-friendly',
-  'Oracle Park': 'Pitcher-friendly: marine layer and large foul territory',
-  'Petco Park': 'Pitcher-friendly: spacious outfield',
-}
-
-async function getMLBStats(teamId, teamName) {
-  try {
-    const res = await fetch(`https://statsapi.mlb.com/api/v1/standings?leagueId=103,104`)
-    const data = await res.json()
-    for (const division of data.records || []) {
-      for (const tr of division.teamRecords || []) {
-        if (tr.team.id === teamId || tr.team.name === teamName) {
-          return {
-            wins: tr.wins || 0,
-            losses: tr.losses || 0,
-            runDiff: tr.runDifferential || 0,
-          }
-        }
-      }
-    }
-    return { wins: 0, losses: 0, runDiff: 0 }
-  } catch {
-    return { wins: 0, losses: 0, runDiff: 0 }
-  }
-}
-
-async function getPitcherStats(pitcherId, pitcherName) {
-  try {
-    const res = await fetch(
-      `https://statsapi.mlb.com/api/v1/people?personIds=${pitcherId}&hydrate=stats(group=pitching,type=season),currentTeam`
-    )
-    const data = await res.json()
-    const person = data.people?.[0]
-    const seasonStats = person?.stats?.find(s =>
-      s.group?.displayName === 'pitching' && s.type?.displayName === 'season'
-    )
-    const stats = seasonStats?.splits?.[0]?.stat
-    if (stats) {
-      return {
-        era: stats.era ? parseFloat(stats.era).toFixed(2) : 'N/A',
-        wins: stats.wins || 0,
-        losses: stats.losses || 0,
-        ip: stats.inningsPitched || 0,
-        k9: stats.strikeoutsPer9Inn ? parseFloat(stats.strikeoutsPer9Inn).toFixed(1) : 'N/A',
-        whip: stats.whip ? parseFloat(stats.whip).toFixed(2) : 'N/A',
-        oppAvg: stats.avg || 'N/A',
-        hr9: stats.homeRunsPer9 ? parseFloat(stats.homeRunsPer9).toFixed(1) : 'N/A',
-      }
-    }
-    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
-  } catch {
-    console.warn(`Pitcher stats fetch failed for ${pitcherName || pitcherId}`)
-    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
-  }
-}
-
-async function getTodaysGames() {
-  const today = getPacificDateKey(new Date())
-  const games = []
-
-  try {
-    const res = await fetch(`https://statsapi.mlb.com/api/v1/schedule?sportId=1&date=${today}&hydrate=probablePitcher,team,weather,venue`)
-    const data = await res.json()
-    data.dates?.forEach(d => {
-      d.games?.forEach(g => {
-        games.push({
-          sport: 'MLB',
-          away: g.teams?.away?.team?.name,
-          awayId: g.teams?.away?.team?.id,
-          home: g.teams?.home?.team?.name,
-          homeId: g.teams?.home?.team?.id,
-          venue: g.venue?.name,
-          weather: g.weather,
-          awayPitcher: g.teams?.away?.probablePitcher?.fullName,
-          awayPitcherId: g.teams?.away?.probablePitcher?.id,
-          homePitcher: g.teams?.home?.probablePitcher?.fullName,
-          homePitcherId: g.teams?.home?.probablePitcher?.id,
-          gameTime: g.gameDateTime,
-        })
-      })
-    })
-  } catch { console.warn('MLB fetch failed') }
-
-  try {
-    const mlbOddsRes = await fetch(`https://api.the-odds-api.com/v4/sports/baseball_mlb/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
-    const mlbOddsData = await mlbOddsRes.json()
-    if (Array.isArray(mlbOddsData)) {
-      mlbOddsData.forEach(g => {
-        const existingGame = games.find(eg => eg.sport === 'MLB' && eg.away === g.away_team && eg.home === g.home_team)
-        if (existingGame) {
-          existingGame.bookmakers = g.bookmakers
-        } else {
-          games.push({
-            sport: 'MLB',
-            away: g.away_team,
-            home: g.home_team,
-            bookmakers: g.bookmakers,
-            commence_time: g.commence_time
-          })
-        }
-      })
-    }
-  } catch { console.warn('MLB odds fetch failed') }
-
-  try {
-    const nbaRes = await fetch(`https://api.the-odds-api.com/v4/sports/basketball_nba/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
-    const nbaData = await nbaRes.json()
-    nbaData?.forEach(g => games.push({ 
-      sport: 'NBA', 
-      away: g.away_team, 
-      home: g.home_team, 
-      bookmakers: g.bookmakers, 
-      commence_time: g.commence_time,
-      awayId: g.away_team?.toLowerCase().replace(/\s+/g, ''),
-      homeId: g.home_team?.toLowerCase().replace(/\s+/g, '')
-    }))
-  } catch { console.warn('NBA fetch failed') }
-
-  try {
-    const nhlRes = await fetch(`https://api.the-odds-api.com/v4/sports/icehockey_nhl/odds?apiKey=${ODDS_API_KEY}&regions=us&markets=h2h,spreads,totals&oddsFormat=american&bookmakers=${BOOKMAKERS}`)
-    const nhlData = await nhlRes.json()
-    nhlData?.forEach(g => games.push({ 
-      sport: 'NHL', 
-      away: g.away_team, 
-      home: g.home_team, 
-      bookmakers: g.bookmakers, 
-      commence_time: g.commence_time,
-      awayId: g.away_team?.toLowerCase().replace(/\s+/g, ''),
-      homeId: g.home_team?.toLowerCase().replace(/\s+/g, '')
-    }))
-  } catch { console.warn('NHL fetch failed') }
-
-  return games
-}
-
-function formatOdds(price) {
-  if (price === null || price === undefined || price === 'N/A') return 'N/A'
-  const n = Number(price)
-  if (Number.isNaN(n)) return String(price)
-  return n > 0 ? `+${n}` : `${n}`
-}
-
-function bookName(key) {
-  return BOOK_LABELS[key] || key
-}
-
-function getMarket(bookmaker, key) {
-  return bookmaker?.markets?.find(m => m.key === key)
-}
-
-function bestOutcome(game, marketKey, outcomeName, preferPoint = null) {
-  const outcomes = []
-  for (const book of game.bookmakers || []) {
-    const market = getMarket(book, marketKey)
-    const outcome = market?.outcomes?.find(o =>
-      o.name === outcomeName && (preferPoint == null || Number(o.point) === Number(preferPoint))
-    )
-    if (outcome?.price != null) {
-      outcomes.push({
-        book: bookName(book.key),
-        price: outcome.price,
-        point: outcome.point,
-      })
-    }
-  }
-
-  if (!outcomes.length) return null
-  return outcomes.sort((a, b) => b.price - a.price)[0]
-}
-
-function collectOutcomePoints(game, marketKey, outcomeName) {
-  const points = []
-  for (const book of game.bookmakers || []) {
-    const market = getMarket(book, marketKey)
-    const outcome = market?.outcomes?.find(o => o.name === outcomeName)
-    if (outcome?.point != null) points.push(Number(outcome.point))
-  }
-  return points
-}
-
-function bestSpread(game, teamName) {
-  const candidates = []
-  for (const book of game.bookmakers || []) {
-    const market = getMarket(book, 'spreads')
-    const outcome = market?.outcomes?.find(o => o.name === teamName)
-    if (outcome?.point != null && outcome?.price != null) {
-      candidates.push({ book: bookName(book.key), point: outcome.point, price: outcome.price })
-    }
-  }
-
-  if (!candidates.length) return null
-  return candidates.sort((a, b) => {
-    if (b.point !== a.point) return b.point - a.point
-    return b.price - a.price
-  })[0]
-}
-
-function bestTotal(game, side) {
-  const candidates = []
-  for (const book of game.bookmakers || []) {
-    const market = getMarket(book, 'totals')
-    const outcome = market?.outcomes?.find(o => o.name === side)
-    if (outcome?.point != null && outcome?.price != null) {
-      candidates.push({ book: bookName(book.key), point: outcome.point, price: outcome.price })
-    }
-  }
-
-  if (!candidates.length) return null
-  return candidates.sort((a, b) => {
-    if (side === 'Over' && a.point !== b.point) return a.point - b.point
-    if (side === 'Under' && a.point !== b.point) return b.point - a.point
-    return b.price - a.price
-  })[0]
-}
-
-function oddsRange(game, marketKey, outcomeName) {
-  const prices = []
-  for (const book of game.bookmakers || []) {
-    const outcome = getMarket(book, marketKey)?.outcomes?.find(o => o.name === outcomeName)
-    if (outcome?.price != null) prices.push(outcome.price)
-  }
-  if (prices.length < 2) return null
-  return `${formatOdds(Math.min(...prices))} to ${formatOdds(Math.max(...prices))}`
-}
-
-function ballparkInfo(venue) {
-  if (!venue) return null
-  const match = Object.entries(BALLPARK_FACTORS).find(([name]) =>
-    venue.includes(name) || name.includes(venue)
-  )
-  return match ? match[1] : 'Standard run environment'
-}
-
-function enrichOdds(game) {
-  if (!game.bookmakers?.length) return game
-
-  const awayML = bestOutcome(game, 'h2h', game.away)
-  const homeML = bestOutcome(game, 'h2h', game.home)
-  const awaySpread = bestSpread(game, game.away)
-  const homeSpread = bestSpread(game, game.home)
-  const over = bestTotal(game, 'Over')
-  const under = bestTotal(game, 'Under')
-  const totalPoints = collectOutcomePoints(game, 'totals', 'Over')
-
-  return {
-    ...game,
-    bestOdds: { awayML, homeML, awaySpread, homeSpread, over, under },
-    oddsSummary: [
-      `ML best: ${game.away} ${awayML ? `${formatOdds(awayML.price)} ${awayML.book}` : 'N/A'} (range ${oddsRange(game, 'h2h', game.away) || 'N/A'})`,
-      `${game.home} ${homeML ? `${formatOdds(homeML.price)} ${homeML.book}` : 'N/A'} (range ${oddsRange(game, 'h2h', game.home) || 'N/A'})`,
-      awaySpread ? `${game.away} spread: ${awaySpread.point} (${formatOdds(awaySpread.price)}) ${awaySpread.book}` : null,
-      homeSpread ? `${game.home} spread: ${homeSpread.point} (${formatOdds(homeSpread.price)}) ${homeSpread.book}` : null,
-      over ? `Total: Over ${over.point} (${formatOdds(over.price)}) ${over.book}` : null,
-      under ? `Under ${under.point} (${formatOdds(under.price)}) ${under.book}` : null,
-      totalPoints.length >= 2 ? `Total line range: ${Math.min(...totalPoints)}-${Math.max(...totalPoints)}` : null,
-    ].filter(Boolean).join(' | '),
-  }
-}
-
-function pacificDateKey(date) {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'America/Los_Angeles',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(date)
-}
-
-function gameDate(game) {
-  const value = game.gameTime || game.commence_time
-  return value ? new Date(value) : null
-}
-
-function isGameOnPacificDate(game, targetDateKey) {
-  const date = gameDate(game)
-  if (!date || Number.isNaN(date.getTime())) return true
-  return pacificDateKey(date) === targetDateKey
-}
-
-function balancedSlate(games, maxGames = 24) {
-  const bySport = {
-    NBA: games.filter(g => g.sport === 'NBA'),
-    NHL: games.filter(g => g.sport === 'NHL'),
-    MLB: games.filter(g => g.sport === 'MLB'),
-  }
-
-  const selected = []
-  const seen = new Set()
-  const add = (game) => {
-    const key = `${game.sport}:${game.away}@${game.home}:${game.gameTime || game.commence_time || ''}`
-    if (!seen.has(key)) {
-      seen.add(key)
-      selected.push(game)
-    }
-  }
-
-  // Guarantee playoff sports make the slate when they are playing today.
-  ;['NBA', 'NHL'].forEach(sport => bySport[sport].slice(0, 4).forEach(add))
-
-  const remaining = rankGamesByDataQuality(
-    [...games].sort((a, b) => (gameDate(a)?.getTime() || 0) - (gameDate(b)?.getTime() || 0))
-  )
-
-  for (const game of remaining) {
-    if (selected.length >= maxGames) break
-    add(game)
-  }
-
-  return selected.slice(0, maxGames)
-}
-
-async function generatePicks(games) {
-  const now = new Date()
-  const date = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
-  const todayKey = pacificDateKey(now)
-  
-  const dated = games.filter(g => isGameOnPacificDate(g, todayKey))
-  const bettable = filterBettableGames(dated)
-  const todaysGames = balancedSlate(bettable)
-
-  if (todaysGames.length === 0) {
-    return { picksText: 'No bettable games with multi-book odds for today', slate: [] }
-  }
-  
-  const contextBundle = await loadSportContextBundle()
-
-  const gamesWithStats = await Promise.all(todaysGames.map(async g => {
-    let stats = {}
-    if (g.sport === 'MLB') {
-      if (g.awayPitcherId) {
-        const awayStats = await getPitcherStats(g.awayPitcherId)
-        stats.awayPitcher = awayStats
-      }
-      if (g.homePitcherId) {
-        const homeStats = await getPitcherStats(g.homePitcherId)
-        stats.homePitcher = homeStats
-      }
-      if (g.awayId) stats.awayTeam = await getMLBStats(g.awayId, g.away)
-      if (g.homeId) stats.homeTeam = await getMLBStats(g.homeId, g.home)
-    }
-    stats = applySportContext({ ...g, stats }, contextBundle)
-    return enrichOdds({ ...g, stats })
-  }))
-
-  const slate = gamesWithStats.map(g => {
-    let line = `${g.sport}: ${g.away} @ ${g.home}`
-    if (g.venue) line += ` | ${g.venue}`
-    if (g.venue) line += ` | Ballpark: ${ballparkInfo(g.venue)}`
-    if (g.stats?.weatherReport) line += ` | Weather: ${g.stats.weatherReport}`
-    else if (g.weather?.temp) line += ` | ${g.weather.temp}F ${g.weather.condition || ''} ${g.weather.wind || ''}`
-    if (g.awayPitcher) line += ` | SP: ${g.awayPitcher} vs ${g.homePitcher || 'TBD'}`
-    if (g.sport === 'NHL' && (g.stats?.awayGoalie || g.stats?.homeGoalie)) {
-      line += ` | G: ${g.stats.awayGoalie || 'TBD'} vs ${g.stats.homeGoalie || 'TBD'}`
-    }
-    if (g.stats?.awayStanding?.record) line += ` | ${g.away} ${g.stats.awayStanding.record}`
-    if (g.stats?.homeStanding?.record) line += ` | ${g.home} ${g.stats.homeStanding.record}`
-    if (g.oddsSummary) line += ` | ${g.oddsSummary}`
-    return line
-  }).join('\n')
-
-  const gameMap = gamesWithStats.map((g, idx) => ({
-    index: idx,
-    matchup: `${g.away} @ ${g.home}`,
-    sport: g.sport,
-    away: g.away,
-    home: g.home,
-    bestOdds: g.bestOdds,
-    oddsSummary: g.oddsSummary || 'N/A',
-  }))
-  
-  if (gameMap.length === 0) {
-    return { picksText: 'No games found for today', slate: [] }
-  }
-
-  let statsContext = '=== REAL SEASON STATS, WEATHER, INJURIES (League + ESPN feeds) ===\n\n'
-  gamesWithStats.forEach(g => {
-    statsContext += appendGameStatsBlock(g, ballparkInfo)
-  })
-
-  const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ${gm.oddsSummary}`).join('\n')
-
-  const systemPrompt = `You are Vega, TrueOddsIQ's sports betting analyst. You must be precise, evidence-based, and honest about missing data. Never invent stats, injuries, line movement, public betting splits, or sharp-money claims.`
-
-  const prompt = `Today is ${date}.
-
-${statsContext}
-Today's slate (MLB, NBA, NHL):
-${slate}
-
-CRITICAL RULES:
-1. ONLY cite stats you know for certain. NEVER make up statistics, estimates, player names, or team records.
-2. For MLB: Cite pitcher ERA, K/9, WHIP, team records, weather, ballpark, and listed injuries from STATS.
-3. For NBA: Cite team records, PPG/OPP PPG, home/road splits, last-10, streak, and injury report from STATS. For NHL: cite records, GF/GA, goalies, injuries, and home/road splits from STATS.
-4. EVERY pick's Edge explanation MUST reference specific real information.
-5. Use exact numbers. Avoid vague claims unless tied to supplied numbers.
-6. If a game shows odds as "N/A" or no odds available, SKIP that game entirely.
-7. Only pick games that have actual numerical odds in the reference list.
-8. Cross-book odds ranges are NOT line movement. Do not call them steam, public money, or reverse line movement.
-9. Prefer bets where the best available price is clearly listed with a book. Put that exact best book and price in the Bet line.
-10. SPORT MIX: The slate can include MLB, NBA, and NHL on the same day. When NBA or NHL games appear in MATCHUP REFERENCE with valid odds, include at least one NBA or NHL pick among your 3. Do not choose only MLB picks when playoff basketball or hockey games are available with valid odds.
-
-${PICK_METRICS_PROMPT_RULES}
-
-MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
-${gameReference}
-
-Give exactly 3 picks to BET (not fades or passes). Always lead with your single best bet clearly marked.
-
-CRITICAL: Each pick MUST include:
-1. Full matchup on its own line: "[Away Team] @ [Home Team]"
-2. Your pick with actual odds and book from MATCHUP REFERENCE
-3. Example matchup line: "Pirates @ Rockies"
-4. If odds show as "N/A", skip that game and move to next
-5. Moneyline picks must end in "ML" (example: "Dodgers ML"). Totals must include the number (example: "Under 8.5"). Spreads must include the number (example: "Yankees -1.5").
-6. Every pick is an actionable bet to place — never list a "fade", "avoid", or "pass" section.
-
-Format EXACTLY like this:
-
-TOP PICK OF THE DAY
-[Away Team] @ [Home Team]
-**[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
-- Confidence: [rating out of 5]
-- Edge: [4-6 sentences — full email write-up with specific stats, matchup context, and why this is the best bet today]
-
----
-
-PICK #2
-[Away Team] @ [Home Team]
-**[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
-- Confidence: [rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
-
----
-
-PICK #3
-[Away Team] @ [Home Team]
-**[SPORT] Pick: [Team/Total/Spread]**
-- Bet: [type] at [odds] via [best book]
-- Confidence: [rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
-
-Only pick games with genuine edge. Be specific with stats and reasoning. Output exactly 3 picks — no fourth section. Picks #2 and #3 are for Premium subscribers on the site; only the TOP PICK goes in the free newsletter email.`
-
-  try {
-    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2200,
-        temperature: 0.1,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    })
-
-    if (!apiRes.ok) {
-      console.error('Claude API error:', apiRes.status, apiRes.statusText)
-      return { picksText: '', slate: gamesWithStats }
-    }
-
-    const data = await apiRes.json()
-    return {
-      picksText: data.content?.[0]?.text || '',
-      slate: gamesWithStats,
-    }
-  } catch (err) {
-    console.error('Claude API fetch error:', err.message)
-    return { picksText: '', slate: gamesWithStats }
-  }
-}
-
-async function fetchTopDailyPick(supabase, dateKey) {
-  return fetchTopDailyPickSafe(supabase, dateKey)
-}
-
-async function finishNewsletterEmails({
-  supabase,
-  resend,
-  todayKey,
-  picksText,
-  dailyPickRow,
-  dateLabel,
-}) {
-  const { data: subscribers, error } = await supabase
-    .from('newsletter_subscribers')
-    .select('email')
-    .eq('active', true)
-
-  if (error) throw error
-  if (!subscribers?.length) {
-    return { sent: 0, message: 'No subscribers yet', recipients: 0 }
-  }
-
-  const topPickText = resolveTopPickText(picksText, dailyPickRow)
-  const delivery = await deliverNewsletterEmails({
-    resend,
-    subscribers,
-    topPickText,
-    dateLabel,
-  })
-
-  if (delivery.sent > 0) {
-    const recorded = await completeNewsletterSend(supabase, todayKey, delivery.sent, picksText || null)
-    if (!recorded) {
-      console.error('Newsletter sent but newsletter_daily_sends update failed')
-    }
-  }
-
-  return {
-    sent: delivery.sent,
-    failed: delivery.failed,
-    failures: delivery.failures.slice(0, 10),
-    recipients: delivery.recipients,
-    message:
-      delivery.sent > 0
-        ? `Sent to ${delivery.sent} subscribers`
-        : 'No newsletter emails were delivered',
-  }
+function expectedScheduleForStep(step) {
+  if (step === 'generate') return NEWSLETTER_GENERATE_SCHEDULE
+  if (step === 'send') return NEWSLETTER_SEND_SCHEDULE
+  if (step === 'social') return NEWSLETTER_SOCIAL_SCHEDULE
+  return null
 }
 
 export default async function handler(req, res) {
@@ -605,334 +50,68 @@ export default async function handler(req, res) {
   }
 }
 
-function isCronAuthorized(req) {
-  const authHeader = String(req.headers?.authorization || req.headers?.Authorization || '')
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
-  return Boolean(process.env.CRON_SECRET && token === process.env.CRON_SECRET)
-}
-
 async function runNewsletterHandler(req, res) {
   const secret = req.headers['x-newsletter-secret']
   const isVercelCron = isCronAuthorized(req)
   const forceSend = req.query?.force === 'true' || req.body?.force === true
-  const catchupSend = req.query?.catchup === 'true' || req.body?.catchup === true
-  const emailsOnly = catchupSend || req.query?.emailsOnly === 'true' || req.body?.emailsOnly === true
   const forceRegenerate = req.query?.regenerate === 'true' || req.body?.regenerate === true
+  const catchupSend = req.query?.catchup === 'true' || req.body?.catchup === true
+  const step = resolveNewsletterStep(req)
 
   if (!isVercelCron && secret !== process.env.NEWSLETTER_SECRET) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  const todayKey = getPacificDateKey(new Date())
-  const cronSchedule = req.headers['x-vercel-cron-schedule'] || null
-  const supabase = getSupabase()
-  let claimedSend = false
-  let emailsDelivered = 0
-  let picksText = ''
-  const dateLabel = new Date().toLocaleDateString('en-US', {
-    weekday: 'long',
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  })
-
-  async function abortNewsletter(body, status = 200) {
-    if (claimedSend && emailsDelivered === 0) {
-      const reason = body.error || body.message || body.reason || 'newsletter_aborted'
-      await recordNewsletterFailure(supabase, todayKey, reason, {
-        picksText: picksText || undefined,
-      })
-      claimedSend = false
-    }
-    return res.status(status).json(body)
-  }
-
-  // Block cron-job.org / manual hits — only Vercel cron or ?force=true recovery.
   if (!forceSend && !isVercelCron) {
     return res.json({
       sent: 0,
       skipped: true,
       reason: 'external_trigger_disabled',
       message:
-        'Daily newsletter only runs via Vercel cron (0 14 UTC, ~7 AM Pacific). Remove duplicate newsletter jobs on cron-job.org.',
+        'Newsletter runs via Vercel cron (generate 0 14 UTC, send 30 14 UTC) or ?force=true with CRON_SECRET.',
     })
   }
 
-  const expectedSchedule = catchupSend ? NEWSLETTER_CATCHUP_SCHEDULE : NEWSLETTER_CRON_SCHEDULE
-  if (isVercelCron && !forceSend && cronSchedule && cronSchedule !== expectedSchedule) {
-    console.warn(
-      `Newsletter cron on unexpected schedule ${cronSchedule} (expected ${expectedSchedule}) — continuing anyway`,
-    )
+  const cronSchedule = req.headers['x-vercel-cron-schedule'] || null
+  const expected = expectedScheduleForStep(step)
+  if (isVercelCron && !forceSend && expected && cronSchedule && cronSchedule !== expected) {
+    console.warn(`Newsletter step=${step} on schedule ${cronSchedule} (expected ${expected}) — continuing`)
   }
 
-  const existingRow = await fetchNewsletterRowSafe(supabase, todayKey)
-  const storedTopPick = await fetchTopDailyPickSafe(supabase, todayKey)
-  const catchupNeedsGeneration =
-    catchupSend &&
-    !storedTopPick &&
-    !(existingRow?.picks_text || '').trim()
-  const effectiveEmailsOnly = emailsOnly && !catchupNeedsGeneration
+  const todayKey = getPacificDateKey(new Date())
+  const supabase = getSupabase()
 
-  if (catchupNeedsGeneration) {
-    console.warn('[cron-newsletter] catchup: no stored picks — running full generation')
-  }
-
-  const recoverEmails = shouldRecoverEmailDelivery(existingRow, {
-    emailsOnly: effectiveEmailsOnly,
-    catchupSend,
-    forceSend,
-  }) && Boolean(storedTopPick)
-
-  if (recoverEmails && (!forceRegenerate || effectiveEmailsOnly)) {
-    const result = await runEmailOnlyDelivery({
-      supabase,
-      resend: getResend(),
-      todayKey,
-      dateLabel,
-      picksText: existingRow?.picks_text || '',
-      dailyPickRow: storedTopPick,
-      mode: catchupSend ? 'catchup' : emailsOnly ? 'emails_only' : 'stale_recovery',
-      allowResend: forceSend && effectiveEmailsOnly,
-    })
-    emailsDelivered = result.sent || 0
-    if (result.sent === 0 && result.failed > 0) {
-      return res.status(502).json(result)
-    }
-    return res.json(result)
-  }
-
-  if (isNewsletterSendComplete(existingRow) && !(forceSend && effectiveEmailsOnly)) {
-    return res.json({
-      sent: 0,
-      skipped: true,
-      reason: 'already_sent_today',
-      date: todayKey,
-      sentAt: existingRow.sent_at,
-      subscriber_count: existingRow.subscriber_count,
-    })
-  }
-
-  if (effectiveEmailsOnly) {
-    if (isSendInProgress(existingRow) && !forceSend) {
-      return res.json({
-        sent: 0,
-        skipped: true,
-        reason: 'send_in_progress',
-        date: todayKey,
-        started_at: existingRow.started_at,
-        message: 'Main newsletter run still in progress — catch-up will retry after claim goes stale',
-      })
-    }
-
-    const result = await runEmailOnlyDelivery({
-      supabase,
-      resend: getResend(),
-      todayKey,
-      dateLabel,
-      picksText: existingRow?.picks_text || '',
-      dailyPickRow: storedTopPick,
-      mode: catchupSend ? 'catchup' : 'emails_only',
-      allowResend: forceSend,
-    })
-    emailsDelivered = result.sent || 0
-    if (result.sent === 0 && result.failed > 0) {
-      return res.status(502).json({ ...result, date: todayKey, mode: 'catchup' })
-    }
-    return res.json({ ...result, date: todayKey, mode: catchupSend ? 'catchup' : 'emails_only' })
-  }
-
-  if (storedTopPick && !forceRegenerate) {
-    console.log(`Picks already stored for ${todayKey} — sending email recovery instead of regenerating`)
-    const result = await runEmailOnlyDelivery({
-      supabase,
-      resend: getResend(),
-      todayKey,
-      dateLabel,
-      picksText: existingRow?.picks_text || '',
-      dailyPickRow: storedTopPick,
-      mode: 'stored_picks_recovery',
-    })
-    emailsDelivered = result.sent || 0
-    if (result.sent === 0 && result.failed > 0) {
-      return res.status(502).json(result)
-    }
-    return res.json(result)
-  }
-
-  if (forceSend) {
+  if (forceSend && step === 'all') {
     await releaseNewsletterClaim(supabase, todayKey)
   }
 
-  if (!forceSend) {
-    const claim = await claimDailyNewsletterSend(supabase, todayKey, { cronSchedule })
-    if (!claim.claimed) {
-      const message =
-        claim.reason === 'already_sent_today'
-          ? 'Newsletter already sent today — duplicate run skipped'
-          : claim.reason === 'send_in_progress'
-            ? 'Newsletter send already in progress — duplicate run skipped'
-            : claim.reason === 'table_missing'
-              ? 'Newsletter dedup table missing — run create-newsletter-send-log.sql in Supabase'
-              : 'Newsletter not claimed'
-      console.log(`Newsletter claim skipped for ${todayKey}:`, claim.reason, cronSchedule)
-      if (claim.tableMissing) {
-        return res.status(503).json({
-          sent: 0,
-          error: 'newsletter_daily_sends table missing',
-          message,
-          date: todayKey,
-        })
-      }
-      return res.json({
-        sent: 0,
-        skipped: true,
-        reason: claim.reason || 'not_claimed',
-        date: todayKey,
-        cronSchedule,
-        sentAt: claim.sentAt,
-        message,
-      })
-    }
-    claimedSend = true
+  const ctx = {
+    supabase,
+    resend: getResend(),
+    todayKey,
+    forceRegenerate: forceRegenerate || (forceSend && step === 'generate'),
+    forceSend,
+    catchup: catchupSend,
   }
 
-  try {
-    const games = await getTodaysGames()
-    if (!games.length) {
-      return abortNewsletter({ sent: 0, message: 'No games today', date: todayKey })
+  let result
+  if (step === 'generate') {
+    result = await runGenerateStep(ctx)
+  } else if (step === 'send') {
+    result = await runSendStep(ctx)
+    if (!result.ok && result.failed > 0) {
+      return res.status(502).json(result)
     }
-
-    const generated = await generatePicks(games)
-    picksText = typeof generated === 'string' ? generated : generated.picksText
-    const slate = typeof generated === 'string' ? [] : generated.slate || []
-
-    if (!picksText || picksText.trim().length < 100) {
-      console.warn('No valid picks generated')
-      return abortNewsletter({ sent: 0, message: 'No picks generated', date: todayKey })
+  } else if (step === 'social') {
+    result = await runSocialStep(ctx)
+  } else {
+    result = await runAllSteps(ctx)
+    const send = result.steps?.send
+    if (send && !send.ok && send.failed > 0) {
+      return res.status(502).json(result)
     }
-
-    if (picksText.includes('cannot responsibly') || picksText.includes('cannot generate') || picksText.includes('insufficient data')) {
-      console.warn('Claude refused picks')
-      return abortNewsletter({ sent: 0, message: 'Claude refused to generate picks', date: todayKey })
-    }
-
-    const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade)
-    const { picks, warnings, tier } = resolvePicksForPublish(extracted, slate)
-    if (warnings.length) console.warn('Pick quality gates:', warnings.join(' | '))
-    if (tier !== 'strict') {
-      console.warn(`[cron-newsletter] using ${tier} pick tier for publish`)
-    }
-
-    console.log(`Extracted ${extracted.length} picks, ${picks.length} selected for store/send (${tier})`)
-
-    if (picks.length < 1) {
-      console.error('No publishable picks. Raw response (first 500 chars):', picksText.slice(0, 500))
-      return abortNewsletter({
-        error: 'No publishable picks',
-        warnings: warnings.slice(0, 10),
-        picksPreview: picksText.slice(0, 500),
-        date: todayKey,
-      }, 500)
-    }
-
-    if (picks.length < 3) {
-      console.warn(`Only ${picks.length}/3 picks available — sending top pick email and storing partial slate`)
-    }
-
-    let storedPicks = []
-    try {
-      storedPicks = await storePicks(picks, new Date())
-    } catch (storageErr) {
-      console.error('Failed to store picks:', storageErr.message)
-      return abortNewsletter({
-        error: 'Failed to store generated picks',
-        detail: storageErr.message,
-        extracted: picks.length,
-        date: todayKey,
-      }, 500)
-    }
-
-    if (storedPicks.length === 0) {
-      console.error('Store completed without returning saved pick rows')
-      return abortNewsletter({
-        error: 'Generated picks were not stored',
-        extracted: picks.length,
-        stored: 0,
-        date: todayKey,
-      }, 500)
-    }
-
-    await persistNewsletterDraft(supabase, todayKey, picksText)
-
-    const delivery = await finishNewsletterEmails({
-      supabase,
-      resend: getResend(),
-      todayKey,
-      picksText,
-      dailyPickRow: storedPicks[0],
-      dateLabel,
-    })
-
-    emailsDelivered = delivery.sent
-    claimedSend = false
-
-    if (delivery.failed > 0 && delivery.sent === 0) {
-      await releaseNewsletterClaim(supabase, todayKey)
-      return res.status(502).json({
-        error: 'Newsletter emails failed to send',
-        ...delivery,
-        stored: storedPicks.length,
-        date: todayKey,
-      })
-    }
-
-    if (delivery.failed > 0) {
-      console.warn(`Newsletter partial send: ${delivery.sent} ok, ${delivery.failed} failed`)
-    }
-
-    const topPickSection = extractTopPickSection(picksText)
-    const pickLine = topPickSection.match(/\*\*(.+Pick.+?)\*\*/)?.[1]?.trim() || ''
-    const edgeLine = topPickSection.match(/- Edge: (.+)/)?.[1]?.trim() || ''
-    const betLine = topPickSection.match(/- Bet: (.+)/)?.[1]?.trim() || ''
-    const hasPicks = pickLine && betLine
-
-    try {
-      if (hasPicks && pickLine) {
-        const tgMessage = `TOP PICK — ${dateLabel}\n\n ${pickLine}\n ${betLine}\n\n ${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`
-        await fetch(`https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ chat_id: process.env.TELEGRAM_CHANNEL_ID, text: tgMessage })
-        })
-      }
-    } catch (tgErr) {
-      console.warn('Telegram post failed:', tgErr.message)
-    }
-
-    try {
-      if (hasPicks && pickLine) {
-        const tweet = `TOP PICK — ${dateLabel}\n\n${pickLine}\n${betLine}\n\n${edgeLine}\n\nFull analysis: trueoddsiq.com/picks\n\n#SportsBetting #VegaPicks`.slice(0, 280)
-        await postTweet(tweet)
-      }
-    } catch (tweetErr) {
-      console.warn('X post failed:', tweetErr.message)
-    }
-
-    return res.json({
-      sent: delivery.sent,
-      date: todayKey,
-      message: delivery.message,
-      picks: picksText,
-      stored: storedPicks.length,
-      failed: delivery.failed,
-    })
-  } catch (err) {
-    if (claimedSend && emailsDelivered === 0) {
-      await releaseNewsletterClaim(supabase, todayKey)
-    } else if (emailsDelivered > 0) {
-      await completeNewsletterSend(supabase, todayKey, emailsDelivered, picksText)
-    }
-    console.error('Newsletter error:', err)
-    return res.status(500).json({ error: err.message, emailsDelivered })
   }
+
+  const status = result.ok === false ? 500 : 200
+  return res.status(status).json({ date: todayKey, step, ...result })
 }
