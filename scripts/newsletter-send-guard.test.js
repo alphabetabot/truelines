@@ -1,5 +1,9 @@
 import assert from 'node:assert/strict'
-import { isStaleNewsletterClaim, STALE_NEWSLETTER_CLAIM_MS } from '../api/_newsletter-send-guard.js'
+import {
+  isNewsletterSendComplete,
+  isStaleNewsletterClaim,
+  STALE_NEWSLETTER_CLAIM_MS,
+} from '../api/_newsletter-send-guard.js'
 
 const now = Date.parse('2026-06-10T14:30:00.000Z')
 
@@ -22,5 +26,9 @@ assert.equal(
 )
 
 assert.equal(STALE_NEWSLETTER_CLAIM_MS, 15 * 60 * 1000)
+
+assert.equal(isNewsletterSendComplete({ sent_at: '2026-06-10T14:05:00.000Z', subscriber_count: 7 }), true)
+assert.equal(isNewsletterSendComplete({ sent_at: '2026-06-10T14:05:00.000Z', subscriber_count: -1 }), false)
+assert.equal(isNewsletterSendComplete({ sent_at: null, subscriber_count: -1 }), false)
 
 console.log('newsletter-send-guard.test.js: all passed')

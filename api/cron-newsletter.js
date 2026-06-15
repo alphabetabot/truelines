@@ -21,6 +21,7 @@ import {
   getPacificDateKey,
   isNewsletterSendComplete,
   persistNewsletterDraft,
+  recordNewsletterFailure,
   releaseNewsletterClaim,
 } from './_newsletter-send-guard.js'
 import {
@@ -28,7 +29,7 @@ import {
   filterBettableGames,
   rankGamesByDataQuality,
   validatePicksAgainstSlate,
-  selectPublishablePicks,
+  resolvePicksForPublish,
 } from './_pick-metrics.js'
 import {
   appendGameStatsBlock,
@@ -627,6 +628,7 @@ async function runNewsletterHandler(req, res) {
   const supabase = getSupabase()
   let claimedSend = false
   let emailsDelivered = 0
+  let picksText = ''
   const dateLabel = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
@@ -636,7 +638,10 @@ async function runNewsletterHandler(req, res) {
 
   async function abortNewsletter(body, status = 200) {
     if (claimedSend && emailsDelivered === 0) {
-      await releaseNewsletterClaim(supabase, todayKey)
+      const reason = body.error || body.message || body.reason || 'newsletter_aborted'
+      await recordNewsletterFailure(supabase, todayKey, reason, {
+        picksText: picksText || undefined,
+      })
       claimedSend = false
     }
     return res.status(status).json(body)
@@ -655,24 +660,30 @@ async function runNewsletterHandler(req, res) {
 
   const expectedSchedule = catchupSend ? NEWSLETTER_CATCHUP_SCHEDULE : NEWSLETTER_CRON_SCHEDULE
   if (isVercelCron && !forceSend && cronSchedule && cronSchedule !== expectedSchedule) {
-    console.warn(`Ignoring newsletter cron on unexpected schedule: ${cronSchedule}`)
-    return res.json({
-      sent: 0,
-      skipped: true,
-      reason: 'unexpected_cron_schedule',
-      schedule: cronSchedule,
-      expected: expectedSchedule,
-      message:
-        'Duplicate or legacy cron schedule blocked. Delete extra newsletter crons in Vercel → Settings → Cron Jobs.',
-    })
+    console.warn(
+      `Newsletter cron on unexpected schedule ${cronSchedule} (expected ${expectedSchedule}) — continuing anyway`,
+    )
   }
 
   const existingRow = await fetchNewsletterRowSafe(supabase, todayKey)
   const storedTopPick = await fetchTopDailyPickSafe(supabase, todayKey)
-  const recoverEmails = shouldRecoverEmailDelivery(existingRow, { emailsOnly, catchupSend, forceSend })
-    && Boolean(storedTopPick)
+  const catchupNeedsGeneration =
+    catchupSend &&
+    !storedTopPick &&
+    !(existingRow?.picks_text || '').trim()
+  const effectiveEmailsOnly = emailsOnly && !catchupNeedsGeneration
 
-  if (recoverEmails && (!forceRegenerate || emailsOnly)) {
+  if (catchupNeedsGeneration) {
+    console.warn('[cron-newsletter] catchup: no stored picks — running full generation')
+  }
+
+  const recoverEmails = shouldRecoverEmailDelivery(existingRow, {
+    emailsOnly: effectiveEmailsOnly,
+    catchupSend,
+    forceSend,
+  }) && Boolean(storedTopPick)
+
+  if (recoverEmails && (!forceRegenerate || effectiveEmailsOnly)) {
     const result = await runEmailOnlyDelivery({
       supabase,
       resend: getResend(),
@@ -681,7 +692,7 @@ async function runNewsletterHandler(req, res) {
       picksText: existingRow?.picks_text || '',
       dailyPickRow: storedTopPick,
       mode: catchupSend ? 'catchup' : emailsOnly ? 'emails_only' : 'stale_recovery',
-      allowResend: forceSend && emailsOnly,
+      allowResend: forceSend && effectiveEmailsOnly,
     })
     emailsDelivered = result.sent || 0
     if (result.sent === 0 && result.failed > 0) {
@@ -690,7 +701,7 @@ async function runNewsletterHandler(req, res) {
     return res.json(result)
   }
 
-  if (isNewsletterSendComplete(existingRow) && !(forceSend && emailsOnly)) {
+  if (isNewsletterSendComplete(existingRow) && !(forceSend && effectiveEmailsOnly)) {
     return res.json({
       sent: 0,
       skipped: true,
@@ -701,7 +712,7 @@ async function runNewsletterHandler(req, res) {
     })
   }
 
-  if (emailsOnly) {
+  if (effectiveEmailsOnly) {
     if (isSendInProgress(existingRow) && !forceSend) {
       return res.json({
         sent: 0,
@@ -785,8 +796,6 @@ async function runNewsletterHandler(req, res) {
     claimedSend = true
   }
 
-  let picksText = ''
-
   try {
     const games = await getTodaysGames()
     if (!games.length) {
@@ -808,16 +817,18 @@ async function runNewsletterHandler(req, res) {
     }
 
     const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade)
-    const { picks: publishable, warnings } = selectPublishablePicks(extracted, slate)
+    const { picks, warnings, tier } = resolvePicksForPublish(extracted, slate)
     if (warnings.length) console.warn('Pick quality gates:', warnings.join(' | '))
+    if (tier !== 'strict') {
+      console.warn(`[cron-newsletter] using ${tier} pick tier for publish`)
+    }
 
-    const picks = publishable.slice(0, 3)
-    console.log(`Extracted ${extracted.length} picks, ${publishable.length} passed quality gates, using ${picks.length} for store/send`)
+    console.log(`Extracted ${extracted.length} picks, ${picks.length} selected for store/send (${tier})`)
 
     if (picks.length < 1) {
-      console.error('No picks passed quality gates. Raw response (first 500 chars):', picksText.slice(0, 500))
+      console.error('No publishable picks. Raw response (first 500 chars):', picksText.slice(0, 500))
       return abortNewsletter({
-        error: 'No picks passed quality gates',
+        error: 'No publishable picks',
         warnings: warnings.slice(0, 10),
         picksPreview: picksText.slice(0, 500),
         date: todayKey,
