@@ -5,7 +5,7 @@ import { verifyUnsubscribeToken } from './_newsletter-utils.js'
 import { handleBillingRequest, isBillingAction } from './_billing-handlers.js'
 import { pacificDateKey } from './_date-utils.js'
 import { repairPickOrderFromText } from './_store-picks.js'
-import { isStaleNewsletterClaim } from './_newsletter-send-guard.js'
+import { isStaleNewsletterClaim, getPipelinePhase } from './_newsletter-send-guard.js'
 import { requireSupabaseUser } from './_auth-utils.js'
 import { buildAiParlayTicket } from './_parlay-builder.js'
 import { consumeParlayBuild, getParlayUsage, PARLAY_DAILY_LIMIT, refundParlayBuild } from './_parlay-usage.js'
@@ -170,16 +170,51 @@ async function fetchNewsletterSendStatus(supabase, dateKey) {
   if (!data) {
     const hint = newsletterMissedCronHint(dateKey)
     return hint
-      ? { date: dateKey, status: 'not_started', hint }
-      : { date: dateKey, status: 'not_started' }
+      ? { date: dateKey, status: 'not_started', phase: 'not_started', hint }
+      : { date: dateKey, status: 'not_started', phase: 'not_started' }
   }
+
+  const phase = getPipelinePhase(data)
 
   if (data.sent_at && data.subscriber_count != null && data.subscriber_count >= 0) {
     return {
       date: dateKey,
       status: 'sent',
+      phase,
       sent_at: data.sent_at,
       subscriber_count: data.subscriber_count,
+      cron_schedule: data.cron_schedule,
+    }
+  }
+
+  if (data.subscriber_count != null && data.subscriber_count < 0) {
+    return {
+      date: dateKey,
+      status: phase === 'send_failed' ? 'send_failed' : 'generate_failed',
+      phase,
+      started_at: data.started_at,
+      cron_schedule: data.cron_schedule,
+      hint: 'Check picks_text for FAILED reason. Run ?force=true to retry all steps.',
+    }
+  }
+
+  if (phase === 'picks_ready') {
+    return {
+      date: dateKey,
+      status: 'picks_ready',
+      phase,
+      started_at: data.started_at,
+      cron_schedule: data.cron_schedule,
+      hint: 'Picks stored — send step runs at 30 14 UTC or trigger ?force=true',
+    }
+  }
+
+  if (phase === 'generating' || phase === 'sending') {
+    return {
+      date: dateKey,
+      status: phase,
+      phase,
+      started_at: data.started_at,
       cron_schedule: data.cron_schedule,
     }
   }
@@ -197,7 +232,8 @@ async function fetchNewsletterSendStatus(supabase, dateKey) {
 
   return {
     date: dateKey,
-    status: 'in_progress',
+    status: phase === 'unknown' ? 'in_progress' : phase,
+    phase,
     started_at: data.started_at,
     cron_schedule: data.cron_schedule,
   }
@@ -210,7 +246,7 @@ async function handleNewsletterRecovery(req, res) {
 
   const siteOrigin = process.env.SITE_URL || 'https://www.trueoddsiq.com'
   const recovery = await fetch(
-    `${siteOrigin.replace(/\/$/, '')}/api/cron-newsletter?force=true&emailsOnly=true`,
+    `${siteOrigin.replace(/\/$/, '')}/api/cron-newsletter?force=true`,
     {
       method: 'GET',
       headers: { Authorization: `Bearer ${process.env.CRON_SECRET}` },
@@ -445,8 +481,10 @@ export default async function handler(req, res) {
         recent: summarizeRows(recentGraded).picks,
       },
       cron: {
-        newsletterMain: '0 14 * * * UTC',
+        newsletterGenerate: '0 14 * * * UTC',
+        newsletterSend: '30 14 * * * UTC',
         newsletterCatchup: '45 14 * * * UTC',
+        newsletterSocial: '50 14 * * * UTC',
         resultGrading: '30 12 * * * UTC',
       },
     })

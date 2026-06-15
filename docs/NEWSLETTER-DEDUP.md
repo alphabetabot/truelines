@@ -1,11 +1,17 @@
 # Newsletter: one email per day
 
-## Intended schedule
+## Intended schedule (3-step pipeline)
 
-- **Main** Vercel cron: `0 14 * * *` UTC → `/api/cron-newsletter` (~7:00 AM Pacific)
-- **Catch-up** cron: `45 14 * * *` UTC → `/api/cron-newsletter-catchup` (~7:45 AM Pacific) — sends emails if picks were stored but the main run timed out before Resend finished
+Each step is a **separate cron** so a timeout during Claude cannot block email delivery.
 
-**Vercel dashboard must show:** `/api/cron-newsletter` with `0 14 * * *` (daily). If it shows `0 8 * * 1` (Mondays only), crons are mis-registered — redeploy `main` after the `vercel.json` fix that uses unique paths (no `?query` on cron paths, no duplicate `/api/log-results` paths).
+| Schedule (UTC) | Path | Step |
+|----------------|------|------|
+| `0 14 * * *` | `/api/cron-newsletter-generate` | Fetch slate → Claude → store picks |
+| `30 14 * * *` | `/api/cron-newsletter-send` | Resend email from stored picks |
+| `45 14 * * *` | `/api/cron-newsletter-send-catchup` | Retry send (runs generate first if no picks) |
+| `50 14 * * *` | `/api/cron-newsletter-social` | Telegram + X posts |
+
+**Vercel dashboard must show** all four paths above after deploy. Status phases: `not_started` → `generating` → `picks_ready` → `sent` (or `generate_failed` / `send_failed` — never silently deleted).
 
 ## If you get two emails
 
@@ -39,7 +45,7 @@ WHERE active = true GROUP BY email HAVING COUNT(*) > 1;
 curl -sS "https://www.trueoddsiq.com/api/picks-status" | jq '.newsletter, .dates.pacificToday, .today.total'
 ```
 
-`newsletter.status`: `not_started` | `in_progress` | `stale_in_progress` | `sent`
+`newsletter.status` / `newsletter.phase`: `not_started` | `generating` | `picks_ready` | `sending` | `sent` | `generate_failed` | `send_failed` | `stale_in_progress`
 
 ## Manual resend (recovery only)
 
