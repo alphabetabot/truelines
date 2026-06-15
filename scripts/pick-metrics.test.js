@@ -5,6 +5,7 @@ import {
   countBooksWithMarket,
   filterBettableGames,
   hasActionableOdds,
+  resolvePicksForPublish,
   scoreGameDataQuality,
   selectPublishablePicks,
   validatePicksAgainstSlate,
@@ -107,5 +108,19 @@ const publishable = selectPublishablePicks([
 
 assert(publishable.picks.length === 1, 'rejects heavy chalk / short edge')
 assert(publishable.warnings.some(w => /Rejected/.test(w)), 'explains rejections')
+
+const fallback = resolvePicksForPublish([
+  {
+    game: 'Team A @ Team B',
+    pickSelection: 'Team A ML',
+    bet: 'ML at -108 via DraftKings',
+    odds: -108,
+    confidence: 3,
+    edge: 'Thin edge with 3.20 ERA vs 4.50 and run diff +15 vs -10.',
+  },
+], slate)
+
+assert(fallback.picks.length === 1, 'resolvePicksForPublish falls back when strict gates block')
+assert(fallback.tier === 'validated', 'uses validated tier on fallback')
 
 console.log('pick-metrics.test.js: all assertions passed')

@@ -78,6 +78,12 @@ export async function claimDailyNewsletterSend(supabase, dateKey, { cronSchedule
     }
   }
 
+  if (row?.subscriber_count != null && row.subscriber_count < 0) {
+    console.warn(`Reclaiming failed newsletter run for ${dateKey}`)
+    await supabase.from('newsletter_daily_sends').delete().eq('date', dateKey)
+    return claimDailyNewsletterSend(supabase, dateKey, { cronSchedule, _retried: true })
+  }
+
   if (!_retried && isStaleNewsletterClaim(row)) {
     console.warn(`Releasing stale newsletter claim for ${dateKey} (started ${row.started_at})`)
     await supabase.from('newsletter_daily_sends').delete().eq('date', dateKey)
@@ -121,7 +127,10 @@ export async function fetchNewsletterRow(supabase, dateKey) {
 }
 
 export function isNewsletterSendComplete(row) {
-  return Boolean(row?.sent_at && row.subscriber_count != null && row.subscriber_count >= 0)
+  if (!row?.sent_at) return false
+  if (row.subscriber_count == null) return false
+  if (row.subscriber_count < 0) return false
+  return true
 }
 
 export async function completeNewsletterSend(supabase, dateKey, subscriberCount, picksText = null) {
@@ -158,6 +167,25 @@ export function uniqueSubscriberEmails(subscribers) {
     out.push(email)
   }
   return out
+}
+
+/** Record a failed run without deleting the row (so status is visible). */
+export async function recordNewsletterFailure(supabase, dateKey, errorMessage, { picksText } = {}) {
+  const note = String(errorMessage || 'Newsletter failed').slice(0, 2000)
+  const draft = picksText || `FAILED: ${note}`
+  const { error } = await supabase
+    .from('newsletter_daily_sends')
+    .upsert({
+      date: dateKey,
+      sent_at: null,
+      subscriber_count: -1,
+      picks_text: draft,
+      started_at: new Date().toISOString(),
+    }, { onConflict: 'date' })
+
+  if (error && !isMissingTableError(error)) {
+    console.warn('Failed to record newsletter failure:', error.message)
+  }
 }
 
 /** Drop a failed claim so a manual ?force=true retry can run (only if no mail was sent). */

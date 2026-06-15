@@ -196,6 +196,35 @@ export function selectPublishablePicks(picks, slateEntries, {
   return { picks: publishable, warnings }
 }
 
+/**
+ * Prefer strict quality gates, but always fall back so the newsletter can send.
+ */
+export function resolvePicksForPublish(extracted, slate) {
+  const { picks: strict, warnings } = selectPublishablePicks(extracted, slate)
+  if (strict.length) {
+    return { picks: strict.slice(0, 3), warnings, tier: 'strict' }
+  }
+
+  const { picks: validated, warnings: validatedWarnings } = validatePicksAgainstSlate(extracted, slate)
+  if (validated.length) {
+    return {
+      picks: validated.slice(0, 3),
+      warnings: [...warnings, ...validatedWarnings, 'Fell back to validated picks (strict gates blocked all)'],
+      tier: 'validated',
+    }
+  }
+
+  if (extracted.length) {
+    return {
+      picks: extracted.slice(0, 3),
+      warnings: [...warnings, 'Fell back to extracted picks (no validated matches)'],
+      tier: 'extracted',
+    }
+  }
+
+  return { picks: [], warnings, tier: 'none' }
+}
+
 export const PICK_METRICS_PROMPT_RULES = `
 METRICS & CONFIDENCE RULES (strict):
 11. Every Edge MUST cite at least TWO numeric facts from STATS or MATCHUP REFERENCE (ERA, WHIP, K/9, W-L, run diff, odds, spread, total line).
