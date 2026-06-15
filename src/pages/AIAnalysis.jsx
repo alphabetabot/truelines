@@ -39,12 +39,13 @@ export default function AIAnalysis() {
   const [gptLoading, setGptLoading] = useState(false)
   const [gptError, setGptError] = useState(null)
 
-  const analysisWindow = getAnalysisWindow()
-
-  const { data, isLoading, isError, error, refetch } = useQuery({
-    queryKey: ['odds', sport, 'analysis', analysisWindow.commenceTimeFrom],
-    queryFn: () => getOdds(sport, 'h2h,spreads,totals', 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365', analysisWindow),
-    staleTime: 30_000,
+  const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
+    queryKey: ['odds', sport, 'analysis'],
+    queryFn: () => {
+      const window = getAnalysisWindow()
+      return getOdds(sport, 'h2h,spreads,totals', 'draftkings,fanduel,betmgm,williamhill_us,pinnacle,bet365', window)
+    },
+    staleTime: 300_000,
   })
 
   const { data: pitchers = {} } = useQuery({
@@ -186,7 +187,13 @@ export default function AIAnalysis() {
             className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
             style={{ background: '#fff', border: '1px solid #e2e8f0', color: selectedGame ? '#0f172a' : '#64748b' }}
           >
-            <option value="">{isLoading ? 'Loading...' : games.length === 0 ? 'No upcoming games' : '— Choose a game —'}</option>
+            <option value="">
+              {isLoading || isFetching
+                ? 'Loading games...'
+                : games.length === 0
+                  ? 'No upcoming games'
+                  : '— Choose a game —'}
+            </option>
             {gameGroups.map(group => (
               <optgroup key={group.key} label={group.label}>
                 {group.games.map(g => (
