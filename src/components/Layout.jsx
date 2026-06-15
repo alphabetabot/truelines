@@ -1,8 +1,6 @@
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
 import { Activity, BarChart2, Brain, Zap, Download, BookOpen, Lock, Layers } from 'lucide-react'
 import { useState, useEffect } from 'react'
-import ScoreTicker from './ScoreTicker'
-import CollapsibleScoreTicker from './CollapsibleScoreTicker'
 import PageMeta from './PageMeta'
 import CookieConsent, { openCookiePreferences } from './CookieConsent'
 import LogoLink from './LogoLink'
@@ -14,8 +12,6 @@ import SeoFooterNav from '../seo/components/SeoFooterNav'
 import {
   isAppWorkspaceRoute,
   isMarketingHomepage,
-  showCollapsibleScoreTicker,
-  hideGlobalScoreTicker,
 } from '../lib/appRoutes'
 
 const NAV = [
@@ -99,8 +95,6 @@ export default function Layout({ children }) {
   const pathname = location.pathname
   const appWorkspace = isAppWorkspaceRoute(pathname)
   const marketingHome = isMarketingHomepage(pathname)
-  const showCollapsibleTicker = showCollapsibleScoreTicker(pathname)
-  const showFullTicker = !hideGlobalScoreTicker(pathname)
 
   return (
     <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg-primary)' }}>
@@ -195,10 +189,6 @@ export default function Layout({ children }) {
       )}
 
       {!appWorkspace && !marketingHome && <SeoNavBar />}
-
-      {/* ── Score ticker: hidden on /odds; collapsible on other app pages; full elsewhere ── */}
-      {showCollapsibleTicker && <CollapsibleScoreTicker />}
-      {showFullTicker && <ScoreTicker />}
 
       {/* ── iOS install hint ── */}
       {showIOSHint && (
