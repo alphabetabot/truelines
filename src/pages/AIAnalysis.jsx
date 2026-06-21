@@ -25,6 +25,20 @@ import {
   groupGamesByDay,
 } from '../lib/gameFilters'
 
+const ANALYZE_BTN_FONT = 13
+const ANALYZE_BTN_ICON = 14
+
+function analyzeButtonStyle(enabled) {
+  return {
+    fontSize: ANALYZE_BTN_FONT,
+    background: enabled ? 'var(--green)' : 'rgba(255,255,255,0.08)',
+    color: enabled ? 'var(--text-on-cta)' : 'rgba(255,255,255,0.55)',
+    cursor: enabled ? 'pointer' : 'not-allowed',
+    boxShadow: enabled ? '0 4px 18px rgba(57,255,100,0.35)' : 'none',
+    border: enabled ? '1px solid var(--green-border)' : '1px solid transparent',
+  }
+}
+
 export default function AIAnalysis() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
@@ -224,32 +238,20 @@ export default function AIAnalysis() {
         <button
           onClick={runClaude}
           disabled={!selectedGame || claudeLoading || authLoading}
-          className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
-          style={{
-            fontSize: 11,
-            background: selectedGame && !claudeLoading && !authLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'rgba(255,255,255,0.08)',
-            color: selectedGame && !claudeLoading && !authLoading ? '#fff' : 'rgba(255,255,255,0.55)',
-            cursor: selectedGame && !claudeLoading && !authLoading ? 'pointer' : 'not-allowed',
-            boxShadow: selectedGame && !claudeLoading && !authLoading ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
-          }}
+          className="flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+          style={analyzeButtonStyle(Boolean(selectedGame && !claudeLoading && !authLoading))}
         >
-          <Zap size={12} />
+          <Zap size={ANALYZE_BTN_ICON} />
           {claudeLoading ? 'Vega Analyzing...' : user ? 'Analyze with Vega' : 'Sign in for Vega'}
         </button>
 
         <button
           onClick={runGPT}
           disabled={!selectedGame || gptLoading || authLoading}
-          className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
-          style={{
-            fontSize: 11,
-            background: selectedGame && !gptLoading && !authLoading ? 'linear-gradient(135deg, var(--green), #15803d)' : 'rgba(255,255,255,0.08)',
-            color: selectedGame && !gptLoading && !authLoading ? '#fff' : 'rgba(255,255,255,0.55)',
-            cursor: selectedGame && !gptLoading && !authLoading ? 'pointer' : 'not-allowed',
-            boxShadow: selectedGame && !gptLoading && !authLoading ? '0 4px 14px rgba(22,163,74,0.3)' : 'none',
-          }}
+          className="flex-1 py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all"
+          style={analyzeButtonStyle(Boolean(selectedGame && !gptLoading && !authLoading))}
         >
-          <Brain size={12} />
+          <Brain size={ANALYZE_BTN_ICON} />
           {gptLoading ? 'ChatGPT Analyzing...' : user ? 'Analyze with ChatGPT' : 'Sign in for ChatGPT'}
         </button>
       </div>
