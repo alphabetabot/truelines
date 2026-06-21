@@ -9,7 +9,6 @@ import Scores from './Scores'
 import PerformanceTracker from '../components/PerformanceTracker'
 import TodaysEdges from '../components/TodaysEdges'
 import DailyPickTeaser from '../components/DailyPickTeaser'
-import OddsGuestStrip from '../components/OddsGuestStrip'
 import StickyOddsToolbar from '../components/StickyOddsToolbar'
 import RecentlyViewedGames from '../components/RecentlyViewedGames'
 import { addRecentGame } from '../lib/recentGames'
@@ -110,8 +109,6 @@ export default function LiveOdds() {
         onSportChange={handleSportChange}
         onTabChange={handleStickyTab}
       />
-
-      <OddsGuestStrip />
 
       <SportSelector selected={sport} onChange={s => handleSportChange(s, 'selector')} />
 
