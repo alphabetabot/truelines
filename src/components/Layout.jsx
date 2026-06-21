@@ -1,5 +1,5 @@
 import { NavLink, Link, useNavigate, useLocation } from 'react-router-dom'
-import { Activity, BarChart2, Brain, Zap, Download, BookOpen, Lock, Layers } from 'lucide-react'
+import { Activity, Brain, Zap, Download, BookOpen, Lock, Layers } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import PageMeta from './PageMeta'
 import CookieConsent, { openCookiePreferences } from './CookieConsent'
@@ -16,7 +16,6 @@ import {
 
 const NAV = [
   { to: '/odds', label: 'Live Odds', shortLabel: 'Odds', icon: Activity, exact: true },
-  { to: '/compare', label: 'Line Compare', shortLabel: 'Compare', icon: BarChart2 },
   { to: '/parlay', label: 'Parlay Builder', shortLabel: 'Parlay', icon: Layers },
   { to: '/analysis', label: 'AI Analysis', shortLabel: 'Analysis', icon: Brain, premium: true },
   { to: '/picks', label: 'AI Picks', shortLabel: 'Picks', icon: Zap, premium: true },
