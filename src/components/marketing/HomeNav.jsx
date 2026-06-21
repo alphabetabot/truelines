@@ -1,6 +1,8 @@
 import { useNavigate } from 'react-router-dom'
-import LogoLink from '../LogoLink'
+import MarketingLogo from './MarketingLogo'
 import { trackEvent } from '../../lib/analytics'
+
+const GOLD = '#f5b800'
 
 const LINKS = [
   { label: 'Picks', id: 'top-pick' },
@@ -25,15 +27,15 @@ export default function HomeNav() {
     <nav
       className="sticky top-0 z-40 w-full"
       style={{
-        background: 'rgba(6, 6, 6, 0.92)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(57, 255, 100, 0.12)',
+        background: 'rgba(0, 0, 0, 0.88)',
+        backdropFilter: 'blur(14px)',
+        borderBottom: '1px solid rgba(57, 255, 100, 0.1)',
       }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <LogoLink height={34} maxWidth={150} />
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
+        <MarketingLogo size={34} />
 
-        <div className="hidden md:flex items-center gap-8">
+        <div className="hidden md:flex items-center justify-center gap-8">
           {LINKS.map(({ label, id }) => (
             <button
               key={label}
@@ -47,12 +49,12 @@ export default function HomeNav() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
           <button
             type="button"
             onClick={() => navigate('/login')}
             className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white/5"
-            style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.2)' }}
+            style={{ color: '#e5e5e5', background: 'transparent', border: 'none' }}
           >
             Sign In
           </button>
@@ -60,7 +62,7 @@ export default function HomeNav() {
             type="button"
             onClick={ctaSignup}
             className="px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #f5b800 0%, #e8a317 100%)', color: '#0a0a0a' }}
+            style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
           >
             Get Today&apos;s Free Pick
           </button>
