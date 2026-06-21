@@ -95,7 +95,7 @@ export default function Welcome() {
 
   return (
     <div
-      className="w-full text-white min-h-screen"
+      className="w-full text-white min-h-screen pb-28"
       style={{
         fontFamily: "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         background: `radial-gradient(ellipse 120% 80% at 50% -20%, rgba(59, 130, 246, 0.1), transparent 55%), ${BG}`,
@@ -104,12 +104,12 @@ export default function Welcome() {
       <HomeNav />
 
       {/* ── HERO ── */}
-      <header className={`${PAGE} pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24`}>
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
-          <div className="text-center lg:text-left order-2 lg:order-1">
+      <header className={`${PAGE} pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-20 lg:pb-24`}>
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+          <div className="text-center lg:text-left">
             <h1
-              className="font-black leading-[1.06] tracking-tight mb-5"
-              style={{ fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)' }}
+              className="font-black leading-[1.06] tracking-tight mb-4 sm:mb-5"
+              style={{ fontSize: 'clamp(2rem, 8vw, 3.75rem)' }}
             >
               <span style={{ color: TEXT }}>Smarter Bets.</span>
               <br />
@@ -118,12 +118,29 @@ export default function Welcome() {
               <span style={{ color: '#a1a1aa' }}>Real Profits.</span>
             </h1>
 
-            <p className="text-base sm:text-lg leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0" style={{ color: MUTED }}>
+            <p className="text-sm sm:text-lg leading-relaxed mb-5 sm:mb-6 max-w-lg mx-auto lg:mx-0" style={{ color: MUTED }}>
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-10">
+            {/* Mobile: compact Vega visible above the fold */}
+            <div className="flex justify-center mb-5 sm:mb-6 lg:hidden">
+              <img
+                src={VEGA_IMAGE}
+                alt="Vega — TrueOddsIQ AI sports analyst"
+                className="rounded-xl"
+                style={{
+                  maxHeight: 200,
+                  width: 'auto',
+                  maxWidth: '85%',
+                  objectFit: 'contain',
+                  objectPosition: 'center top',
+                  filter: 'drop-shadow(0 16px 32px rgba(0,0,0,0.4))',
+                }}
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-8 lg:mb-10">
               <button
                 type="button"
                 onClick={() => ctaSignup('hero_free_pick')}
@@ -142,7 +159,7 @@ export default function Welcome() {
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 justify-center lg:justify-start">
+            <div className="hidden lg:flex flex-row flex-wrap gap-8">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
                   <Brain size={18} style={{ color: '#94a3b8' }} />
@@ -164,7 +181,7 @@ export default function Welcome() {
             </div>
           </div>
 
-          <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+          <div className="hidden lg:flex justify-center lg:justify-end">
             <div className="relative w-full" style={{ maxWidth: 480 }}>
               <div
                 className="absolute inset-0 rounded-3xl blur-3xl opacity-30"
