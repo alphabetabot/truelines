@@ -6,9 +6,28 @@ export default function LogoLink({
   maxWidth = 220,
   className = '',
   style = {},
+  theme = 'default',
 }) {
   const { user } = useAuth()
   const homeTo = user ? '/odds' : '/'
+
+  if (theme === 'marketing') {
+    return (
+      <Link
+        to={homeTo}
+        className={className}
+        aria-label="TrueOddsIQ home"
+        style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', ...style }}
+      >
+        <span
+          className="font-black tracking-tight whitespace-nowrap"
+          style={{ fontSize: height > 32 ? 20 : 17, color: '#fafafa', lineHeight: 1 }}
+        >
+          TrueOdds<span style={{ color: '#f59e0b' }}>IQ</span>
+        </span>
+      </Link>
+    )
+  }
 
   return (
     <Link

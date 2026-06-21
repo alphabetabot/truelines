@@ -3,8 +3,8 @@ import LogoLink from '../LogoLink'
 import { trackEvent } from '../../lib/analytics'
 
 const LINKS = [
-  { label: 'Picks', id: 'top-pick' },
-  { label: 'How It Works', id: 'top-pick' },
+  { label: 'Today\'s Pick', id: 'top-pick' },
+  { label: 'How It Works', id: 'how-it-works' },
   { label: 'Results', id: 'results' },
   { label: 'Pricing', id: 'pricing' },
 ]
@@ -25,13 +25,13 @@ export default function HomeNav() {
     <nav
       className="sticky top-0 z-40 w-full"
       style={{
-        background: 'rgba(6, 6, 6, 0.92)',
+        background: 'rgba(3, 7, 18, 0.9)',
         backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid rgba(57, 255, 100, 0.12)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
       }}
     >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-        <LogoLink height={34} maxWidth={150} />
+        <LogoLink height={34} theme="marketing" />
 
         <div className="hidden md:flex items-center gap-8">
           {LINKS.map(({ label, id }) => (
@@ -40,7 +40,7 @@ export default function HomeNav() {
               type="button"
               onClick={() => scrollToId(id)}
               className="text-sm font-medium transition-colors hover:text-white"
-              style={{ color: '#a3a3a3', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ color: '#a1a1aa', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {label}
             </button>
@@ -51,18 +51,18 @@ export default function HomeNav() {
           <button
             type="button"
             onClick={() => navigate('/login')}
-            className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white/5"
-            style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.2)' }}
+            className="hidden sm:inline-flex px-4 py-2 rounded-full text-sm font-semibold transition-colors hover:bg-white/5"
+            style={{ color: '#e4e4e7', border: '1px solid rgba(255,255,255,0.15)' }}
           >
             Sign In
           </button>
           <button
             type="button"
             onClick={ctaSignup}
-            className="px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
-            style={{ background: 'linear-gradient(135deg, #f5b800 0%, #e8a317 100%)', color: '#0a0a0a' }}
+            className="px-3 sm:px-5 py-2 rounded-full text-xs sm:text-sm font-semibold whitespace-nowrap transition-opacity hover:opacity-90"
+            style={{ background: '#fafafa', color: '#09090b' }}
           >
-            Get Today&apos;s Free Pick
+            Get Free Pick
           </button>
         </div>
       </div>

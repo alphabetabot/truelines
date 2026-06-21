@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import {
-  Brain, TrendingUp, BarChart2, Check, Lock, Trophy, LineChart, Target, Shield,
-} from 'lucide-react'
+import { Brain, TrendingUp, BarChart2, Check, Lock, ClipboardCheck, Eye, Shield } from 'lucide-react'
 import { usePickPerformance } from '../hooks/usePickPerformance'
 import { trackEvent } from '../lib/analytics'
 import { briefEdgeSummary } from '../lib/pickText'
@@ -10,10 +8,16 @@ import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 import HomeNav from '../components/marketing/HomeNav'
 import HomeFooter from '../components/marketing/HomeFooter'
 
-const PAGE = 'max-w-6xl mx-auto w-full px-4 sm:px-6'
+const PAGE = 'max-w-6xl mx-auto w-full px-4 sm:px-6 lg:px-8'
 const VEGA_IMAGE = '/realvega.jpeg'
-const GREEN = '#39ff66'
-const GOLD = '#f5b800'
+
+const BG = '#030712'
+const TEXT = '#fafafa'
+const MUTED = '#a1a1aa'
+const DIM = '#71717a'
+const ACCENT = '#4ade80'
+const CARD = 'rgba(255,255,255,0.04)'
+const BORDER = 'rgba(255,255,255,0.08)'
 
 function isPlaceholderBet(bet) {
   return !bet || bet.includes('-10000') || bet.includes('-99999')
@@ -34,19 +38,13 @@ function confidencePercent(confidence) {
 function edgePercentFromText(edge) {
   if (!edge) return null
   const match = String(edge).match(/(\d+(?:\.\d+)?)\s*%/)
-  return match ? `+${match[1]}%` : null
+  return match ? `${match[1]}%` : null
 }
 
-function edgeBullets(edge, max = 3) {
-  if (!edge) return []
-  const text = briefEdgeSummary(edge, max)
-  return text.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, max)
-}
-
-function CheckItem({ children }) {
+function CheckItem({ children, accent = ACCENT }) {
   return (
-    <li className="flex items-start gap-2.5 text-sm" style={{ color: '#a3a3a3' }}>
-      <Check size={16} className="shrink-0 mt-0.5" style={{ color: GREEN }} />
+    <li className="flex items-start gap-2.5 text-sm" style={{ color: MUTED }}>
+      <Check size={16} className="shrink-0 mt-0.5" style={{ color: accent }} />
       <span>{children}</span>
     </li>
   )
@@ -88,114 +86,100 @@ export default function Welcome() {
     navigate('/premium')
   }
 
-  const winRate = perf.hasRecord && perf.winRate != null ? `${perf.winRate}%` : '—'
-  const unitsLabel = perf.hasRecord && !perf.error
-    ? `${perf.totalUnits > 0 ? '+' : ''}${perf.totalUnits.toFixed(1)}`
-    : '—'
   const picksTracked = perf.hasRecord && !perf.error ? String(perf.gradedCount) : '—'
   const recordLabel = perf.hasRecord && !perf.error ? `${perf.wins}–${perf.losses}` : '—'
 
   const edgePct = pick ? edgePercentFromText(pick.edge) : null
   const confPct = pick ? confidencePercent(pick.confidence) : null
-  const bullets = pick ? edgeBullets(pick.edge) : []
+  const edgePreview = pick?.edge ? briefEdgeSummary(pick.edge, 2) : null
 
   return (
     <div
       className="w-full text-white min-h-screen"
       style={{
         fontFamily: "'Instrument Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        background: '#060606',
+        background: `radial-gradient(ellipse 120% 80% at 50% -20%, rgba(59, 130, 246, 0.1), transparent 55%), ${BG}`,
       }}
     >
       <HomeNav />
 
       {/* ── HERO ── */}
-      <header
-        className={`${PAGE} pt-12 pb-16 lg:pt-16 lg:pb-20`}
-        style={{
-          background: 'radial-gradient(ellipse 80% 60% at 70% 20%, rgba(57, 255, 100, 0.08), transparent 60%)',
-        }}
-      >
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-6 items-center">
-          <div>
+      <header className={`${PAGE} pt-12 pb-16 sm:pt-16 sm:pb-20 lg:pt-20 lg:pb-24`}>
+        <div className="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+          <div className="text-center lg:text-left order-2 lg:order-1">
             <h1
-              className="font-black leading-[1.08] tracking-tight mb-5"
+              className="font-black leading-[1.06] tracking-tight mb-5"
               style={{ fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)' }}
             >
-              <span style={{ color: '#fafafa' }}>Smarter Bets.</span>
+              <span style={{ color: TEXT }}>Smarter Bets.</span>
               <br />
-              <span style={{ color: '#fafafa' }}>Real Edge.</span>
+              <span style={{ color: '#e4e4e7' }}>Real Edge.</span>
               <br />
-              <span
-                style={{
-                  background: 'linear-gradient(90deg, #39ff66 0%, #38bdf8 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                Real Profits.
-              </span>
+              <span style={{ color: '#a1a1aa' }}>Real Profits.</span>
             </h1>
 
-            <p className="text-base sm:text-lg leading-relaxed mb-8 max-w-lg" style={{ color: '#a3a3a3' }}>
+            <p className="text-base sm:text-lg leading-relaxed mb-8 max-w-lg mx-auto lg:mx-0" style={{ color: MUTED }}>
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-10">
+            <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start mb-10">
               <button
                 type="button"
                 onClick={() => ctaSignup('hero_free_pick')}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-lg font-bold text-sm sm:text-base transition-opacity hover:opacity-90"
-                style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
+                className="inline-flex items-center justify-center px-7 py-3.5 rounded-full font-semibold text-sm sm:text-base transition-opacity hover:opacity-90"
+                style={{ background: '#fafafa', color: '#09090b' }}
               >
-                Get Today&apos;s Free Pick →
+                Get Today&apos;s Free Pick
               </button>
               <button
                 type="button"
-                onClick={() => scrollToId('top-pick')}
-                className="px-6 py-3.5 rounded-lg font-semibold text-sm sm:text-base transition-colors hover:bg-white/5"
-                style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.2)' }}
+                onClick={() => scrollToId('how-it-works')}
+                className="px-7 py-3.5 rounded-full font-semibold text-sm sm:text-base transition-colors hover:bg-white/5"
+                style={{ color: TEXT, border: '1px solid rgba(255,255,255,0.15)' }}
               >
                 See How It Works
               </button>
             </div>
 
-            <div className="flex flex-col sm:flex-row flex-wrap gap-6 sm:gap-8">
-              {[
-                { icon: Brain, label: 'AI-Powered Analysis' },
-                { icon: TrendingUp, label: 'Sharp Money Tracking' },
-                { icon: BarChart2, label: 'Live Odds From 6 Books' },
-              ].map(({ icon: Icon, label }) => (
-                <div key={label} className="flex items-center gap-2.5">
-                  <div
-                    className="w-9 h-9 rounded-lg flex items-center justify-center"
-                    style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.2)' }}
-                  >
-                    <Icon size={18} style={{ color: GREEN }} />
-                  </div>
-                  <span className="text-sm font-medium" style={{ color: '#d4d4d4' }}>{label}</span>
+            <div className="flex flex-col sm:flex-row flex-wrap gap-5 sm:gap-8 justify-center lg:justify-start">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <Brain size={18} style={{ color: '#94a3b8' }} />
                 </div>
-              ))}
+                <span className="text-sm font-medium" style={{ color: '#d4d4d8' }}>AI-Powered Analysis</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <TrendingUp size={18} style={{ color: '#94a3b8' }} />
+                </div>
+                <span className="text-sm font-medium" style={{ color: '#d4d4d8' }}>Sharp Money Tracking</span>
+              </div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+                  <BarChart2 size={18} style={{ color: '#94a3b8' }} />
+                </div>
+                <span className="text-sm font-medium" style={{ color: '#d4d4d8' }}>Live Odds From 6 Books</span>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-center lg:justify-end">
+          <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
             <div className="relative w-full" style={{ maxWidth: 480 }}>
               <div
-                className="absolute -inset-4 rounded-3xl blur-2xl opacity-30"
-                style={{ background: 'radial-gradient(circle, rgba(57,255,100,0.4) 0%, transparent 70%)' }}
+                className="absolute inset-0 rounded-3xl blur-3xl opacity-30"
+                style={{ background: 'radial-gradient(circle at 50% 40%, rgba(96, 165, 250, 0.25), transparent 70%)' }}
                 aria-hidden
               />
               <img
                 src={VEGA_IMAGE}
-                alt="Vega AI Sports Analyst"
-                className="relative w-full h-auto rounded-xl"
+                alt="Vega — TrueOddsIQ AI sports analyst"
+                className="relative w-full h-auto rounded-2xl"
                 style={{
                   maxHeight: 'min(70vh, 560px)',
                   objectFit: 'contain',
                   objectPosition: 'center top',
-                  filter: 'drop-shadow(0 20px 40px rgba(0,0,0,0.5))',
+                  filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.45))',
                 }}
               />
             </div>
@@ -205,92 +189,89 @@ export default function Welcome() {
 
       {/* ── TODAY'S TOP PICK ── */}
       <section id="top-pick" className={`${PAGE} py-14 sm:py-20`}>
-        <p className="text-center text-xs font-bold uppercase tracking-[0.25em] mb-10" style={{ color: GREEN }}>
-          Today&apos;s Top Pick
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] mb-3 text-center" style={{ color: DIM }}>
+          Today&apos;s top pick
         </p>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-10 tracking-tight" style={{ color: TEXT }}>
+          Vega&apos;s pick of the day
+        </h2>
 
         {pickLoading ? (
-          <div className="rounded-2xl animate-pulse h-64" style={{ background: 'rgba(57,255,100,0.04)' }} />
+          <div className="rounded-2xl animate-pulse h-72 max-w-2xl mx-auto" style={{ background: CARD }} />
         ) : pick ? (
           <div
-            className="rounded-2xl overflow-hidden"
+            className="max-w-2xl mx-auto rounded-2xl overflow-hidden"
             style={{
-              background: 'linear-gradient(180deg, rgba(20,20,20,0.95) 0%, rgba(10,10,10,0.98) 100%)',
-              border: '1px solid rgba(57, 255, 100, 0.2)',
-              boxShadow: '0 0 40px rgba(57, 255, 100, 0.06)',
+              background: 'linear-gradient(145deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%)',
+              boxShadow: `0 0 0 1px ${BORDER}, 0 24px 48px rgba(0,0,0,0.35)`,
             }}
           >
-            <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
-              {/* Pick details */}
-              <div className="p-6 sm:p-8">
-                <p className="text-xs font-semibold uppercase tracking-wider mb-4" style={{ color: '#737373' }}>
-                  {pick.sport}
+            <div className="p-6 sm:p-8">
+              <p className="text-xs font-semibold uppercase tracking-wider mb-3" style={{ color: DIM }}>
+                {pick.sport}
+              </p>
+              <p className="text-xl sm:text-2xl font-bold mb-1" style={{ color: TEXT }}>{pick.game}</p>
+              <p className="text-lg font-semibold mb-6" style={{ color: '#e4e4e7' }}>{pick.pick}</p>
+
+              <div className="flex flex-wrap gap-8 mb-6">
+                {edgePct && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: DIM }}>Edge</p>
+                    <p className="text-2xl font-bold" style={{ color: ACCENT }}>{edgePct}</p>
+                  </div>
+                )}
+                {confPct != null && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: DIM }}>Confidence</p>
+                    <p className="text-2xl font-bold" style={{ color: TEXT }}>{confPct}%</p>
+                  </div>
+                )}
+              </div>
+
+              {edgePreview && (
+                <p className="text-sm leading-relaxed mb-6" style={{ color: MUTED }}>
+                  {edgePreview}
+                  <span style={{ color: DIM }}> …</span>
                 </p>
-                <p className="text-xl font-bold mb-1" style={{ color: '#fafafa' }}>{pick.pick}</p>
-                <p className="text-sm mb-6" style={{ color: '#a3a3a3' }}>{pick.game}</p>
-                <div className="flex gap-8">
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: '#737373' }}>Edge</p>
-                    <p className="text-lg font-bold" style={{ color: GREEN }}>{edgePct || '—'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider mb-1" style={{ color: '#737373' }}>Confidence</p>
-                    <p className="text-lg font-bold" style={{ color: '#fafafa' }}>{confPct != null ? `${confPct}%` : pick.confidence || '—'}</p>
-                  </div>
-                </div>
-              </div>
+              )}
 
-              {/* Why we like it */}
-              <div className="p-6 sm:p-8">
-                <p className="text-sm font-bold mb-4" style={{ color: '#fafafa' }}>Why we like it:</p>
-                <ul className="space-y-3">
-                  {bullets.length > 0 ? bullets.map(line => (
-                    <CheckItem key={line}>{line}</CheckItem>
-                  )) : (
-                    <>
-                      <CheckItem>Backed by live sportsbook odds data</CheckItem>
-                      <CheckItem>AI analysis from Vega on matchup context</CheckItem>
-                      <CheckItem>Graded publicly after the game finishes</CheckItem>
-                    </>
-                  )}
-                </ul>
-              </div>
-
-              {/* Locked unlock */}
-              <div className="p-6 sm:p-8 flex flex-col items-center justify-center text-center">
+              <div
+                className="rounded-xl p-4 flex items-center gap-4"
+                style={{ background: 'rgba(0,0,0,0.25)', border: `1px solid ${BORDER}` }}
+              >
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4"
-                  style={{ background: 'rgba(57,255,100,0.1)', border: `1px solid rgba(57,255,100,0.3)` }}
+                  className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+                  style={{ background: CARD, border: `1px solid ${BORDER}` }}
                 >
-                  <Lock size={24} style={{ color: GREEN }} />
+                  <Lock size={18} style={{ color: '#94a3b8' }} />
                 </div>
-                <p className="text-sm font-semibold mb-1" style={{ color: '#fafafa' }}>Locked</p>
-                <p className="text-xs mb-5 max-w-[200px] leading-relaxed" style={{ color: '#737373' }}>
-                  Unlock full analysis, player props &amp; best bets
-                </p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: TEXT }}>Full analysis locked</p>
+                  <p className="text-xs" style={{ color: DIM }}>Sign up free for the complete write-up and daily email</p>
+                </div>
                 <button
                   type="button"
                   onClick={() => ctaSignup('pick_unlock')}
-                  className="text-sm font-bold transition-opacity hover:opacity-80"
-                  style={{ color: GREEN, background: 'none', border: 'none', cursor: 'pointer' }}
+                  className="shrink-0 px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
+                  style={{ background: '#fafafa', color: '#09090b' }}
                 >
-                  Get Free Pick →
+                  Unlock
                 </button>
               </div>
             </div>
           </div>
         ) : (
           <div
-            className="rounded-2xl p-10 text-center"
-            style={{ border: '1px solid rgba(57,255,100,0.15)', background: 'rgba(57,255,100,0.03)' }}
+            className="max-w-2xl mx-auto rounded-2xl p-10 text-center"
+            style={{ background: CARD, boxShadow: `0 0 0 1px ${BORDER}` }}
           >
-            <p className="text-lg font-semibold mb-2" style={{ color: '#fafafa' }}>Picks publish every morning</p>
-            <p className="text-sm mb-6" style={{ color: '#737373' }}>Pacific time · Sign up free to get today&apos;s pick by email</p>
+            <p className="text-lg font-semibold mb-2" style={{ color: '#e4e4e7' }}>Picks publish every morning</p>
+            <p className="text-sm mb-6" style={{ color: DIM }}>Pacific time · Sign up free to get today&apos;s pick by email</p>
             <button
               type="button"
               onClick={() => ctaSignup('pick_empty')}
-              className="px-6 py-3 rounded-lg font-bold"
-              style={{ background: GREEN, color: '#0a0a0a' }}
+              className="px-7 py-3.5 rounded-full font-semibold transition-opacity hover:opacity-90"
+              style={{ background: '#fafafa', color: '#09090b' }}
             >
               Get Today&apos;s Free Pick
             </button>
@@ -298,55 +279,97 @@ export default function Welcome() {
         )}
       </section>
 
-      {/* ── VERIFIED RESULTS ── */}
-      <section id="results" className={`${PAGE} py-14 sm:py-20`}>
-        <p className="text-center text-sm font-bold uppercase tracking-[0.2em] mb-12" style={{ color: GREEN }}>
-          Our Picks. Verified. Transparent.
-        </p>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+      {/* ── HOW IT WORKS ── */}
+      <section id="how-it-works" className={`${PAGE} py-14 sm:py-20`}>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12 tracking-tight" style={{ color: TEXT }}>
+          How it works
+        </h2>
+        <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { icon: Trophy, val: perf.loading ? '…' : winRate, label: 'Win Rate' },
-            { icon: LineChart, val: perf.loading ? '…' : unitsLabel, label: 'Units Profit' },
-            { icon: Target, val: perf.loading ? '…' : picksTracked, label: 'Picks Tracked' },
-            { icon: Shield, val: perf.loading ? '…' : recordLabel, label: 'W–L Record' },
-          ].map(({ icon: Icon, val, label }) => (
-            <div key={label} className="text-center">
-              <div
-                className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4"
-                style={{ background: 'rgba(57,255,100,0.08)', border: '1px solid rgba(57,255,100,0.15)' }}
-              >
-                <Icon size={22} style={{ color: GREEN }} />
-              </div>
-              <p className="text-3xl sm:text-4xl font-black mb-1" style={{ color: '#fafafa' }}>{val}</p>
-              <p className="text-xs uppercase tracking-wider" style={{ color: '#737373' }}>{label}</p>
+            {
+              step: '01',
+              title: 'Vega analyzes the slate',
+              body: 'AI scans odds from six books, injury reports, and sharp money movement every morning.',
+            },
+            {
+              step: '02',
+              title: 'You get the top pick free',
+              body: 'Create a free account for today\'s best bet by email — edge, confidence, and key angles included.',
+            },
+            {
+              step: '03',
+              title: 'Every result is graded publicly',
+              body: 'Wins and losses post to the tracker after games finish. No hidden record, no cherry-picking.',
+            },
+          ].map(({ step, title, body }) => (
+            <div
+              key={step}
+              className="rounded-2xl p-6"
+              style={{ background: CARD, boxShadow: `0 0 0 1px ${BORDER}` }}
+            >
+              <p className="text-xs font-bold mb-4 tracking-widest" style={{ color: '#52525b' }}>{step}</p>
+              <p className="text-lg font-semibold mb-2" style={{ color: TEXT }}>{title}</p>
+              <p className="text-sm leading-relaxed" style={{ color: MUTED }}>{body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── VERIFIED RESULTS ── */}
+      <section id="results" className={`${PAGE} py-14 sm:py-20`}>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-3 tracking-tight" style={{ color: TEXT }}>
+          Verified. Transparent.
+        </h2>
+        <p className="text-center text-sm mb-12 max-w-lg mx-auto" style={{ color: MUTED }}>
+          Every pick is graded in public after the final whistle. See the full history — wins and losses included.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-8 max-w-3xl mx-auto mb-10">
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+              <ClipboardCheck size={22} style={{ color: '#94a3b8' }} />
+            </div>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight" style={{ color: TEXT }}>{perf.loading ? '…' : picksTracked}</p>
+            <p className="text-xs sm:text-sm uppercase tracking-wider" style={{ color: DIM }}>Picks graded publicly</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+              <Eye size={22} style={{ color: '#94a3b8' }} />
+            </div>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight" style={{ color: TEXT }}>{perf.loading ? '…' : recordLabel}</p>
+            <p className="text-xs sm:text-sm uppercase tracking-wider" style={{ color: DIM }}>Win–loss record posted</p>
+          </div>
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: CARD, border: `1px solid ${BORDER}` }}>
+              <Shield size={22} style={{ color: '#94a3b8' }} />
+            </div>
+            <p className="text-3xl sm:text-4xl font-bold mb-1 tracking-tight" style={{ color: TEXT }}>100%</p>
+            <p className="text-xs sm:text-sm uppercase tracking-wider" style={{ color: DIM }}>Transparent grading</p>
+          </div>
         </div>
         <div className="text-center">
           <Link
             to="/odds?tracker=1#pick-tracker"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-semibold transition-colors hover:bg-white/5"
-            style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.15)' }}
+            className="inline-flex items-center gap-2 text-sm font-medium transition-colors hover:text-white"
+            style={{ color: MUTED }}
           >
-            View Full Track Record →
+            View full track record →
           </Link>
         </div>
       </section>
 
       {/* ── PRICING ── */}
-      <section id="pricing" className={`${PAGE} py-14 sm:py-20`}>
-        <h2 className="text-center text-2xl sm:text-3xl font-black mb-12" style={{ color: '#fafafa' }}>
-          Choose Your Edge
+      <section id="pricing" className={`${PAGE} py-14 sm:py-20 pb-24`}>
+        <h2 className="text-2xl sm:text-3xl font-bold text-center mb-12 tracking-tight" style={{ color: TEXT }}>
+          Simple pricing
         </h2>
-        <div className="grid md:grid-cols-3 gap-5 max-w-5xl mx-auto">
-          {/* Free */}
+        <div className="grid md:grid-cols-3 gap-5 max-w-4xl mx-auto">
           <div
             className="rounded-2xl p-7 flex flex-col"
-            style={{ background: '#0c0c0c', border: '1px solid rgba(57,255,100,0.15)' }}
+            style={{ background: CARD, boxShadow: `0 0 0 1px ${BORDER}` }}
           >
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>Free</p>
-            <p className="text-3xl font-black mb-6" style={{ color: '#fafafa' }}>
-              $0 <span className="text-base font-normal" style={{ color: '#737373' }}>/mo</span>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: DIM }}>Free</p>
+            <p className="text-3xl font-bold mb-6" style={{ color: TEXT }}>
+              $0 <span className="text-base font-normal" style={{ color: DIM }}>/mo</span>
             </p>
             <ul className="space-y-3 mb-8 flex-1">
               <CheckItem>1 daily pick via email</CheckItem>
@@ -357,25 +380,24 @@ export default function Welcome() {
             <button
               type="button"
               onClick={() => ctaSignup('pricing_free')}
-              className="w-full py-3 rounded-lg font-bold transition-opacity hover:opacity-90"
-              style={{ background: GREEN, color: '#0a0a0a' }}
+              className="w-full py-3 rounded-full font-semibold transition-colors hover:bg-white/10"
+              style={{ color: TEXT, border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.05)' }}
             >
-              Get Free Pick
+              Start free
             </button>
           </div>
 
-          {/* Premium */}
           <div
             className="rounded-2xl p-7 flex flex-col relative"
             style={{
-              background: 'linear-gradient(180deg, #141410 0%, #0c0c0c 100%)',
-              border: `2px solid ${GOLD}`,
-              boxShadow: `0 0 32px rgba(245, 184, 0, 0.12)`,
+              background: 'linear-gradient(160deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 100%)',
+              boxShadow: '0 0 0 1px rgba(255,255,255,0.14), 0 20px 40px rgba(0,0,0,0.3)',
             }}
           >
-            <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: GOLD }}>Premium</p>
-            <p className="text-3xl font-black mb-6" style={{ color: '#fafafa' }}>
-              $19.95 <span className="text-base font-normal" style={{ color: '#737373' }}>/mo</span>
+            <p className="text-xs font-semibold uppercase tracking-widest mb-2" style={{ color: '#a1a1aa' }}>Premium</p>
+            <p className="text-3xl font-bold mb-6" style={{ color: TEXT }}>
+              {PREMIUM_PRICE_DISPLAY.replace('/mo', '')}
+              <span className="text-base font-normal" style={{ color: DIM }}>/mo</span>
             </p>
             <ul className="space-y-3 mb-8 flex-1">
               {[
@@ -384,43 +406,39 @@ export default function Welcome() {
                 'Sharp money & injury reports',
                 'Closing line value tracking',
               ].map(item => (
-                <li key={item} className="flex items-start gap-2.5 text-sm" style={{ color: '#a3a3a3' }}>
-                  <Check size={16} className="shrink-0 mt-0.5" style={{ color: GOLD }} />
-                  <span>{item}</span>
-                </li>
+                <CheckItem key={item} accent="#f59e0b">{item}</CheckItem>
               ))}
             </ul>
             <button
               type="button"
               onClick={() => ctaPremium('pricing_premium')}
-              className="w-full py-3 rounded-lg font-bold transition-opacity hover:opacity-90"
-              style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
+              className="w-full py-3 rounded-full font-semibold transition-opacity hover:opacity-90"
+              style={{ background: '#fafafa', color: '#09090b' }}
             >
-              Get Premium
+              Go Premium
             </button>
           </div>
 
-          {/* Compare */}
           <div
             className="rounded-2xl p-7 flex flex-col items-center text-center"
-            style={{ background: '#0c0c0c', border: '1px solid rgba(255,255,255,0.08)' }}
+            style={{ background: CARD, boxShadow: `0 0 0 1px ${BORDER}` }}
           >
             <div
-              className="w-16 h-16 rounded-2xl flex items-center justify-center mb-5 mt-2"
-              style={{ border: '1px solid rgba(57,255,100,0.2)', background: 'rgba(57,255,100,0.05)' }}
+              className="w-14 h-14 rounded-2xl flex items-center justify-center mb-5 mt-2"
+              style={{ border: `1px solid ${BORDER}`, background: 'rgba(255,255,255,0.03)' }}
             >
-              <BarChart2 size={28} style={{ color: GREEN }} />
+              <BarChart2 size={26} style={{ color: '#94a3b8' }} />
             </div>
-            <p className="text-sm leading-relaxed mb-8 flex-1" style={{ color: '#a3a3a3' }}>
-              Not sure which plan is right for you? Compare features side-by-side and choose what fits your betting style.
+            <p className="text-sm leading-relaxed mb-8 flex-1" style={{ color: MUTED }}>
+              See exactly what&apos;s included in free vs Premium before you decide.
             </p>
             <Link
               to="/plans"
               onClick={() => trackEvent('welcome_cta', { action: 'plans', source: 'pricing_compare' })}
-              className="w-full py-3 rounded-lg font-semibold text-center block transition-colors hover:bg-white/5"
-              style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.15)' }}
+              className="w-full py-3 rounded-full font-semibold text-center block transition-colors hover:bg-white/5"
+              style={{ color: TEXT, border: `1px solid ${BORDER}` }}
             >
-              Compare Plans →
+              Compare plans
             </Link>
           </div>
         </div>
