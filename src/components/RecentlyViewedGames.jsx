@@ -59,10 +59,9 @@ export default function RecentlyViewedGames({ page, sportKey, onSelect }) {
             key={`${entry.sport}-${entry.id}`}
             type="button"
             onClick={() => openGame(entry)}
-            className="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
+            className="shrink-0 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
             style={{
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
+              background: 'rgba(255,255,255,0.06)',
               color: 'var(--text-primary)',
             }}
           >

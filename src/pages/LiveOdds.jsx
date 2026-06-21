@@ -19,7 +19,7 @@ import { RefreshCw, Search, AlertTriangle } from 'lucide-react'
 import { format } from 'date-fns'
 
 const TABS = ['Odds', 'Scores']
-const COMPACT_SHIMMER_HEIGHT = 176
+const COMPACT_SHIMMER_HEIGHT = 200
 
 export default function LiveOdds() {
   const [sport, setSport] = useSportSelection('odds')
@@ -194,11 +194,11 @@ export default function LiveOdds() {
           {isError && (
             <div
               className="flex items-start gap-3 p-3 rounded-xl mb-3"
-              style={{ background: '#fef2f2', border: '1px solid #fecaca' }}
+              style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.25)' }}
             >
-              <AlertTriangle size={16} style={{ color: '#dc2626' }} className="mt-0.5 shrink-0" />
+              <AlertTriangle size={16} style={{ color: '#fca5a5' }} className="mt-0.5 shrink-0" />
               <div>
-                <p className="font-semibold text-sm" style={{ color: '#dc2626' }}>
+                <p className="font-semibold text-sm" style={{ color: '#fca5a5' }}>
                   Failed to load odds
                 </p>
                 <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
@@ -231,16 +231,18 @@ export default function LiveOdds() {
                   </p>
                 </div>
               ) : (
-                displayGames.map(game => (
-                  <MatchupCard
-                    key={game.id}
-                    game={game}
-                    isMLB={isMLB}
-                    pitchers={pitchers}
-                    compact
-                    onSelect={openCompare}
-                  />
-                ))
+                <div className="flex flex-col gap-2.5">
+                  {displayGames.map(game => (
+                    <MatchupCard
+                      key={game.id}
+                      game={game}
+                      isMLB={isMLB}
+                      pitchers={pitchers}
+                      compact
+                      onSelect={openCompare}
+                    />
+                  ))}
+                </div>
               )}
 
               <DailyPickTeaser />
