@@ -9,7 +9,7 @@ export const ROUTE_META = {
   '/': {
     title: 'Daily AI Picks & Live Odds Comparison',
     description:
-      'Vega\'s daily top pick, public track record, and live odds from six sportsbooks. Compare free vs Premium and sign up in minutes.',
+      'Smarter bets with Vega — AI picks, sharp money tracking, and public results. Free top pick daily or Premium full slate.',
   },
   '/plans': {
     title: 'Compare Free vs Premium',
