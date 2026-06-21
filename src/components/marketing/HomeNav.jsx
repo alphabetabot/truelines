@@ -53,8 +53,8 @@ export default function HomeNav() {
           <button
             type="button"
             onClick={() => navigate('/login')}
-            className="hidden sm:inline-flex px-4 py-2 rounded-lg text-sm font-semibold transition-colors hover:bg-white/5"
-            style={{ color: '#e5e5e5', background: 'transparent', border: 'none' }}
+            className="inline-flex px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors hover:bg-white/5 whitespace-nowrap"
+            style={{ color: '#e5e5e5', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
           >
             Sign In
           </button>
