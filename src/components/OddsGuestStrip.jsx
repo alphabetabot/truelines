@@ -8,8 +8,8 @@ export default function OddsGuestStrip() {
 
   return (
     <div
-      className="mb-3 px-3 py-2 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
+      className="mb-3 px-3 py-2.5 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
+      style={{ background: 'rgba(255,255,255,0.04)' }}
     >
       <p className="text-xs leading-snug" style={{ color: 'var(--text-muted)' }}>
         Compare live sportsbook odds, AI picks, and line movement.{' '}

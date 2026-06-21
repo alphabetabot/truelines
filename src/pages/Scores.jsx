@@ -38,13 +38,15 @@ function ScoreCard({ game, liveStatusMap }) {
 
   return (
     <div
-      className="mb-2 rounded-xl"
-      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+      className="mb-2 rounded-2xl overflow-hidden"
+      style={{
+        background: 'linear-gradient(165deg, rgba(18,18,18,0.98) 0%, rgba(8,8,8,1) 100%)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.04)',
+      }}
     >
-      {/* Header — no overflow-hidden on card; it clipped “Final” and scores at rounded corners */}
       <div
-        className="flex items-center justify-between gap-3 rounded-t-xl px-4 py-2"
-        style={{ background: 'var(--bg-elevated)' }}
+        className="flex items-center justify-between gap-3 px-4 py-2"
+        style={{ background: 'rgba(255,255,255,0.04)' }}
       >
         <span className="min-w-0 shrink text-xs font-semibold text-white truncate">
           {format(gameTime, 'EEE M/d')}
@@ -57,12 +59,10 @@ function ScoreCard({ game, liveStatusMap }) {
         </span>
       </div>
 
-      {/* Teams + scores */}
-      <div className="rounded-b-xl px-4 py-2.5 sm:px-5">
-        {/* Away */}
+      <div className="px-4 py-2 sm:px-5">
         <div
           className="flex items-center gap-3 py-1.5"
-          style={{ borderBottom: '1px solid #f1f5f9' }}
+          style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
         >
           <span
             className="min-w-0 flex-1 text-sm truncate"
@@ -85,7 +85,6 @@ function ScoreCard({ game, liveStatusMap }) {
             {isFinal || isLive ? (away?.score ?? '—') : '—'}
           </span>
         </div>
-        {/* Home */}
         <div className="flex items-center gap-3 py-1.5">
           <span
             className="min-w-0 flex-1 text-sm truncate"
