@@ -3,7 +3,7 @@ import { formatOdds, SPORTSBOOKS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
 import { getSportsbookLink, getSportsbookLinkRel, trackSportsbookClick } from '../lib/affiliateLinks'
 import { ChevronDown, ArrowRight } from 'lucide-react'
 import { getOddsGameTimeLabel } from '../lib/gameStatus'
-import { getAffiliateDisclosureInline, SPORTSBOOK_LINK_FOOTER_NOTE } from '../lib/affiliateDisclosure'
+import { getAffiliateDisclosureInline } from '../lib/affiliateDisclosure'
 import PremiumFeatureSlot from './PremiumFeatureSlot'
 
 const BET_TYPES = [
@@ -327,10 +327,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
       </div>
 
       {/* ── Footer ── */}
-      <div className="px-3.5 py-2.5 flex items-center justify-between gap-3">
-        <span className="text-[10px] leading-snug flex-1" style={{ color: 'var(--text-muted)' }}>
-          {SPORTSBOOK_LINK_FOOTER_NOTE}
-        </span>
+      <div className="px-3.5 py-2.5 flex justify-end">
         <button
           type="button"
           onClick={e => { e.stopPropagation(); onSelect && onSelect(game) }}
