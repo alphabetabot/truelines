@@ -103,18 +103,24 @@ function HeroChartDecor() {
   )
 }
 
-function VegaHeroImage({ compact = false }) {
+function VegaHeroImage({ size = 'desktop' }) {
+  const config = {
+    mobile: { maxWidth: 168, maxHeight: 228 },
+    compact: { maxWidth: 300, maxHeight: 260 },
+    desktop: { maxWidth: 500, maxHeight: 580 },
+  }[size] || { maxWidth: 500, maxHeight: 580 }
+
   return (
-    <div className="relative w-full mx-auto" style={{ maxWidth: compact ? 300 : 500 }}>
+    <div className="relative shrink-0" style={{ width: config.maxWidth, maxWidth: '100%' }}>
       <HeroChartDecor />
       <img
         src={VEGA_IMAGE}
         alt="Vega AI Sports Analyst"
-        className="relative w-full h-auto rounded-xl mx-auto z-10"
+        className="relative w-full h-auto rounded-xl z-10 ml-auto"
         style={{
-          maxHeight: compact ? 260 : 'min(72vh, 580px)',
+          maxHeight: config.maxHeight,
           objectFit: 'contain',
-          objectPosition: 'center top',
+          objectPosition: 'top right',
           filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.55))',
         }}
       />
@@ -206,16 +212,16 @@ export default function Welcome() {
 
       {/* ── HERO ── */}
       <header
-        className={`${PAGE} pt-10 pb-14 sm:pt-14 sm:pb-18 lg:pt-16 lg:pb-20`}
+        className={`${PAGE} pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-16 lg:pb-20`}
         style={{
           background: 'radial-gradient(ellipse 90% 70% at 75% 15%, rgba(57, 255, 100, 0.09), transparent 55%)',
         }}
       >
-        <div className="grid lg:grid-cols-2 gap-10 lg:gap-8 items-center">
-          <div className="text-center lg:text-left">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-8">
+          <div className="col-start-1 row-start-1 text-left min-w-0">
             <h1
-              className="font-black leading-[1.08] tracking-tight mb-5"
-              style={{ fontSize: 'clamp(2.25rem, 5.5vw, 3.75rem)' }}
+              className="font-black leading-[1.08] tracking-tight mb-3 sm:mb-5"
+              style={{ fontSize: 'clamp(1.5rem, 5.5vw, 3.75rem)' }}
             >
               <span style={{ color: '#fafafa' }}>Smarter Bets.</span>
               <br />
@@ -224,16 +230,30 @@ export default function Welcome() {
               <span style={{ color: GREEN }}>Real Profits.</span>
             </h1>
 
-            <p className="text-base sm:text-lg leading-relaxed mb-7 max-w-lg mx-auto lg:mx-0" style={{ color: '#a3a3a3' }}>
+            <p
+              className="text-xs sm:text-base lg:text-lg leading-relaxed max-w-lg"
+              style={{ color: '#a3a3a3' }}
+            >
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
             </p>
+          </div>
 
-            <div className="flex flex-col sm:flex-row gap-3 mb-7 justify-center lg:justify-start">
+          <div className="col-start-2 row-start-1 row-span-2 lg:row-span-3 self-start justify-self-end">
+            <div className="lg:hidden">
+              <VegaHeroImage size="mobile" />
+            </div>
+            <div className="hidden lg:block">
+              <VegaHeroImage size="desktop" />
+            </div>
+          </div>
+
+          <div className="col-start-1 row-start-2 text-left">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 sm:mt-4 max-w-xl">
               <button
                 type="button"
                 onClick={() => ctaSignup('hero_free_pick')}
-                className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm sm:text-base transition-opacity hover:opacity-90"
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-xs sm:text-base transition-opacity hover:opacity-90"
                 style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
               >
                 Get Today&apos;s Free Pick →
@@ -241,27 +261,20 @@ export default function Welcome() {
               <button
                 type="button"
                 onClick={() => scrollToId('top-pick')}
-                className="px-6 py-3.5 rounded-xl font-semibold text-sm sm:text-base transition-colors hover:bg-white/5"
+                className="px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-semibold text-xs sm:text-base transition-colors hover:bg-white/5"
                 style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.18)' }}
               >
                 See How It Works
               </button>
             </div>
-
-            <FeatureBar className="hidden lg:flex justify-start" />
           </div>
 
-          <div className="flex justify-center lg:justify-end">
-            <div className="w-full lg:hidden">
-              <VegaHeroImage compact />
-            </div>
-            <div className="hidden lg:block w-full">
-              <VegaHeroImage />
-            </div>
+          <div className="col-start-1 row-start-3 hidden lg:block">
+            <FeatureBar className="mt-10 justify-start" />
           </div>
-
-          <FeatureBar className="lg:hidden justify-center col-span-1" />
         </div>
+
+        <FeatureBar className="mt-8 lg:hidden" />
       </header>
 
       {/* ── TODAY'S TOP PICK ── */}
