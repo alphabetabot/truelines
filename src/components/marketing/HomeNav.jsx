@@ -1,8 +1,5 @@
 import { useNavigate } from 'react-router-dom'
 import MarketingLogo from './MarketingLogo'
-import { trackEvent } from '../../lib/analytics'
-
-const GOLD = '#f5b800'
 
 const LINKS = [
   { label: 'Picks', id: 'top-pick' },
@@ -17,11 +14,6 @@ function scrollToId(id) {
 
 export default function HomeNav() {
   const navigate = useNavigate()
-
-  function ctaSignup() {
-    trackEvent('welcome_cta', { action: 'signup', source: 'nav_free_pick' })
-    navigate('/login', { state: { mode: 'signup' } })
-  }
 
   return (
     <nav
@@ -49,24 +41,18 @@ export default function HomeNav() {
           ))}
         </div>
 
-        <div className="flex items-center justify-end gap-2 sm:gap-3 shrink-0">
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            className="inline-flex px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-colors hover:bg-white/5 whitespace-nowrap"
-            style={{ color: '#e5e5e5', background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
-          >
-            Sign In
-          </button>
-          <button
-            type="button"
-            onClick={ctaSignup}
-            className="px-3 sm:px-5 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
-            style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
-          >
-            Get Today&apos;s Free Pick
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => navigate('/login')}
+          className="inline-flex px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90 shrink-0"
+          style={{
+            background: 'linear-gradient(135deg, #f5b800 0%, #e8a317 100%)',
+            color: '#0a0a0a',
+            border: 'none',
+          }}
+        >
+          Sign In
+        </button>
       </div>
     </nav>
   )
