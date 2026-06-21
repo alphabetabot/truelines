@@ -1,25 +1,44 @@
 @import "tailwindcss";
 
 :root {
-  --bg-primary: #f0f4f8;
-  --bg-secondary: #ffffff;
-  --bg-card: #ffffff;
-  --bg-header: #1e293b;
-  --bg-nav: #0f172a;
-  --border: #e2e8f0;
-  --border-light: #f1f5f9;
-  --text-primary: #0f172a;
-  --text-secondary: #334155;
-  --text-muted: #64748b;
-  --accent: #2563eb;
-  --accent-dim: rgba(37, 99, 235, 0.08);
-  --green: #16a34a;
-  --green-light: rgba(22, 163, 74, 0.1);
-  --red: #dc2626;
-  --gold: #d97706;
-  --odds-border: #e2e8f0;
-  --odds-bg: #f8fafc;
-  --odds-bg-best: #f0fdf4;
+  /* Brand — matches homepage */
+  --green: #39ff66;
+  --green-dim: rgba(57, 255, 100, 0.12);
+  --green-border: rgba(57, 255, 100, 0.22);
+  --gold: #f5b800;
+  --gold-dim: rgba(245, 184, 0, 0.12);
+  --gold-dark: #e8a317;
+
+  /* Surfaces */
+  --bg-primary: #000000;
+  --bg-secondary: #0c0c0c;
+  --bg-card: #121212;
+  --bg-elevated: #1a1a1a;
+  --bg-header: #000000;
+  --bg-nav: rgba(0, 0, 0, 0.88);
+
+  /* Text */
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-muted: #737373;
+  --text-on-cta: #0a0a0a;
+
+  /* UI */
+  --border: rgba(255, 255, 255, 0.1);
+  --border-light: rgba(255, 255, 255, 0.06);
+  --accent: #39ff66;
+  --accent-dim: rgba(57, 255, 100, 0.08);
+
+  /* Semantic */
+  --red: #f87171;
+  --red-dim: rgba(248, 113, 113, 0.12);
+  --green-light: rgba(57, 255, 100, 0.1);
+  --green-live: #39ff66;
+
+  /* Odds workspace */
+  --odds-border: rgba(57, 255, 100, 0.15);
+  --odds-bg: #0c0c0c;
+  --odds-bg-best: rgba(57, 255, 100, 0.08);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -27,22 +46,25 @@
 body {
   background: var(--bg-primary);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+  font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
   font-size: 16px;
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
-  /* Prevent content from touching screen edges on mobile */
   overflow-x: hidden;
 }
 
-h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px; }
-h2 { font-size: 1.4rem; font-weight: 800; }
-h3 { font-size: 1.1rem; font-weight: 700; }
+a {
+  color: var(--accent);
+}
+
+h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px; color: var(--text-primary); }
+h2 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
+h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 4px; }
 
 @keyframes pulse-live {
   0%, 100% { opacity: 1; }
@@ -55,12 +77,11 @@ h3 { font-size: 1.1rem; font-weight: 700; }
 
 .live-dot { animation: pulse-live 1.5s ease-in-out infinite; }
 .shimmer {
-  background: linear-gradient(90deg, #f1f5f9 25%, #e8edf2 50%, #f1f5f9 75%);
+  background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
 
-/* +2px on small body copy inside pages; footer/nav chrome sits outside <main> */
 main .text-xs {
   font-size: 0.875rem;
   line-height: 1.25rem;

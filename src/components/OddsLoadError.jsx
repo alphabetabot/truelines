@@ -11,13 +11,13 @@ export default function OddsLoadError({ title = 'Failed to load odds', message, 
       <AlertTriangle size={16} style={{ color: '#dc2626' }} className="mt-0.5 shrink-0" />
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-sm" style={{ color: '#dc2626' }}>{title}</p>
-        <p className="text-xs mt-0.5" style={{ color: '#475569' }}>{message}</p>
+        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>{message}</p>
         {onRetry && (
           <button
             type="button"
             onClick={onRetry}
             className="mt-2 text-xs font-semibold underline"
-            style={{ color: '#2563eb' }}
+            style={{ color: 'var(--accent)' }}
           >
             Try again
           </button>

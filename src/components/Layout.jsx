@@ -37,8 +37,8 @@ function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact, loc
       end={exact}
       className={`flex items-center ${gap} ${px} h-full font-bold transition-all whitespace-nowrap shrink-0`}
       style={({ isActive }) => ({
-        background: isActive ? '#f59e0b' : 'transparent',
-        color: isActive ? '#0f172a' : compact ? 'rgba(255,255,255,0.8)' : 'rgba(255,255,255,0.8)',
+        background: isActive ? 'var(--gold)' : 'transparent',
+        color: isActive ? 'var(--text-on-cta)' : 'rgba(255,255,255,0.8)',
         fontSize,
       })}
     >
@@ -99,53 +99,51 @@ export default function Layout({ children }) {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: marketingHome ? '#000000' : 'var(--bg-primary)' }}
+      style={{ background: 'var(--bg-primary)' }}
     >
       {!hideRouteSEO && <RouteSEO />}
 
-      {/* Homepage renders its own nav + footer inside Welcome.jsx */}
       {!marketingHome && (
-      <div style={{ background: '#0f172a' }}>
+      <div style={{ background: 'var(--bg-header)', borderBottom: '1px solid var(--green-border)' }}>
         <div
           className="max-w-5xl mx-auto px-4 flex items-center justify-between"
           style={{ height: appWorkspace ? 56 : 68 }}
         >
-          <LogoLink height={48} maxWidth={220} />
+          <LogoLink height={48} maxWidth={220} theme="marketing" />
 
           <div className="flex items-center gap-3">
             {showInstall && (
               <button onClick={handleInstall}
                 className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold"
-                style={{ background: '#f59e0b', color: '#0f172a' }}>
+                style={{ background: 'var(--gold)', color: 'var(--text-on-cta)' }}>
                 <Download size={12} /> Download
               </button>
             )}
             {user ? (
               <button onClick={signOut}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
+                style={{ background: 'rgba(255,255,255,0.06)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
                 Sign Out
               </button>
             ) : (
               <button onClick={() => navigate('/login')}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                style={{ background: '#f59e0b', color: '#0f172a' }}>
+                style={{ background: 'var(--gold)', color: 'var(--text-on-cta)' }}>
                 Sign In
               </button>
             )}
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-              style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
-              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
-              <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
+              style={{ background: 'var(--green-dim)', border: '1px solid var(--green-border)' }}>
+              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: 'var(--green-live)' }} />
+              <span style={{ color: 'var(--green-live)', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
             </div>
           </div>
         </div>
       </div>
       )}
 
-      {/* ── Nav tabs (hidden on marketing homepage — tools live on /odds, /compare, etc.) ── */}
       {!marketingHome && (
-        <div style={{ background: '#1e293b', borderBottom: '3px solid #f59e0b' }}>
+        <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--green-border)' }}>
           <div className="max-w-5xl mx-auto px-3">
             {appWorkspace ? (
               <div
@@ -163,7 +161,7 @@ export default function Layout({ children }) {
                     <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
                   ))}
                 </div>
-                <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid rgba(255,255,255,0.08)' }}>
+                <div className="flex items-center gap-1" style={{ height: 36, borderTop: '1px solid var(--border-light)' }}>
                   {NAV.slice(2).map(item => (
                     <PrimaryNavLink key={item.to} {...item} compact={false} locked={item.premium && !isPremium} />
                   ))}
@@ -176,19 +174,17 @@ export default function Layout({ children }) {
 
       {!appWorkspace && !marketingHome && <SeoNavBar />}
 
-      {/* ── iOS install hint ── */}
       {showIOSHint && (
         <div className="flex items-center justify-between px-4 py-3"
-          style={{ background: '#f59e0b' }}>
-          <span className="text-sm font-semibold" style={{ color: '#0f172a' }}>
+          style={{ background: 'var(--gold)' }}>
+          <span className="text-sm font-semibold" style={{ color: 'var(--text-on-cta)' }}>
             📲 Tap the <strong>Share ⬆️</strong> button at the bottom of Safari → then tap <strong>"Add to Home Screen"</strong>
           </span>
           <button onClick={() => setShowIOSHint(false)}
-            className="font-bold ml-4 text-lg" style={{ color: '#0f172a' }}>✕</button>
+            className="font-bold ml-4 text-lg" style={{ color: 'var(--text-on-cta)' }}>✕</button>
         </div>
       )}
 
-      {/* ── Main content ── */}
       <main
         className={`flex-1 w-full ${marketingHome ? 'max-w-none px-0 py-0' : `max-w-5xl mx-auto px-4 ${appWorkspace ? 'py-2 sm:py-3' : 'py-5'}`}`}
         style={marketingHome ? undefined : { paddingLeft: 16, paddingRight: 16 }}
@@ -201,33 +197,33 @@ export default function Layout({ children }) {
       {!marketingHome && (
       <footer
         className="px-4 pb-20 sm:pb-6 py-4 sm:pb-4"
-        style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}
+        style={{ borderTop: '1px solid var(--green-border)', background: 'var(--bg-secondary)' }}
       >
         <div className="max-w-5xl mx-auto flex flex-col gap-2">
           <SeoFooterNav variant="default" />
-          <div className="text-center" style={{ color: '#334155', fontSize: 11 }}>
+          <div className="text-center" style={{ color: 'var(--text-muted)', fontSize: 11 }}>
             TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
           </div>
-          <div className="text-center" style={{ fontSize: 11, color: '#334155' }}>
-            Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: '#16a34a', fontWeight: 700 }}>1-800-GAMBLER</a>
+          <div className="text-center" style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+            Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: 'var(--green)', fontWeight: 700 }}>1-800-GAMBLER</a>
             {' '}·{' '}
-            <Link to="/about" style={{ color: '#2563eb', fontWeight: 600 }}>About</Link>
+            <Link to="/about" style={{ color: 'var(--accent)', fontWeight: 600 }}>About</Link>
             {' '}·{' '}
-            <Link to="/disclaimer" style={{ color: '#2563eb', fontWeight: 600 }}>Site Disclaimer</Link>
+            <Link to="/disclaimer" style={{ color: 'var(--accent)', fontWeight: 600 }}>Site Disclaimer</Link>
             {' '}·{' '}
-            <Link to="/privacy" style={{ color: '#2563eb', fontWeight: 600 }}>Privacy</Link>
+            <Link to="/privacy" style={{ color: 'var(--accent)', fontWeight: 600 }}>Privacy</Link>
             {' '}·{' '}
-            <Link to="/terms" style={{ color: '#2563eb', fontWeight: 600 }}>Terms</Link>
+            <Link to="/terms" style={{ color: 'var(--accent)', fontWeight: 600 }}>Terms</Link>
             {' '}·{' '}
             <button
               type="button"
               onClick={openCookiePreferences}
-              style={{ color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11 }}
+              style={{ color: 'var(--accent)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11 }}
             >
               Cookie preferences
             </button>
             {' '}·{' '}
-            <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb', fontWeight: 600 }}>Contact Us</a>
+            <a href="mailto:info@trueoddsiq.com" style={{ color: 'var(--accent)', fontWeight: 600 }}>Contact Us</a>
           </div>
         </div>
       </footer>

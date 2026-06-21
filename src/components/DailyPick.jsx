@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useSubscription } from '../hooks/useSubscription'
 import { briefEdgeSummary } from '../lib/pickText'
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
+const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1' }
 
 function isPlaceholderBet(bet) {
   return !bet || bet.includes('-10000') || bet.includes('-99999')
@@ -50,7 +50,7 @@ export default function DailyPick() {
   }, [])
 
   if (loading) return (
-    <div className="rounded-2xl p-5 mb-5 animate-pulse" style={{ background: '#0f172a', height: 140 }} />
+    <div className="rounded-2xl p-5 mb-5 animate-pulse" style={{ background: 'var(--bg-secondary)', height: 140 }} />
   )
 
   if (!pick) return null
@@ -58,19 +58,19 @@ export default function DailyPick() {
   const edgeDisplay = isPremium ? pick.edge : briefEdgeSummary(pick.edge)
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '2px solid #f59e0b', background: '#0f172a' }}>
+    <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '2px solid var(--gold)', background: 'var(--bg-secondary)' }}>
       <div className="px-4 py-2.5 flex items-center justify-between" style={{ background: 'rgba(245,158,11,0.15)', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
         <div className="flex items-center gap-2">
-          <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: '#f59e0b' }}>
-            <Zap size={12} style={{ color: '#0f172a' }} />
+          <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ background: 'var(--gold)' }}>
+            <Zap size={12} style={{ color: 'var(--text-primary)' }} />
           </div>
-          <span className="text-xs font-black" style={{ color: '#f59e0b' }}>
+          <span className="text-xs font-black" style={{ color: 'var(--gold)' }}>
             {isPremium ? "VEGA'S TOP PICK TODAY" : "TODAY'S TOP PICK PREVIEW"}
           </span>
         </div>
         <div className="flex items-center gap-1.5">
           <span className="text-xs px-2 py-0.5 rounded-full font-bold"
-            style={{ background: (sportColor[pick.sport] || '#475569') + '30', color: sportColor[pick.sport] || '#475569' }}>
+            style={{ background: (sportColor[pick.sport] || 'var(--text-muted)') + '30', color: sportColor[pick.sport] || 'var(--text-muted)' }}>
             {pick.sport}
           </span>
           <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -82,8 +82,8 @@ export default function DailyPick() {
       <div className="px-4 py-4">
         <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.78)' }}>{pick.game}</p>
         <div className="flex items-start justify-between gap-3 mb-3">
-          <h3 className="font-black text-lg leading-tight" style={{ color: '#fff' }}>{pick.pick}</h3>
-          <span className="text-sm flex-shrink-0 tracking-widest" style={{ color: '#f59e0b' }}>
+          <h3 className="font-black text-lg leading-tight" style={{ color: 'var(--text-primary)' }}>{pick.pick}</h3>
+          <span className="text-sm flex-shrink-0 tracking-widest" style={{ color: 'var(--gold)' }}>
             {typeof pick.confidence === 'string' && pick.confidence.includes('★')
               ? pick.confidence
               : '★'.repeat(Math.min(5, Math.max(1, parseInt(pick.confidence, 10) || 3)))}
@@ -106,7 +106,7 @@ export default function DailyPick() {
           <button
             onClick={() => navigate('/premium')}
             className="flex items-center gap-1 text-xs font-bold"
-            style={{ color: '#f59e0b' }}
+            style={{ color: 'var(--gold)' }}
           >
             {isPremium ? 'View all picks' : 'Unlock all 3 picks'} <ChevronRight size={13} />
           </button>

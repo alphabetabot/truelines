@@ -20,10 +20,10 @@ export default function SeoSportsbookComparisonPage() {
         secondaryCta={{ to: '/compare', label: 'Open line compare' }}
       />
       <SportsbookComparisonSection />
-      <h2 className="text-xl font-black mb-3" style={{ color: '#0f172a' }}>
+      <h2 className="text-xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>
         Live odds preview (NBA sample)
       </h2>
-      <p className="text-sm mb-4" style={{ color: '#64748b' }}>
+      <p className="text-sm mb-4" style={{ color: 'var(--text-muted)' }}>
         Example feed below uses NBA when scheduled games are available. Switch sports in the live tool.
       </p>
       <SportsOddsPreview sportKey="basketball_nba" sportLabel="NBA" liveOddsPath="/odds" />

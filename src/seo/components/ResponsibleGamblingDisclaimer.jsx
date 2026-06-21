@@ -4,7 +4,7 @@ export default function ResponsibleGamblingDisclaimer({ className = 'mb-6' }) {
   return (
     <div
       className={`rounded-xl p-4 ${className}`}
-      style={{ background: '#f0fdf4', border: '1px solid #bbf7d0' }}
+      style={{ background: 'var(--odds-bg-best)', border: '1px solid #bbf7d0' }}
     >
       <p className="text-xs font-bold mb-1" style={{ color: '#15803d' }}>
         Responsible gambling · 21+ where legal

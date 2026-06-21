@@ -40,13 +40,13 @@ export default function Unsubscribe() {
 
   return (
     <div className="max-w-xl mx-auto py-16 text-center">
-      <div className="rounded-2xl p-8" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
-        <h1 className="text-2xl font-black mb-3" style={{ color: '#0f172a' }}>Email Preferences</h1>
-        <p className="text-sm mb-6" style={{ color: status === 'error' ? '#dc2626' : '#475569' }}>
+      <div className="rounded-2xl p-8" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <h1 className="text-2xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>Email Preferences</h1>
+        <p className="text-sm mb-6" style={{ color: status === 'error' ? '#dc2626' : 'var(--text-muted)' }}>
           {message}
         </p>
         <Link to="/" className="inline-block px-5 py-3 rounded-xl text-sm font-bold"
-          style={{ background: '#0f172a', color: '#fff' }}>
+          style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
           Back to TrueOddsIQ
         </Link>
       </div>

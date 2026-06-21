@@ -37,8 +37,8 @@ export default function StickyOddsToolbar({
         className="max-w-5xl mx-auto px-3 flex items-center gap-2"
         style={{
           height: 40,
-          background: '#1e293b',
-          borderBottom: '2px solid #f59e0b',
+          background: 'var(--bg-elevated)',
+          borderBottom: '2px solid var(--gold)',
         }}
       >
         <label className="sr-only" htmlFor="sticky-sport-select">Sport</label>
@@ -48,8 +48,8 @@ export default function StickyOddsToolbar({
           onChange={e => onSportChange(e.target.value, 'sticky_bar')}
           className="text-xs font-bold rounded-lg px-2 py-1.5 shrink-0"
           style={{
-            background: '#0f172a',
-            color: '#fff',
+            background: 'var(--bg-secondary)',
+            color: 'var(--text-primary)',
             border: '1px solid rgba(255,255,255,0.2)',
             maxWidth: 110,
           }}
@@ -70,8 +70,8 @@ export default function StickyOddsToolbar({
               }}
               className="px-3 py-1.5 rounded-lg text-xs font-bold min-h-[32px]"
               style={{
-                background: activeTab === tab ? '#f59e0b' : 'transparent',
-                color: activeTab === tab ? '#0f172a' : 'rgba(255,255,255,0.85)',
+                background: activeTab === tab ? 'var(--gold)' : 'transparent',
+                color: activeTab === tab ? 'var(--text-on-cta)' : 'rgba(255,255,255,0.85)',
               }}
             >
               {tab}

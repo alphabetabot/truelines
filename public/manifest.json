@@ -4,8 +4,8 @@
   "description": "Live sports betting odds comparison and AI-assisted pick tracking",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#f4f6f9",
-  "theme_color": "#1e293b",
+  "background_color": "#000000",
+  "theme_color": "#000000",
   "orientation": "portrait",
   "icons": [
     {

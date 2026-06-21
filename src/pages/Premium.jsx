@@ -103,22 +103,22 @@ export default function Premium() {
       <header
         className="relative overflow-hidden"
         style={{
-          background: 'linear-gradient(165deg, #0a0f1a 0%, #0f172a 45%, #1a2332 100%)',
-          color: '#fff',
+          background: 'linear-gradient(165deg, #000000 0%, var(--bg-secondary) 45%, var(--bg-elevated) 100%)',
+          color: 'var(--text-primary)',
           margin: '0 -1rem',
           padding: '40px 1.5rem 48px',
         }}
       >
         <div className="max-w-2xl mx-auto relative z-10">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles size={18} style={{ color: '#f59e0b' }} />
-            <p className="text-xs font-bold uppercase" style={{ color: '#f59e0b', letterSpacing: '0.2em' }}>
+            <Sparkles size={18} style={{ color: 'var(--gold)' }} />
+            <p className="text-xs font-bold uppercase" style={{ color: 'var(--gold)', letterSpacing: '0.2em' }}>
               TrueOddsIQ Premium
             </p>
             {isPremium && (
               <span
                 className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-md"
-                style={{ background: '#22c55e', color: '#0f172a', letterSpacing: '0.08em' }}
+                style={{ background: 'var(--green)', color: 'var(--text-primary)', letterSpacing: '0.08em' }}
               >
                 Active
               </span>
@@ -135,7 +135,7 @@ export default function Premium() {
             Unlock AI Picks
             <em
               className="block not-italic"
-              style={{ color: '#fbbf24', fontWeight: 500, fontStyle: 'italic', fontSize: '0.9em', marginTop: 4 }}
+              style={{ color: 'var(--gold)', fontWeight: 500, fontStyle: 'italic', fontSize: '0.9em', marginTop: 4 }}
             >
               and unlimited analysis.
             </em>
@@ -178,8 +178,8 @@ export default function Premium() {
                   {cancelAtPeriodEnd ? ' (cancels at period end)' : ''}.
                 </span>
               )}
-              {' '}Open <Link to="/picks" style={{ color: '#4ade80', fontWeight: 600 }}>AI Picks</Link>
-              {' '}or <Link to="/analysis" style={{ color: '#4ade80', fontWeight: 600 }}>AI Analysis</Link>.
+              {' '}Open <Link to="/picks" style={{ color: 'var(--green-live)', fontWeight: 600 }}>AI Picks</Link>
+              {' '}or <Link to="/analysis" style={{ color: 'var(--green-live)', fontWeight: 600 }}>AI Analysis</Link>.
             </div>
           )}
 
@@ -190,7 +190,7 @@ export default function Premium() {
                 onClick={handleManageBilling}
                 disabled={busy || subLoading}
                 className="px-6 py-3.5 rounded-xl text-sm font-bold"
-                style={{ background: '#f59e0b', color: '#0f172a' }}
+                style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
               >
                 {busy ? 'Opening…' : 'Manage billing'}
               </button>
@@ -200,7 +200,7 @@ export default function Premium() {
                 onClick={handleSubscribe}
                 disabled={busy || authLoading || subLoading}
                 className="px-7 py-3.5 rounded-xl text-sm font-extrabold"
-                style={{ background: '#f59e0b', color: '#0f172a' }}
+                style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
               >
                 {busy ? 'Redirecting…' : `Subscribe — ${PREMIUM_PRICE_DISPLAY}`}
               </button>
@@ -227,21 +227,21 @@ export default function Premium() {
         <section
           className="rounded-2xl p-5 mb-6 relative"
           style={{
-            background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
-            border: '2px solid #f59e0b',
+            background: 'linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-elevated) 100%)',
+            border: '2px solid var(--gold)',
             boxShadow: '0 12px 40px rgba(245, 158, 11, 0.18)',
-            color: '#fff',
+            color: 'var(--text-primary)',
           }}
         >
           <span
             className="absolute -top-2.5 right-4 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md"
-            style={{ background: '#f59e0b', color: '#0f172a', letterSpacing: '0.1em' }}
+            style={{ background: 'var(--gold)', color: 'var(--text-primary)', letterSpacing: '0.1em' }}
           >
             What you get
           </span>
           <h2
             className="font-black text-xl mb-4"
-            style={{ fontFamily: "'Fraunces', Georgia, serif", color: '#fbbf24' }}
+            style={{ fontFamily: "'Fraunces', Georgia, serif", color: 'var(--gold)' }}
           >
             Premium includes
           </h2>
@@ -252,7 +252,7 @@ export default function Premium() {
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
             >
               <strong className="block font-bold text-white mb-1" style={{ fontSize: 19 }}>{f.title}</strong>
-              <span className="italic leading-relaxed" style={{ fontSize: 18, color: '#e2e8f0' }}>
+              <span className="italic leading-relaxed" style={{ fontSize: 18, color: 'var(--border)' }}>
                 {f.detail}
               </span>
             </div>
@@ -263,9 +263,9 @@ export default function Premium() {
         </section>
 
         <p className="text-center text-sm mt-8">
-          <Link to="/welcome" style={{ color: '#2563eb', fontWeight: 600 }}>← Back to welcome</Link>
+          <Link to="/welcome" style={{ color: 'var(--accent)', fontWeight: 600 }}>← Back to welcome</Link>
           {' · '}
-          <Link to="/odds" style={{ color: '#2563eb', fontWeight: 600 }}>Live odds</Link>
+          <Link to="/odds" style={{ color: 'var(--accent)', fontWeight: 600 }}>Live odds</Link>
         </p>
       </div>
     </div>

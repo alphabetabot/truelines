@@ -37,15 +37,15 @@ export default function CookieConsent() {
   return (
     <div
       className="fixed bottom-0 left-0 right-0 z-50 px-4 py-4"
-      style={{ background: 'rgba(15, 23, 42, 0.97)', borderTop: '1px solid #334155' }}
+      style={{ background: 'rgba(0, 0, 0, 0.95)', borderTop: '1px solid var(--green-border)' }}
       role="dialog"
       aria-label="Cookie consent"
     >
       <div className="max-w-5xl mx-auto flex flex-col sm:flex-row sm:items-center gap-4">
-        <p className="text-sm flex-1 leading-relaxed" style={{ color: '#e2e8f0' }}>
+        <p className="text-sm flex-1 leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
           We use cookies for essential site features and optional Google Analytics to understand traffic.
           See our{' '}
-          <Link to="/privacy" className="underline font-semibold" style={{ color: '#f59e0b' }}>
+          <Link to="/privacy" className="underline font-semibold" style={{ color: 'var(--gold)' }}>
             Privacy Policy
           </Link>
           .
@@ -55,7 +55,7 @@ export default function CookieConsent() {
             type="button"
             onClick={decline}
             className="px-4 py-2 rounded-lg text-sm font-semibold"
-            style={{ background: 'transparent', color: '#64748b', border: '1px solid #475569' }}
+            style={{ background: 'transparent', color: 'var(--text-muted)', border: '1px solid var(--border)' }}
           >
             Decline analytics
           </button>
@@ -63,7 +63,7 @@ export default function CookieConsent() {
             type="button"
             onClick={accept}
             className="px-4 py-2 rounded-lg text-sm font-bold"
-            style={{ background: '#f59e0b', color: '#0f172a' }}
+            style={{ background: 'var(--gold)', color: 'var(--text-on-cta)' }}
           >
             Accept analytics
           </button>

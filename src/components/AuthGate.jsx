@@ -13,7 +13,7 @@ export default function AuthGate({
   if (loading) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm font-semibold" style={{ color: '#475569' }}>Loading…</p>
+        <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>Loading…</p>
       </div>
     )
   }
@@ -26,13 +26,13 @@ export default function AuthGate({
         className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4"
         style={{ background: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)' }}
       >
-        <UserPlus size={24} style={{ color: '#f59e0b' }} />
+        <UserPlus size={24} style={{ color: 'var(--gold)' }} />
       </div>
-      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: '#f59e0b' }}>
+      <p className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: 'var(--gold)' }}>
         Sign up free
       </p>
-      <h1 className="text-2xl font-black mb-3" style={{ color: '#0f172a' }}>{title}</h1>
-      <p className="text-sm leading-relaxed mb-6 font-semibold" style={{ color: '#0f172a' }}>
+      <h1 className="text-2xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>{title}</h1>
+      <p className="text-sm leading-relaxed mb-6 font-semibold" style={{ color: 'var(--text-primary)' }}>
         {description}
       </p>
 
@@ -41,7 +41,7 @@ export default function AuthGate({
           to="/login"
           state={{ mode: 'signup', from }}
           className="px-6 py-3.5 rounded-xl text-sm font-bold"
-          style={{ background: '#f59e0b', color: '#0f172a' }}
+          style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
         >
           Create free account
         </Link>
@@ -49,13 +49,13 @@ export default function AuthGate({
           to="/login"
           state={{ from }}
           className="px-6 py-3.5 rounded-xl text-sm font-bold"
-          style={{ background: '#f1f5f9', color: '#0f172a', border: '1px solid #e2e8f0' }}
+          style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}
         >
           Sign in
         </Link>
       </div>
 
-      <p className="text-xs mt-8 font-semibold" style={{ color: '#475569' }}>
+      <p className="text-xs mt-8 font-semibold" style={{ color: 'var(--text-muted)' }}>
         Free · newsletter + odds tools · no credit card
       </p>
     </div>

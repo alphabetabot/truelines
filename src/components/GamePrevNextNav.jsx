@@ -29,19 +29,19 @@ export default function GamePrevNextNav({
   return (
     <div
       className="flex items-center justify-between gap-2 mb-4 px-3 py-2 rounded-xl"
-      style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+      style={{ background: 'var(--odds-bg)', border: '1px solid var(--border)' }}
     >
       <button
         type="button"
         disabled={!prev}
         onClick={() => go(prev, 'prev')}
         className="flex items-center gap-1 text-xs font-bold min-h-[44px] px-2 disabled:opacity-40"
-        style={{ color: prev ? '#0f172a' : '#64748b' }}
+        style={{ color: prev ? 'var(--text-primary)' : 'var(--text-muted)' }}
       >
         <ChevronLeft size={16} />
         <span className="hidden sm:inline">Previous</span>
       </button>
-      <span className="text-xs font-semibold text-center truncate px-1" style={{ color: '#475569' }}>
+      <span className="text-xs font-semibold text-center truncate px-1" style={{ color: 'var(--text-muted)' }}>
         {short(selectedGame)}
       </span>
       <button
@@ -49,7 +49,7 @@ export default function GamePrevNextNav({
         disabled={!next}
         onClick={() => go(next, 'next')}
         className="flex items-center gap-1 text-xs font-bold min-h-[44px] px-2 disabled:opacity-40"
-        style={{ color: next ? '#0f172a' : '#64748b' }}
+        style={{ color: next ? 'var(--text-primary)' : 'var(--text-muted)' }}
       >
         <span className="hidden sm:inline">Next</span>
         <ChevronRight size={16} />

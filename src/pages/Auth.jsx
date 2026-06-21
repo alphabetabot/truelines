@@ -74,12 +74,12 @@ export default function Auth({ onAuth = () => {} }) {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ background: '#f0f4f8' }}>
+      style={{ background: 'var(--bg-primary)' }}>
 
       {/* Logo */}
       <div className="mb-8 text-center">
         <LogoLink height={48} maxWidth={280} style={{ margin: '0 auto 12px', justifyContent: 'center' }} />
-        <p className="text-sm" style={{ color: '#475569' }}>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
           {mode === 'login'
             ? 'Sign in for odds, newsletter, and tracker — Premium unlocks AI Picks & Analysis'
             : 'Free account — live odds, newsletter email, and public tracker'}
@@ -88,16 +88,16 @@ export default function Auth({ onAuth = () => {} }) {
 
       {/* Card */}
       <div className="w-full max-w-sm rounded-2xl p-6"
-        style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
+        style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 4px 24px rgba(0,0,0,0.08)' }}>
 
         {/* Tabs */}
-        <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: '1px solid #e2e8f0' }}>
+        <div className="flex rounded-xl overflow-hidden mb-6" style={{ border: '1px solid var(--border)' }}>
           {['login', 'signup'].map(m => (
             <button key={m} onClick={() => { setMode(m); setError(null); setSuccess(null) }}
               className="flex-1 py-2.5 text-sm font-bold transition-all"
               style={{
-                background: mode === m ? '#0f172a' : '#fff',
-                color: mode === m ? '#fff' : '#475569',
+                background: mode === m ? 'var(--gold)' : 'var(--bg-card)',
+                color: mode === m ? 'var(--text-on-cta)' : 'var(--text-muted)',
               }}>
               {m === 'login' ? 'Sign In' : 'Sign Up'}
             </button>
@@ -107,7 +107,7 @@ export default function Auth({ onAuth = () => {} }) {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           {/* Email */}
           <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Email</label>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>Email</label>
             <input
               type="email"
               value={email}
@@ -115,13 +115,13 @@ export default function Auth({ onAuth = () => {} }) {
               placeholder="you@example.com"
               required
               className="w-full px-4 py-3 rounded-xl text-sm outline-none"
-              style={{ border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
+              style={{ border: '1.5px solid var(--border)', background: 'var(--odds-bg)', color: 'var(--text-primary)' }}
             />
           </div>
 
           {/* Password */}
           <div>
-            <label className="block text-xs font-semibold mb-1.5" style={{ color: '#475569' }}>Password</label>
+            <label className="block text-xs font-semibold mb-1.5" style={{ color: 'var(--text-muted)' }}>Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
@@ -131,11 +131,11 @@ export default function Auth({ onAuth = () => {} }) {
                 required
                 minLength={6}
                 className="w-full px-4 py-3 rounded-xl text-sm outline-none pr-10"
-                style={{ border: '1.5px solid #e2e8f0', background: '#f8fafc', color: '#0f172a' }}
+                style={{ border: '1.5px solid var(--border)', background: 'var(--odds-bg)', color: 'var(--text-primary)' }}
               />
               <button type="button" onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2"
-                style={{ color: '#64748b' }}>
+                style={{ color: 'var(--text-muted)' }}>
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
@@ -148,15 +148,15 @@ export default function Auth({ onAuth = () => {} }) {
               <label className="flex items-start gap-3 cursor-pointer">
                 <input type="checkbox" checked={newsletter} onChange={e => setNewsletter(e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-blue-600" />
-                <span className="text-xs leading-relaxed" style={{ color: '#475569' }}>
+                <span className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                   ✉️ Yes! Send me the daily top pick newsletter with full analysis and line value alerts.
-                <span className="block mt-1" style={{ fontSize: 13, color: '#475569' }}>📧 Using Outlook or Hotmail? Add picks@trueoddsiq.com to your contacts to ensure delivery.</span>
+                <span className="block mt-1" style={{ fontSize: 13, color: 'var(--text-muted)' }}>📧 Using Outlook or Hotmail? Add picks@trueoddsiq.com to your contacts to ensure delivery.</span>
                 </span>
               </label>
 
               {/* Disclaimer */}
               <label className="flex items-start gap-3 cursor-pointer p-3 rounded-xl"
-                style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+                style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
                 <input type="checkbox" checked={disclaimer} onChange={e => setDisclaimer(e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-blue-600" />
                 <span className="text-xs leading-relaxed" style={{ color: '#92400e' }}>
@@ -175,7 +175,7 @@ export default function Auth({ onAuth = () => {} }) {
             </div>
           )}
           {success && (
-            <div className="p-3 rounded-xl text-xs" style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0' }}>
+            <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--odds-bg-best)', color: 'var(--green)', border: '1px solid #bbf7d0' }}>
               {success}
             </div>
           )}
@@ -184,8 +184,8 @@ export default function Auth({ onAuth = () => {} }) {
           <button type="submit" disabled={loading}
             className="w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
             style={{
-              background: loading ? '#e2e8f0' : '#0f172a',
-              color: loading ? '#64748b' : '#fff',
+              background: loading ? 'var(--border)' : 'var(--gold)',
+              color: loading ? 'var(--text-muted)' : 'var(--text-on-cta)',
               cursor: loading ? 'not-allowed' : 'pointer',
             }}>
             {loading && <Loader2 size={15} className="animate-spin" />}
@@ -200,16 +200,16 @@ export default function Auth({ onAuth = () => {} }) {
             await supabase.auth.resetPasswordForEmail(email)
             setSuccess('Password reset email sent!')
           }}
-            className="w-full text-center mt-3 text-xs" style={{ color: '#2563eb' }}>
+            className="w-full text-center mt-3 text-xs" style={{ color: 'var(--accent)' }}>
             Forgot password?
           </button>
         )}
       </div>
 
-      <p className="text-xs mt-6 text-center" style={{ color: '#64748b' }}>
-        Must be 21+ · For informational use only · <a href="/disclaimer" style={{ color: '#2563eb' }}>Disclaimer</a>
-        {' '}· <a href="/privacy" style={{ color: '#2563eb' }}>Privacy</a>
-        {' '}· <a href="/terms" style={{ color: '#2563eb' }}>Terms</a>
+      <p className="text-xs mt-6 text-center" style={{ color: 'var(--text-muted)' }}>
+        Must be 21+ · For informational use only · <a href="/disclaimer" style={{ color: 'var(--accent)' }}>Disclaimer</a>
+        {' '}· <a href="/privacy" style={{ color: 'var(--accent)' }}>Privacy</a>
+        {' '}· <a href="/terms" style={{ color: 'var(--accent)' }}>Terms</a>
       </p>
     </div>
   )

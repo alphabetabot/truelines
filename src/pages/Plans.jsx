@@ -46,17 +46,17 @@ export default function Plans() {
       <div className={`${PAGE_MAX} ${PAGE_PAD} pt-8 sm:pt-12`}>
         <p
           className="mb-3 font-extrabold uppercase"
-          style={{ fontSize: 14, color: '#0f172a', letterSpacing: '0.14em' }}
+          style={{ fontSize: 14, color: 'var(--text-primary)', letterSpacing: '0.14em' }}
         >
           Get started
         </p>
         <h1
           className="font-black text-3xl sm:text-4xl mb-3 uppercase"
-          style={{ fontFamily: TEAM_FONT, color: '#0f172a', lineHeight: 1.1 }}
+          style={{ fontFamily: TEAM_FONT, color: 'var(--text-primary)', lineHeight: 1.1 }}
         >
           Compare Free vs Premium
         </h1>
-        <p className="mb-10 max-w-2xl" style={{ fontSize: 18, color: '#334155', lineHeight: 1.55 }}>
+        <p className="mb-10 max-w-2xl" style={{ fontSize: 18, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
           Start free with the morning newsletter and public tracker. Upgrade when you want the full daily card and unlimited AI analysis.
         </p>
 
@@ -64,7 +64,7 @@ export default function Plans() {
           {/* Free */}
           <div
             className="rounded-2xl overflow-hidden flex flex-col"
-            style={{ background: '#f0fdf4', border: '2px solid #16a34a' }}
+            style={{ background: 'var(--odds-bg-best)', border: '2px solid var(--green)' }}
           >
             <div
               className="px-6 sm:px-8 py-5"
@@ -72,7 +72,7 @@ export default function Plans() {
             >
               <h2
                 className="font-black text-xl uppercase tracking-wide"
-                style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}
+                style={{ fontFamily: TEAM_FONT, color: 'var(--text-primary)' }}
               >
                 Free account · $0
               </h2>
@@ -89,7 +89,7 @@ export default function Plans() {
                   >
                     <td
                       className="py-4 pl-6 sm:pl-8 pr-4 font-semibold"
-                      style={{ fontSize: 17, color: '#1e293b', verticalAlign: 'middle' }}
+                      style={{ fontSize: 17, color: 'var(--text-primary)', verticalAlign: 'middle' }}
                     >
                       {label}
                     </td>
@@ -111,7 +111,7 @@ export default function Plans() {
                 type="button"
                 onClick={() => ctaSignup('plans_free')}
                 className="w-full px-8 py-4 rounded-xl font-bold"
-                style={{ background: '#0f172a', color: '#fff', fontSize: 18 }}
+                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 18 }}
               >
                 Create Free Account
               </button>
@@ -122,19 +122,19 @@ export default function Plans() {
           <div
             className="rounded-2xl p-6 sm:p-8 relative flex flex-col"
             style={{
-              background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
-              border: '2px solid #f59e0b',
+              background: 'linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-elevated) 100%)',
+              border: '2px solid var(--gold)',
               boxShadow: '0 12px 40px rgba(245, 158, 11, 0.18)',
-              color: '#fff',
+              color: 'var(--text-primary)',
             }}
           >
             <span
               className="absolute -top-2.5 right-6 text-xs font-extrabold uppercase px-2.5 py-1 rounded-md"
-              style={{ background: '#f59e0b', color: '#0f172a', letterSpacing: '0.1em' }}
+              style={{ background: 'var(--gold)', color: 'var(--text-primary)', letterSpacing: '0.1em' }}
             >
               Vega&apos;s Top Picks
             </span>
-            <h2 className="font-black text-2xl mb-1 uppercase" style={{ fontFamily: TEAM_FONT, color: '#fbbf24' }}>
+            <h2 className="font-black text-2xl mb-1 uppercase" style={{ fontFamily: TEAM_FONT, color: 'var(--gold)' }}>
               Premium
             </h2>
             <p className="font-bold text-xl mb-5" style={{ fontFamily: TEAM_FONT, color: '#fde68a' }}>
@@ -146,26 +146,26 @@ export default function Plans() {
                 className="rounded-xl p-4 sm:p-5 mb-3 last:mb-0"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
               >
-                <strong className="block font-bold mb-1.5" style={{ fontSize: 18, color: '#fff' }}>{f.title}</strong>
-                <span style={{ fontSize: 17, color: '#e2e8f0', lineHeight: 1.45 }}>{f.detail}</span>
+                <strong className="block font-bold mb-1.5" style={{ fontSize: 18, color: 'var(--text-primary)' }}>{f.title}</strong>
+                <span style={{ fontSize: 17, color: 'var(--border)', lineHeight: 1.45 }}>{f.detail}</span>
               </div>
             ))}
             <button
               type="button"
               onClick={() => ctaSignup('plans_premium', { premium: true })}
               className="w-full mt-6 py-4 rounded-xl text-center font-extrabold"
-              style={{ background: '#f59e0b', color: '#0f172a', fontSize: 18 }}
+              style={{ background: 'var(--gold)', color: 'var(--text-primary)', fontSize: 18 }}
             >
               Upgrade to Premium
             </button>
           </div>
         </div>
 
-        <p className="text-center mt-10" style={{ fontSize: 17, color: '#334155' }}>
+        <p className="text-center mt-10" style={{ fontSize: 17, color: 'var(--text-secondary)' }}>
           Already have an account?{' '}
-          <Link to="/login" className="font-semibold" style={{ color: '#2563eb' }}>Sign in</Link>
+          <Link to="/login" className="font-semibold" style={{ color: 'var(--accent)' }}>Sign in</Link>
           {' · '}
-          <Link to="/" className="font-semibold" style={{ color: '#2563eb' }}>Back to homepage</Link>
+          <Link to="/" className="font-semibold" style={{ color: 'var(--accent)' }}>Back to homepage</Link>
         </p>
       </div>
     </div>

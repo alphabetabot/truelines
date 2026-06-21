@@ -45,10 +45,10 @@ export default function AuthCallback() {
   }, [navigate])
 
   return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: '#f0f4f8' }}>
+    <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
       <div className="text-center">
         <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full mx-auto mb-4" />
-        <p style={{ color: '#475569' }}>Completing sign in…</p>
+        <p style={{ color: 'var(--text-muted)' }}>Completing sign in…</p>
       </div>
     </div>
   )

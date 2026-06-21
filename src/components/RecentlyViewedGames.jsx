@@ -45,8 +45,8 @@ export default function RecentlyViewedGames({ page, sportKey, onSelect }) {
   return (
     <div className="mb-4">
       <div className="flex items-center gap-1.5 mb-2">
-        <Clock size={13} style={{ color: '#64748b' }} />
-        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: '#64748b' }}>
+        <Clock size={13} style={{ color: 'var(--text-muted)' }} />
+        <span className="text-xs font-bold uppercase tracking-wide" style={{ color: 'var(--text-muted)' }}>
           Recently viewed
         </span>
       </div>
@@ -61,9 +61,9 @@ export default function RecentlyViewedGames({ page, sportKey, onSelect }) {
             onClick={() => openGame(entry)}
             className="shrink-0 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
             style={{
-              background: '#fff',
-              border: '1px solid #e2e8f0',
-              color: '#0f172a',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
             }}
           >
             {formatRecentGameLabel(entry)}

@@ -42,10 +42,10 @@ export default function AIPicksExplainer({ sportLabel, pickSport }) {
 
   return (
     <section className="mb-8">
-      <h2 className="text-xl font-black mb-3" style={{ color: '#0f172a' }}>
+      <h2 className="text-xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>
         How Vega&apos;s {sportLabel ? `${sportLabel} ` : ''}picks work
       </h2>
-      <div className="space-y-3 text-sm leading-relaxed" style={{ color: '#475569' }}>
+      <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         <p>
           Each morning (Pacific time) our system reviews the slate when games are available, compares odds across
           six books, and publishes up to three actionable bets — not fades or pass plays.
@@ -56,28 +56,28 @@ export default function AIPicksExplainer({ sportLabel, pickSport }) {
         </p>
       </div>
 
-      <div className="mt-4 rounded-xl p-4" style={{ background: '#0f172a', border: '1px solid #334155' }}>
-        <h3 className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: '#f59e0b' }}>
+      <div className="mt-4 rounded-xl p-4" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}>
+        <h3 className="text-xs font-black uppercase tracking-wider mb-2" style={{ color: 'var(--gold)' }}>
           Today&apos;s pick snapshot
         </h3>
-        {loading && <p className="text-sm" style={{ color: '#94a3b8' }}>Loading pick data…</p>}
+        {loading && <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading pick data…</p>}
         {!loading && unavailable && (
-          <p className="text-sm" style={{ color: '#94a3b8' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Picks are not available yet today. Check back after the morning run or view the{' '}
-            <Link to="/picks" style={{ color: '#f59e0b' }}>picks page</Link>.
+            <Link to="/picks" style={{ color: 'var(--gold)' }}>picks page</Link>.
           </p>
         )}
         {!loading && !unavailable && !pick && pickSport && (
-          <p className="text-sm" style={{ color: '#94a3b8' }}>
+          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>
             Today&apos;s featured pick is for another sport. The daily slate may still include {sportLabel} on other days — see{' '}
-            <Link to="/picks" style={{ color: '#f59e0b' }}>all picks</Link>.
+            <Link to="/picks" style={{ color: 'var(--gold)' }}>all picks</Link>.
           </p>
         )}
         {!loading && pick && (
           <>
-            <p className="text-xs mb-1" style={{ color: '#94a3b8' }}>{pick.game}</p>
+            <p className="text-xs mb-1" style={{ color: 'var(--text-muted)' }}>{pick.game}</p>
             <p className="font-bold text-white mb-1">{pick.pick}</p>
-            {pick.bet && <p className="text-xs mb-2" style={{ color: '#f59e0b' }}>{pick.bet}</p>}
+            {pick.bet && <p className="text-xs mb-2" style={{ color: 'var(--gold)' }}>{pick.bet}</p>}
             {pick.edge && (
               <p className="text-xs leading-relaxed" style={{ color: '#cbd5e1' }}>
                 {pick.edge.length > 280 ? `${pick.edge.slice(0, 277)}…` : pick.edge}
@@ -87,7 +87,7 @@ export default function AIPicksExplainer({ sportLabel, pickSport }) {
         )}
       </div>
 
-      <Link to="/picks" className="inline-block mt-3 text-sm font-bold" style={{ color: '#2563eb' }}>
+      <Link to="/picks" className="inline-block mt-3 text-sm font-bold" style={{ color: 'var(--accent)' }}>
         Go to today&apos;s picks →
       </Link>
     </section>

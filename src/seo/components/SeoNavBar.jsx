@@ -4,7 +4,7 @@ import { SEO_SPORT_SLUGS, SEO_SPORTS } from '../seoContent'
 
 const linkClass = ({ isActive }) =>
   `flex items-center px-2.5 py-1 rounded-md font-semibold whitespace-nowrap transition-all shrink-0 ${
-    isActive ? 'bg-[#f59e0b] text-[#0f172a]' : 'text-[rgba(255,255,255,0.75)] hover:text-white'
+    isActive ? 'bg-[var(--gold)] text-[var(--text-on-cta)]' : 'text-[rgba(255,255,255,0.75)] hover:text-white'
   }`
 
 const linkStyle = { fontSize: 12 }

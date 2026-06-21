@@ -31,7 +31,7 @@ function TickerItem({ game, liveStatusMap }) {
     <div className="flex items-center gap-2 shrink-0 px-3"
       style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: '100%' }}>
       <span style={{
-        color: isLive ? '#4ade80' : isFinal ? '#64748b' : '#fbbf24',
+        color: isLive ? 'var(--green-live)' : isFinal ? 'var(--text-muted)' : 'var(--gold)',
         fontSize: 9,
         fontWeight: 700,
       }}>
@@ -43,13 +43,13 @@ function TickerItem({ game, liveStatusMap }) {
       {showScores ? (
         <>
           <span className="font-mono text-xs font-bold" style={{
-            color: isLive ? '#fff' : awayWin ? '#4ade80' : '#fff',
+            color: isLive ? '#fff' : awayWin ? 'var(--green-live)' : '#fff',
           }}>
             {awayScore}
           </span>
           <span style={{ color: 'rgba(255,255,255,0.3)' }}>–</span>
           <span className="font-mono text-xs font-bold" style={{
-            color: isLive ? '#fff' : homeWin ? '#4ade80' : '#fff',
+            color: isLive ? '#fff' : homeWin ? 'var(--green-live)' : '#fff',
           }}>
             {homeScore}
           </span>
@@ -149,7 +149,7 @@ export default function ScoreTicker({ embedded = false }) {
 
   const shellStyle = embedded
     ? { height: 28, overflow: 'hidden' }
-    : { background: '#0f172a', borderBottom: '2px solid #1e293b', height: 28, overflow: 'hidden' }
+    : { background: 'var(--bg-secondary)', borderBottom: '2px solid var(--border)', height: 28, overflow: 'hidden' }
 
   return (
     <div style={shellStyle} className="flex items-center">

@@ -5,14 +5,14 @@ export default function InternalLinksSection({ title = 'Explore TrueOddsIQ', lin
 
   return (
     <section className="mb-8">
-      <h2 className="text-lg font-black mb-3" style={{ color: '#0f172a' }}>{title}</h2>
+      <h2 className="text-lg font-black mb-3" style={{ color: 'var(--text-primary)' }}>{title}</h2>
       <div className="flex flex-wrap gap-2">
         {links.map(({ to, label }) => (
           <Link
             key={to + label}
             to={to}
             className="text-xs font-semibold px-3 py-2 rounded-lg"
-            style={{ background: '#f1f5f9', color: '#0f172a', textDecoration: 'none', border: '1px solid #e2e8f0' }}
+            style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', textDecoration: 'none', border: '1px solid var(--border)' }}
           >
             {label}
           </Link>

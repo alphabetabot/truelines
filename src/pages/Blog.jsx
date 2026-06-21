@@ -160,31 +160,31 @@ function BlogCard({ post, onClick }) {
     <div
       onClick={onClick}
       className="rounded-2xl p-5 cursor-pointer transition-all hover:shadow-md"
-      style={{ background: '#fff', border: '1px solid #e2e8f0' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-          style={{ background: '#f1f5f9', color: '#475569' }}>
+          style={{ background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
           <Tag size={10} className="inline mr-1" />{post.sport}
         </span>
-        <span className="text-xs" style={{ color: '#64748b' }}>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
           <Calendar size={10} className="inline mr-1" />
           {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </span>
         {post.auto_generated && (
           <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-            style={{ background: '#fef3c7', color: '#d97706' }}>
+            style={{ background: '#fef3c7', color: 'var(--gold)' }}>
             ⚡ Daily Preview
           </span>
         )}
       </div>
-      <h2 className="font-bold mb-2 leading-tight" style={{ color: '#0f172a', fontSize: '1rem' }}>
+      <h2 className="font-bold mb-2 leading-tight" style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>
         {post.title}
       </h2>
-      <p className="text-sm mb-3 leading-relaxed" style={{ color: '#475569' }}>
+      <p className="text-sm mb-3 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         {post.summary}
       </p>
-      <div className="flex items-center gap-1 text-sm font-semibold" style={{ color: '#2563eb' }}>
+      <div className="flex items-center gap-1 text-sm font-semibold" style={{ color: 'var(--accent)' }}>
         Read more <ChevronRight size={14} />
       </div>
     </div>
@@ -194,36 +194,36 @@ function BlogCard({ post, onClick }) {
 function BlogPost({ post, onBack }) {
   const renderContent = (content) => {
     return content.split('\n').map((line, i) => {
-      if (line.startsWith('# ')) return <h1 key={i} className="text-xl font-bold mt-4 mb-3" style={{ color: '#0f172a' }}>{line.slice(2)}</h1>
-      if (line.startsWith('## ')) return <h2 key={i} className="text-lg font-bold mt-6 mb-3" style={{ color: '#0f172a' }}>{line.slice(3)}</h2>
-      if (line.startsWith('### ')) return <h3 key={i} className="text-base font-bold mt-4 mb-2" style={{ color: '#0f172a' }}>{line.slice(4)}</h3>
-      if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold my-2" style={{ color: '#0f172a' }}>{line.slice(2, -2)}</p>
-      if (line.startsWith('- ')) return <li key={i} className="ml-4 my-1 text-sm" style={{ color: '#475569' }}>{line.slice(2)}</li>
+      if (line.startsWith('# ')) return <h1 key={i} className="text-xl font-bold mt-4 mb-3" style={{ color: 'var(--text-primary)' }}>{line.slice(2)}</h1>
+      if (line.startsWith('## ')) return <h2 key={i} className="text-lg font-bold mt-6 mb-3" style={{ color: 'var(--text-primary)' }}>{line.slice(3)}</h2>
+      if (line.startsWith('### ')) return <h3 key={i} className="text-base font-bold mt-4 mb-2" style={{ color: 'var(--text-primary)' }}>{line.slice(4)}</h3>
+      if (line.startsWith('**') && line.endsWith('**')) return <p key={i} className="font-bold my-2" style={{ color: 'var(--text-primary)' }}>{line.slice(2, -2)}</p>
+      if (line.startsWith('- ')) return <li key={i} className="ml-4 my-1 text-sm" style={{ color: 'var(--text-muted)' }}>{line.slice(2)}</li>
       if (line.match(/^\[.+\]\(.+\)$/)) {
         const text = line.match(/\[(.+)\]/)?.[1]
         const url = line.match(/\((.+)\)/)?.[1]
-        return <a key={i} href={url} className="block my-4 text-center py-3 rounded-xl font-bold text-white text-sm" style={{ background: '#0f172a', textDecoration: 'none' }}>{text}</a>
+        return <a key={i} href={url} className="block my-4 text-center py-3 rounded-xl font-bold text-white text-sm" style={{ background: 'var(--bg-secondary)', textDecoration: 'none' }}>{text}</a>
       }
       if (!line.trim()) return <div key={i} className="h-2" />
-      return <p key={i} className="text-sm my-2 leading-relaxed" style={{ color: '#475569' }}>{line}</p>
+      return <p key={i} className="text-sm my-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>{line}</p>
     })
   }
 
   return (
     <div className="max-w-2xl mx-auto">
-      <button onClick={onBack} className="flex items-center gap-1 text-sm mb-6 font-medium" style={{ color: '#2563eb' }}>
+      <button onClick={onBack} className="flex items-center gap-1 text-sm mb-6 font-medium" style={{ color: 'var(--accent)' }}>
         ← Back to blog
       </button>
       <div className="flex items-center gap-2 mb-4">
-        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: '#f1f5f9', color: '#475569' }}>
+        <span className="text-xs px-2 py-0.5 rounded-full font-semibold" style={{ background: 'var(--bg-secondary)', color: 'var(--text-muted)' }}>
           {post.sport}
         </span>
-        <span className="text-xs" style={{ color: '#64748b' }}>
+        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
           {new Date(post.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
         </span>
       </div>
-      <h1 className="mb-6" style={{ color: '#0f172a' }}>{post.title}</h1>
-      <div className="p-6 rounded-2xl" style={{ background: '#fff', border: '1px solid #e2e8f0' }}>
+      <h1 className="mb-6" style={{ color: 'var(--text-primary)' }}>{post.title}</h1>
+      <div className="p-6 rounded-2xl" style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}>
         {renderContent(post.content)}
       </div>
     </div>
@@ -283,14 +283,14 @@ export default function Blog() {
   return (
     <div>
       <div className="mb-6">
-        <h1 style={{ color: '#0f172a' }}>Betting Insights</h1>
-        <p className="text-sm mt-1" style={{ color: '#475569' }}>
+        <h1 style={{ color: 'var(--text-primary)' }}>Betting Insights</h1>
+        <p className="text-sm mt-1" style={{ color: 'var(--text-muted)' }}>
           Expert analysis, betting guides, and AI-powered insights from Vega
         </p>
       </div>
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader size={20} className="animate-spin" style={{ color: '#64748b' }} />
+          <Loader size={20} className="animate-spin" style={{ color: 'var(--text-muted)' }} />
         </div>
       ) : (
         <div className="grid gap-4">

@@ -12,10 +12,10 @@ const BOOK_NOTES = {
 export default function SportsbookComparisonSection() {
   return (
     <section className="mb-8">
-      <h2 className="text-xl font-black mb-3" style={{ color: '#0f172a' }}>
+      <h2 className="text-xl font-black mb-3" style={{ color: 'var(--text-primary)' }}>
         Sportsbooks we compare
       </h2>
-      <p className="text-sm mb-4 leading-relaxed" style={{ color: '#64748b' }}>
+      <p className="text-sm mb-4 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         TrueOddsIQ pulls odds from six major books when our data provider lists them. We highlight the best displayed
         price on each side — we do not control lines and we are not affiliated with these operators today.
       </p>
@@ -24,18 +24,18 @@ export default function SportsbookComparisonSection() {
           <div
             key={key}
             className="rounded-xl p-4"
-            style={{ background: '#fff', border: '1px solid #e2e8f0' }}
+            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
           >
-            <h3 className="font-bold text-sm mb-1" style={{ color: '#0f172a' }}>
+            <h3 className="font-bold text-sm mb-1" style={{ color: 'var(--text-primary)' }}>
               {SPORTSBOOK_LABELS[key] || key}
             </h3>
-            <p className="text-xs leading-relaxed" style={{ color: '#64748b' }}>
+            <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               {BOOK_NOTES[key] || 'US-regulated sportsbook when available in your state.'}
             </p>
           </div>
         ))}
       </div>
-      <p className="text-xs mt-4" style={{ color: '#94a3b8' }}>
+      <p className="text-xs mt-4" style={{ color: 'var(--text-muted)' }}>
         Must be 21+ and physically located where sports betting is legal. Availability varies by jurisdiction.
       </p>
     </section>

@@ -3,7 +3,7 @@ import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
 import { aggregatePickPerformance } from '../lib/pickPerformance'
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
+const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1' }
 
 function formatDate(value) {
   if (!value) return '—'
@@ -46,7 +46,7 @@ function PerformanceTrackerBody({
     <div
       id={trackerAnchor ? 'pick-tracker' : undefined}
       className="rounded-2xl overflow-hidden mb-6"
-      style={{ background: '#fff', border: '1px solid #e2e8f0' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
     >
 
       <button
@@ -57,18 +57,18 @@ function PerformanceTrackerBody({
           if (next && onEngage) onEngage()
         }}
         className="w-full text-left"
-        style={{ background: '#0f172a' }}
+        style={{ background: 'var(--bg-secondary)' }}
       >
         <div className="px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TrendingUp size={15} style={{ color: '#f59e0b' }} />
+            <TrendingUp size={15} style={{ color: 'var(--gold)' }} />
             <span className="text-sm font-black text-white">Vega&apos;s Pick Performance</span>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs px-2 py-0.5 rounded-full font-bold"
               style={{
                 background: unavailable ? 'rgba(239,68,68,0.15)' : 'rgba(34,197,94,0.15)',
-                color: unavailable ? '#f87171' : '#22c55e',
+                color: unavailable ? '#f87171' : 'var(--green)',
                 border: `1px solid ${unavailable ? 'rgba(239,68,68,0.3)' : 'rgba(34,197,94,0.3)'}`,
               }}>
               {unavailable ? 'Unavailable' : '● Tracked'}
@@ -89,7 +89,7 @@ function PerformanceTrackerBody({
             <div key={label} className="text-center" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
               <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
               <p className="text-base font-black text-white">{record}</p>
-              <p className="text-xs font-semibold" style={{ color: '#64748b' }}>{units}</p>
+              <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{units}</p>
             </div>
           ))}
         </div>
@@ -98,19 +98,19 @@ function PerformanceTrackerBody({
       {expanded && (
         <div className="px-4 pt-3 pb-3">
           {loading ? (
-            <p className="text-xs text-center py-4" style={{ color: '#64748b' }}>Loading results…</p>
+            <p className="text-xs text-center py-4" style={{ color: 'var(--text-muted)' }}>Loading results…</p>
           ) : unavailable ? (
             <div className="flex items-start gap-3 py-4">
               <AlertTriangle size={18} style={{ color: '#dc2626' }} className="shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>Tracker temporarily unavailable</p>
-                <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>{error}</p>
+                <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>Tracker temporarily unavailable</p>
+                <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>{error}</p>
               </div>
             </div>
           ) : isNew ? (
             <div className="text-center py-4">
-              <p className="text-sm font-semibold mb-1" style={{ color: '#0f172a' }}>No graded picks yet</p>
-              <p className="text-xs leading-relaxed" style={{ color: '#475569' }}>
+              <p className="text-sm font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>No graded picks yet</p>
+              <p className="text-xs leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                 Vega sends daily picks in the morning. Results appear here after games finish and the grading job runs.
               </p>
             </div>
@@ -125,22 +125,22 @@ function PerformanceTrackerBody({
                       {pick.sport}
                     </span>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
-                      <p className="text-xs truncate" style={{ color: '#64748b' }}>
+                      <p className="text-xs font-semibold truncate" style={{ color: 'var(--text-primary)' }}>{pick.pick}</p>
+                      <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>
                         {formatDate(pick.date)} · {pick.game}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-2">
                     {formatOdds(pick.displayOdds ?? pick.odds) && (
-                      <span className="text-xs" style={{ color: '#64748b' }}>
+                      <span className="text-xs" style={{ color: 'var(--text-muted)' }}>
                         {formatOdds(pick.displayOdds ?? pick.odds)}
                       </span>
                     )}
                     <span className="text-xs font-bold px-2 py-0.5 rounded-full"
                       style={{
                         background: pick.result === 'W' ? '#dcfce7' : '#fef2f2',
-                        color: pick.result === 'W' ? '#16a34a' : '#dc2626',
+                        color: pick.result === 'W' ? 'var(--green)' : '#dc2626',
                       }}>
                       {pick.result} {(pick.units > 0 ? '+' : '')}{(parseFloat(pick.units) || 0).toFixed(2)}u
                     </span>
@@ -149,7 +149,7 @@ function PerformanceTrackerBody({
               ))}
             </div>
           )}
-          <p className="text-xs text-center mt-3" style={{ color: '#64748b' }}>
+          <p className="text-xs text-center mt-3" style={{ color: 'var(--text-muted)' }}>
             Results matched to the game on each pick&apos;s date · Re-verified after every scores cron · Past results don&apos;t guarantee future performance
           </p>
         </div>

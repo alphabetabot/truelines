@@ -80,7 +80,7 @@ async function fetchEdges() {
   return edges.sort((a, b) => parseFloat(b.edge) - parseFloat(a.edge)).slice(0, 5)
 }
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1' }
+const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1' }
 
 export default function TodaysEdges() {
   useEffect(() => {
@@ -98,10 +98,10 @@ export default function TodaysEdges() {
   if (!edges.length) return null
 
   return (
-    <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '1px solid #e2e8f0', background: '#fff' }}>
-      <div className="px-4 py-3 flex items-center justify-between" style={{ background: '#0f172a' }}>
+    <div className="rounded-2xl overflow-hidden mb-5" style={{ border: '1px solid var(--border)', background: 'var(--bg-card)' }}>
+      <div className="px-4 py-3 flex items-center justify-between" style={{ background: 'var(--bg-secondary)' }}>
         <div className="flex items-center gap-2">
-          <TrendingUp size={15} style={{ color: '#f59e0b' }} />
+          <TrendingUp size={15} style={{ color: 'var(--gold)' }} />
           <span className="text-sm font-black text-white">Best Available Value</span>
         </div>
         <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
@@ -114,18 +114,18 @@ export default function TodaysEdges() {
           <div key={i} className="px-4 py-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-xs px-1.5 py-0.5 rounded font-bold flex-shrink-0"
-                style={{ background: (sportColor[edge.sport] || '#64748b') + '20', color: sportColor[edge.sport] || '#64748b' }}>
+                style={{ background: (sportColor[edge.sport] || 'var(--text-muted)') + '20', color: sportColor[edge.sport] || 'var(--text-muted)' }}>
                 {edge.sport}
               </span>
               <div className="min-w-0">
-                <p className="text-xs font-bold truncate" style={{ color: '#0f172a' }}>{edge.game}</p>
-                <p className="text-xs" style={{ color: '#64748b' }}>{edge.market} · Books: {edge.low} – {edge.high}</p>
+                <p className="text-xs font-bold truncate" style={{ color: 'var(--text-primary)' }}>{edge.game}</p>
+                <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{edge.market} · Books: {edge.low} – {edge.high}</p>
               </div>
             </div>
             <div className="flex items-center gap-2 flex-shrink-0">
               <div className="text-right">
-                <p className="text-xs font-black" style={{ color: '#0f172a' }}>Avg {edge.line}</p>
-                <p className="text-xs font-bold" style={{ color: edge.lean === 'wide' ? '#f59e0b' : '#475569' }}>
+                <p className="text-xs font-black" style={{ color: 'var(--text-primary)' }}>Avg {edge.line}</p>
+                <p className="text-xs font-bold" style={{ color: edge.lean === 'wide' ? 'var(--gold)' : 'var(--text-muted)' }}>
                   {edge.lean === 'wide' ? 'Wide gap' : 'Gap'} +{edge.edge}
                 </p>
               </div>
@@ -135,7 +135,7 @@ export default function TodaysEdges() {
       </div>
 
       <div className="px-4 py-2" style={{ borderTop: '1px solid #f1f5f9' }}>
-        <p className="text-xs" style={{ color: '#64748b' }}>
+        <p className="text-xs" style={{ color: 'var(--text-muted)' }}>
           Value = line spread across DraftKings, FanDuel & Pinnacle · Not betting-splits data · Informational only
         </p>
       </div>

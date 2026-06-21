@@ -23,7 +23,7 @@ export default function LogoLink({
           className="font-black tracking-tight whitespace-nowrap"
           style={{ fontSize: height > 32 ? 20 : 17, color: '#fafafa', lineHeight: 1 }}
         >
-          TrueOdds<span style={{ color: '#f59e0b' }}>IQ</span>
+          TrueOdds<span style={{ color: 'var(--green)' }}>IQ</span>
         </span>
       </Link>
     )

@@ -26,9 +26,9 @@ const selectStyle = {
   width: '100%',
   padding: '14px 16px',
   borderRadius: 12,
-  border: '2px solid #e2e8f0',
-  background: '#fff',
-  color: '#0f172a',
+  border: '2px solid var(--border)',
+  background: 'var(--bg-card)',
+  color: 'var(--text-primary)',
   fontSize: 18,
   fontWeight: 700,
 }
@@ -103,12 +103,12 @@ export default function Parlay() {
     <div className="max-w-xl mx-auto pb-12">
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-2">
-          <Layers size={24} style={{ color: '#f59e0b' }} />
-          <h1 className="text-2xl font-black uppercase" style={{ fontFamily: TEAM_FONT, color: '#0f172a' }}>
+          <Layers size={24} style={{ color: 'var(--gold)' }} />
+          <h1 className="text-2xl font-black uppercase" style={{ fontFamily: TEAM_FONT, color: 'var(--text-primary)' }}>
             Parlay Builder
           </h1>
         </div>
-        <p className="font-semibold leading-relaxed mb-4" style={{ fontSize: 18, color: '#0f172a' }}>
+        <p className="font-semibold leading-relaxed mb-4" style={{ fontSize: 18, color: 'var(--text-primary)' }}>
           Vega builds a parlay from today&apos;s real odds — for fun and research only.
         </p>
         <div
@@ -118,10 +118,10 @@ export default function Parlay() {
             border: `2px solid ${atDailyLimit ? '#fecaca' : '#fcd34d'}`,
           }}
         >
-          <p className="font-bold" style={{ fontSize: 16, color: '#0f172a' }}>
+          <p className="font-bold" style={{ fontSize: 16, color: 'var(--text-primary)' }}>
             Free limit: {PARLAY_DAILY_LIMIT} AI parlays per day
           </p>
-          <p className="font-semibold mt-1" style={{ fontSize: 15, color: atDailyLimit ? '#b91c1c' : '#475569' }}>
+          <p className="font-semibold mt-1" style={{ fontSize: 15, color: atDailyLimit ? '#b91c1c' : 'var(--text-muted)' }}>
             {usageLoading && "Checking today's remaining builds…"}
             {!usageLoading && usage != null && (
               atDailyLimit
@@ -137,9 +137,9 @@ export default function Parlay() {
 
       <div
         className="rounded-2xl p-6 sm:p-8 mb-6"
-        style={{ background: '#fff', border: '2px solid #f59e0b', opacity: atDailyLimit ? 0.72 : 1 }}
+        style={{ background: 'var(--bg-card)', border: '2px solid var(--gold)', opacity: atDailyLimit ? 0.72 : 1 }}
       >
-        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: '#0f172a', letterSpacing: '0.08em' }}>
+        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
           Sport
         </label>
         <select
@@ -152,7 +152,7 @@ export default function Parlay() {
           ))}
         </select>
 
-        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: '#0f172a', letterSpacing: '0.08em' }}>
+        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
           How many legs?
         </label>
         <select
@@ -171,8 +171,8 @@ export default function Parlay() {
           disabled={loading || atDailyLimit || usageLoading}
           className="w-full py-4 rounded-xl font-extrabold flex items-center justify-center gap-2"
           style={{
-            background: loading || atDailyLimit ? '#e2e8f0' : '#f59e0b',
-            color: loading || atDailyLimit ? '#64748b' : '#0f172a',
+            background: loading || atDailyLimit ? 'var(--border)' : 'var(--gold)',
+            color: loading || atDailyLimit ? 'var(--text-muted)' : 'var(--text-on-cta)',
             fontSize: 18,
             cursor: loading || atDailyLimit ? 'not-allowed' : 'pointer',
           }}
@@ -201,25 +201,25 @@ export default function Parlay() {
       )}
 
       {!ticket && !loading && !error && (
-        <p className="text-center font-semibold" style={{ fontSize: 17, color: '#475569' }}>
+        <p className="text-center font-semibold" style={{ fontSize: 17, color: 'var(--text-muted)' }}>
           Choose a sport (or ALL for mixed-sport parlays), pick leg count, then tap Build Parlay with AI.
         </p>
       )}
 
       {ticket?.legs?.length > 0 && (
-        <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid #0f172a' }}>
+        <div className="rounded-2xl overflow-hidden" style={{ border: '2px solid var(--green-border)' }}>
           <div
             className="px-5 sm:px-6 py-4 flex items-center justify-between gap-3"
-            style={{ background: '#f59e0b', borderBottom: '2px solid #d97706' }}
+            style={{ background: 'var(--gold)', borderBottom: '2px solid var(--gold)' }}
           >
-            <h2 className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 20, color: '#0f172a' }}>
+            <h2 className="font-black uppercase" style={{ fontFamily: TEAM_FONT, fontSize: 20, color: 'var(--text-primary)' }}>
               Your {ticket.legCount}-leg parlay
             </h2>
-            <span className="text-sm font-bold" style={{ color: '#0f172a' }}>{ticketDate}</span>
+            <span className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{ticketDate}</span>
           </div>
 
-          <div className="px-5 sm:px-6 py-5" style={{ background: '#0f172a', color: '#fff' }}>
-            <p className="text-xs font-bold uppercase mb-4" style={{ color: '#fbbf24' }}>
+          <div className="px-5 sm:px-6 py-5" style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+            <p className="text-xs font-bold uppercase mb-4" style={{ color: 'var(--gold)' }}>
               {ticket.sport}
             </p>
             <ol className="space-y-5">
@@ -227,7 +227,7 @@ export default function Parlay() {
                 <li key={`${leg.matchup}-${leg.pick}`} className="flex gap-4">
                   <span
                     className="font-black shrink-0 w-8 h-8 rounded-full flex items-center justify-center"
-                    style={{ background: '#f59e0b', color: '#0f172a', fontSize: 16 }}
+                    style={{ background: 'var(--gold)', color: 'var(--text-primary)', fontSize: 16 }}
                   >
                     {i + 1}
                   </span>
@@ -235,14 +235,14 @@ export default function Parlay() {
                     {leg.sport && (
                       <span
                         className="inline-block text-xs font-bold uppercase px-2 py-0.5 rounded mb-1"
-                        style={{ background: 'rgba(245,158,11,0.2)', color: '#fbbf24' }}
+                        style={{ background: 'rgba(245,158,11,0.2)', color: 'var(--gold)' }}
                       >
                         {leg.sport}
                       </span>
                     )}
                     <p className="font-bold text-lg">{leg.pick}</p>
                     <p className="text-sm font-semibold mt-0.5" style={{ color: '#cbd5e1' }}>{leg.matchup}</p>
-                    <p className="text-sm font-bold mt-1" style={{ color: '#4ade80' }}>{leg.bet}</p>
+                    <p className="text-sm font-bold mt-1" style={{ color: 'var(--green-live)' }}>{leg.bet}</p>
                   </div>
                 </li>
               ))}
@@ -254,14 +254,14 @@ export default function Parlay() {
                 style={{ borderTop: '1px solid rgba(255,255,255,0.12)' }}
               >
                 <div>
-                  <p className="text-xs font-bold uppercase mb-1" style={{ color: '#fbbf24' }}>Combined (est.)</p>
-                  <p className="text-3xl font-black" style={{ color: '#4ade80', fontFamily: TEAM_FONT }}>
+                  <p className="text-xs font-bold uppercase mb-1" style={{ color: 'var(--gold)' }}>Combined (est.)</p>
+                  <p className="text-3xl font-black" style={{ color: 'var(--green-live)', fontFamily: TEAM_FONT }}>
                     {formatAmericanOdds(combined)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs font-bold uppercase mb-1" style={{ color: '#fbbf24' }}>$25 pays</p>
-                  <p className="text-3xl font-black" style={{ color: '#4ade80', fontFamily: TEAM_FONT }}>
+                  <p className="text-xs font-bold uppercase mb-1" style={{ color: 'var(--gold)' }}>$25 pays</p>
+                  <p className="text-3xl font-black" style={{ color: 'var(--green-live)', fontFamily: TEAM_FONT }}>
                     ${payout25.toFixed(2)}
                   </p>
                 </div>
@@ -269,16 +269,16 @@ export default function Parlay() {
             )}
           </div>
 
-          <div className="px-5 sm:px-6 py-5 space-y-3" style={{ background: '#fffbeb' }}>
+          <div className="px-5 sm:px-6 py-5 space-y-3" style={{ background: 'var(--gold-dim)' }}>
             <button
               type="button"
               onClick={() => runBuild(true)}
               disabled={loading || atDailyLimit}
               className="w-full py-3.5 rounded-xl font-bold flex items-center justify-center gap-2"
               style={{
-                background: '#fff',
-                color: '#0f172a',
-                border: '2px solid #0f172a',
+                background: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '2px solid var(--green-border)',
                 fontSize: 17,
                 opacity: loading || atDailyLimit ? 0.6 : 1,
                 cursor: loading || atDailyLimit ? 'not-allowed' : 'pointer',
@@ -291,11 +291,11 @@ export default function Parlay() {
               type="button"
               onClick={copyParlay}
               className="w-full py-3 rounded-xl font-semibold"
-              style={{ background: 'transparent', color: '#2563eb', fontSize: 15 }}
+              style={{ background: 'transparent', color: 'var(--accent)', fontSize: 15 }}
             >
               Copy parlay text
             </button>
-            <p className="text-center text-sm font-semibold leading-relaxed" style={{ color: '#475569' }}>
+            <p className="text-center text-sm font-semibold leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               Illustrative odds only — not a real bet slip. Place wagers at a licensed sportsbook. 21+
             </p>
           </div>

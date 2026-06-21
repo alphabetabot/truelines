@@ -19,7 +19,7 @@ import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
 import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
 import { useSubscription } from '../hooks/useSubscription'
 
-const sportColor = { MLB: '#22c55e', NBA: '#2563eb', NHL: '#6366f1', Mixed: '#475569' }
+const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1', Mixed: 'var(--text-muted)' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
 
 function isFadePick(pick) {
@@ -43,7 +43,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
         <div className="flex items-center gap-2">
           <span className="text-xs px-2 py-0.5 rounded font-bold"
-            style={{ background: (sportColor[pick.sport] || '#475569') + '20', color: sportColor[pick.sport] || '#475569' }}>
+            style={{ background: (sportColor[pick.sport] || 'var(--text-muted)') + '20', color: sportColor[pick.sport] || 'var(--text-muted)' }}>
             {pick.sport}
           </span>
           <span className="text-xs font-bold" style={{ color: 'var(--gold)' }}>{label}</span>
@@ -68,7 +68,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
           <span className="inline-block mt-2 text-xs font-bold px-2 py-0.5 rounded-full"
             style={{
               background: pick.result === 'W' ? '#dcfce7' : '#fef2f2',
-              color: pick.result === 'W' ? '#16a34a' : '#dc2626',
+              color: pick.result === 'W' ? 'var(--green)' : '#dc2626',
             }}>
             {pick.result}
           </span>
@@ -251,14 +251,14 @@ export default function AIPicks() {
 
       {!isPremium && (
         <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
-          style={{ background: '#fffbeb', border: '1px solid #fde68a' }}>
+          style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
           <p className="text-sm" style={{ color: '#92400e' }}>
             Today&apos;s top pick with a short summary below. Premium unlocks all {DAILY_NEWSLETTER_PICK_COUNT} picks
             with full write-ups, plus unlimited AI analysis on every game.
           </p>
           <button type="button" onClick={() => navigate('/premium')}
             className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"
-            style={{ background: '#f59e0b', color: '#0f172a' }}>
+            style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}>
             {user ? 'Upgrade to Premium' : 'Sign in · Premium'}
           </button>
         </div>
@@ -354,7 +354,7 @@ export default function AIPicks() {
                     type="button"
                     onClick={() => navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })}
                     className="px-5 py-2.5 rounded-xl font-bold text-sm"
-                    style={{ background: '#f59e0b', color: '#0f172a' }}
+                    style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
                   >
                     {user ? 'Upgrade to Premium' : 'Sign in · Premium'}
                   </button>
@@ -387,7 +387,7 @@ export default function AIPicks() {
               </p>
               <button type="button" onClick={() => navigate(user ? '/premium' : '/login', user ? undefined : { state: { from: '/picks' } })}
                 className="px-6 py-2.5 rounded-xl font-bold text-sm text-white"
-                style={{ background: '#0f172a' }}>
+                style={{ background: 'var(--bg-secondary)' }}>
                 {user ? 'Upgrade to Premium' : 'Sign in'}
               </button>
             </div>

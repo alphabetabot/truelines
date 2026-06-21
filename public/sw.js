@@ -1,4 +1,4 @@
-const CACHE_NAME = 'trueoddsiq-v17'
+const CACHE_NAME = 'trueoddsiq-v18'
 const STATIC_ASSETS = ['/']
 
 self.addEventListener('install', e => {

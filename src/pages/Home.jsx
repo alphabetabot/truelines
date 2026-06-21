@@ -9,7 +9,7 @@ export default function Home() {
   if (loading) {
     return (
       <div className="text-center py-16">
-        <p className="text-sm" style={{ color: '#475569' }}>Loading…</p>
+        <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Loading…</p>
       </div>
     )
   }

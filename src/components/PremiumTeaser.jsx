@@ -42,38 +42,38 @@ export default function PremiumTeaser({ showWaitlist = true }) {
   return (
     <section className="mb-8">
       <div className="flex items-center gap-2 mb-2">
-        <Sparkles size={18} style={{ color: '#f59e0b' }} />
-        <h2 className="text-lg font-black" style={{ color: '#0f172a' }}>
+        <Sparkles size={18} style={{ color: 'var(--gold)' }} />
+        <h2 className="text-lg font-black" style={{ color: 'var(--text-primary)' }}>
           Upgrade to Premium
         </h2>
       </div>
-      <p className="text-sm mb-4 leading-relaxed" style={{ color: '#475569' }}>
+      <p className="text-sm mb-4 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         Unlock the full AI Picks and AI Analysis tabs — {PREMIUM_PRICE_DISPLAY}.
       </p>
 
       <div
         className="rounded-2xl p-4 flex flex-col relative max-w-lg"
         style={{
-          background: 'linear-gradient(165deg, #0f172a 0%, #1e293b 100%)',
-          border: '2px solid #f59e0b',
+          background: 'linear-gradient(165deg, var(--bg-secondary) 0%, var(--bg-elevated) 100%)',
+          border: '2px solid var(--gold)',
           boxShadow: '0 12px 40px rgba(245, 158, 11, 0.18)',
-          color: '#fff',
+          color: 'var(--text-primary)',
         }}
       >
         <span
           className="absolute -top-2.5 right-4 text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-md"
-          style={{ background: '#f59e0b', color: '#0f172a', letterSpacing: '0.1em' }}
+          style={{ background: 'var(--gold)', color: 'var(--text-primary)', letterSpacing: '0.1em' }}
         >
           Recommended
         </span>
-        <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: '#fbbf24' }}>
+        <p className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: 'var(--gold)' }}>
           Premium
         </p>
         <p className="text-xl font-black mb-3" style={{ color: '#fde68a' }}>{PREMIUM_PRICE_DISPLAY}</p>
         <ul className="text-sm space-y-2 mb-4 flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
           {PREMIUM_FEATURES.map(f => (
             <li key={f} className="flex gap-2">
-              <span style={{ color: '#f59e0b' }}>✓</span>
+              <span style={{ color: 'var(--gold)' }}>✓</span>
               <span>{f}</span>
             </li>
           ))}
@@ -84,13 +84,13 @@ export default function PremiumTeaser({ showWaitlist = true }) {
             onClick={handlePremiumCta}
             disabled={busy}
             className="w-full py-2.5 rounded-xl text-sm font-extrabold"
-            style={{ background: '#f59e0b', color: '#0f172a' }}
+            style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
           >
             {busy ? 'Redirecting…' : isPremium ? 'Manage Premium' : `Subscribe — ${PREMIUM_PRICE_DISPLAY}`}
           </button>
         )}
         {!showWaitlist && isPremium && (
-          <p className="text-xs font-bold text-center py-2" style={{ color: '#4ade80' }}>Your plan is active</p>
+          <p className="text-xs font-bold text-center py-2" style={{ color: 'var(--green-live)' }}>Your plan is active</p>
         )}
       </div>
     </section>

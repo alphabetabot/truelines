@@ -41,7 +41,7 @@ export default function DailyPickTeaser() {
 
   if (loading) {
     return (
-      <div className="rounded-xl mb-4 shimmer" style={{ height: 72, border: '1px solid #e2e8f0' }} />
+      <div className="rounded-xl mb-4 shimmer" style={{ height: 72, border: '1px solid var(--border)' }} />
     )
   }
 
@@ -49,10 +49,10 @@ export default function DailyPickTeaser() {
     return (
       <div
         className="rounded-xl mb-4 px-4 py-3"
-        style={{ background: '#f8fafc', border: '1px solid #e2e8f0' }}
+        style={{ background: 'var(--odds-bg)', border: '1px solid var(--border)' }}
       >
-        <p className="text-sm font-semibold" style={{ color: '#0f172a' }}>Today&apos;s AI picks</p>
-        <p className="text-xs mt-1" style={{ color: '#64748b' }}>
+        <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Today&apos;s AI picks</p>
+        <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
           No picks published yet today. New picks land every morning (Pacific time).
           {isPremium ? ' Check /picks for the full slate once they drop.' : ' Premium unlocks all 3 daily picks with full write-ups.'}
         </p>
@@ -74,20 +74,20 @@ export default function DailyPickTeaser() {
     <div
       className="rounded-xl mb-4 overflow-hidden"
       style={{
-        background: '#fff',
-        border: '1.5px solid #f59e0b',
+        background: 'var(--bg-card)',
+        border: '1.5px solid var(--gold)',
         boxShadow: '0 2px 8px rgba(245,158,11,0.12)',
       }}
     >
       <div className="flex items-center gap-2.5 px-4 pt-3 pb-2">
         <div className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: '#f59e0b' }}>
-          <Zap size={14} style={{ color: '#0f172a' }} />
+          style={{ background: 'var(--gold)' }}>
+          <Zap size={14} style={{ color: 'var(--text-primary)' }} />
         </div>
         <div className="min-w-0">
-          <p className="text-xs font-bold" style={{ color: '#f59e0b' }}>Today&apos;s AI Pick</p>
-          <p className="text-sm font-bold truncate" style={{ color: '#0f172a' }}>{pick.pick}</p>
-          <p className="text-xs truncate" style={{ color: '#475569' }}>{pick.game}</p>
+          <p className="text-xs font-bold" style={{ color: 'var(--gold)' }}>Today&apos;s AI Pick</p>
+          <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>{pick.pick}</p>
+          <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{pick.game}</p>
         </div>
       </div>
 
@@ -96,7 +96,7 @@ export default function DailyPickTeaser() {
           type="button"
           onClick={goToTopPickAnalysis}
           className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-left font-bold text-sm transition-opacity hover:opacity-90"
-          style={{ background: '#f8fafc', border: '1px solid #e2e8f0', color: '#0f172a' }}
+          style={{ background: 'var(--odds-bg)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
         >
           <span>{isPremium ? 'View top pick analysis' : 'View full analysis'}</span>
           <ChevronRight size={16} />
@@ -107,13 +107,13 @@ export default function DailyPickTeaser() {
             type="button"
             onClick={goToFullSlate}
             className="w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-lg text-left font-bold text-sm transition-opacity hover:opacity-90"
-            style={{ background: '#f59e0b', color: '#0f172a' }}
+            style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
           >
             <span>All {DAILY_NEWSLETTER_PICK_COUNT} daily picks</span>
             <ChevronRight size={16} />
           </button>
         ) : (
-          <p className="text-xs px-1" style={{ color: '#64748b' }}>
+          <p className="text-xs px-1" style={{ color: 'var(--text-muted)' }}>
             {user
               ? 'Free account: today\'s top pick with a short summary. Premium unlocks all 3 picks with full write-ups.'
               : 'One pick preview free · Premium unlocks all 3 daily picks with full write-ups.'}

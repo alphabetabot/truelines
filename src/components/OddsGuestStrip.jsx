@@ -9,11 +9,11 @@ export default function OddsGuestStrip() {
   return (
     <div
       className="mb-3 px-3 py-2 rounded-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"
-      style={{ background: '#fff', border: '1px solid #e2e8f0' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)' }}
     >
-      <p className="text-xs leading-snug" style={{ color: '#475569' }}>
+      <p className="text-xs leading-snug" style={{ color: 'var(--text-muted)' }}>
         Compare live sportsbook odds, AI picks, and line movement.{' '}
-        <Link to="/login" className="font-semibold" style={{ color: '#2563eb' }}>
+        <Link to="/login" className="font-semibold" style={{ color: 'var(--accent)' }}>
           Create a free account
         </Link>{' '}
         to unlock additional features.

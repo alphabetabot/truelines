@@ -11,14 +11,14 @@ export const SEO_SPORTS = {
     label: 'MLB',
     sportKey: 'baseball_mlb',
     pickSport: 'MLB',
-    color: '#22c55e',
+    color: 'var(--green)',
   },
   nba: {
     slug: 'nba',
     label: 'NBA',
     sportKey: 'basketball_nba',
     pickSport: 'NBA',
-    color: '#2563eb',
+    color: 'var(--accent)',
   },
   nfl: {
     slug: 'nfl',

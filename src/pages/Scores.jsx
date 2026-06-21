@@ -39,12 +39,12 @@ function ScoreCard({ game, liveStatusMap }) {
   return (
     <div
       className="mb-2 rounded-xl"
-      style={{ background: '#fff', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
+      style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}
     >
       {/* Header — no overflow-hidden on card; it clipped “Final” and scores at rounded corners */}
       <div
         className="flex items-center justify-between gap-3 rounded-t-xl px-4 py-2"
-        style={{ background: '#1e293b' }}
+        style={{ background: 'var(--bg-elevated)' }}
       >
         <span className="min-w-0 shrink text-xs font-semibold text-white truncate">
           {format(gameTime, 'EEE M/d')}
@@ -67,7 +67,7 @@ function ScoreCard({ game, liveStatusMap }) {
           <span
             className="min-w-0 flex-1 text-sm truncate"
             style={{
-              color: '#0f172a',
+              color: 'var(--text-primary)',
               fontWeight: awayWins ? 800 : 500,
             }}
           >
@@ -76,7 +76,7 @@ function ScoreCard({ game, liveStatusMap }) {
           <span
             className="shrink-0 text-lg font-mono tabular-nums"
             style={{
-              color: awayWins ? '#16a34a' : '#0f172a',
+              color: awayWins ? 'var(--green)' : 'var(--text-primary)',
               fontWeight: awayWins ? 800 : 500,
               minWidth: 44,
               textAlign: 'right',
@@ -90,7 +90,7 @@ function ScoreCard({ game, liveStatusMap }) {
           <span
             className="min-w-0 flex-1 text-sm truncate"
             style={{
-              color: '#0f172a',
+              color: 'var(--text-primary)',
               fontWeight: homeWins ? 800 : 500,
             }}
           >
@@ -99,7 +99,7 @@ function ScoreCard({ game, liveStatusMap }) {
           <span
             className="shrink-0 text-lg font-mono tabular-nums"
             style={{
-              color: homeWins ? '#16a34a' : '#0f172a',
+              color: homeWins ? 'var(--green)' : 'var(--text-primary)',
               fontWeight: homeWins ? 800 : 500,
               minWidth: 44,
               textAlign: 'right',
@@ -121,9 +121,9 @@ function DateTab({ date, selected, onClick, label, displayLabel, gameCount }) {
       onClick={() => onClick(label)}
       className="flex flex-col items-center px-3 py-2 rounded-lg text-xs font-semibold whitespace-nowrap shrink-0 transition-all"
       style={{
-        background: isSelected ? '#1e293b' : '#fff',
-        color: isSelected ? '#fff' : '#475569',
-        border: `1px solid ${isSelected ? '#1e293b' : '#e2e8f0'}`,
+        background: isSelected ? 'var(--gold)' : 'var(--bg-card)',
+        color: isSelected ? 'var(--text-on-cta)' : 'var(--text-muted)',
+        border: `1px solid ${isSelected ? 'var(--gold)' : 'var(--border)'}`,
       }}
     >
       <span>{displayLabel}</span>
@@ -175,7 +175,7 @@ export default function Scores({ sport }) {
 
   return (
     <div>
-      <p className="text-xs mb-2" style={{ color: '#475569' }}>
+      <p className="text-xs mb-2" style={{ color: 'var(--text-muted)' }}>
         Game results for the selected sport (last {MAX_SCORES_DAYS_FROM} days).
       </p>
       <div className="flex gap-2 overflow-x-auto pb-2 mb-4">
@@ -199,7 +199,7 @@ export default function Scores({ sport }) {
       {isLoading && (
         <div className="space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="shimmer rounded-xl" style={{ height: 90, border: '1px solid #e2e8f0' }} />
+            <div key={i} className="shimmer rounded-xl" style={{ height: 90, border: '1px solid var(--border)' }} />
           ))}
         </div>
       )}
@@ -214,10 +214,10 @@ export default function Scores({ sport }) {
 
       {!isLoading && !isError && games.length === 0 && (
         <div className="text-center py-12">
-          <p className="text-lg font-medium" style={{ color: '#64748b' }}>
+          <p className="text-lg font-medium" style={{ color: 'var(--text-muted)' }}>
             No {SPORTS.find(s => s.key === sport)?.label || 'league'} games on this day
           </p>
-          <p className="text-sm mt-2" style={{ color: '#64748b' }}>
+          <p className="text-sm mt-2" style={{ color: 'var(--text-muted)' }}>
             Try another date above, or switch sport.
           </p>
         </div>

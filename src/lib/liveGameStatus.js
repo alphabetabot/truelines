@@ -171,15 +171,15 @@ export function lookupLiveStatus(game, statusMap) {
 /** Badge text for score cards and ticker. */
 export function formatLiveStatusBadge({ isFinal, isLive, gameTime, liveDetail }) {
   if (isFinal) {
-    return { label: 'Final', bg: 'rgba(148,163,184,0.25)', color: '#94a3b8' }
+    return { label: 'Final', bg: 'rgba(148,163,184,0.25)', color: 'var(--text-muted)' }
   }
   if (isLive) {
     const label = liveDetail ? `● ${liveDetail}` : '● LIVE'
-    return { label, bg: 'rgba(74,222,128,0.2)', color: '#4ade80' }
+    return { label, bg: 'rgba(74,222,128,0.2)', color: 'var(--green-live)' }
   }
   return {
     label: gameTime.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }),
     bg: 'rgba(251,191,36,0.2)',
-    color: '#fbbf24',
+    color: 'var(--gold)',
   }
 }

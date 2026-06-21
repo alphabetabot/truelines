@@ -21,7 +21,7 @@ export default function CollapsibleScoreTicker() {
   }, [])
 
   return (
-    <div style={{ background: '#0f172a', borderBottom: '1px solid #1e293b' }}>
+    <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--bg-elevated)' }}>
       <button
         type="button"
         onClick={() => setExpanded(v => !v)}

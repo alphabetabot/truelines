@@ -28,6 +28,6 @@ export function getScoresTickerLabel(game, liveDetail = null) {
 
 export function getScoresTickerColor(game) {
   if (isScoresGameFinal(game)) return '#94a3b8'
-  if (isScoresGameLive(game)) return '#4ade80'
-  return '#fbbf24'
+  if (isScoresGameLive(game)) return 'var(--green-live)'
+  return 'var(--gold)'
 }

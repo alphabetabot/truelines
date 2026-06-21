@@ -63,7 +63,7 @@ export default function AIPickTeaser() {
 
   if (loading) {
     return (
-      <div className="rounded-2xl p-4 mb-6 shimmer" style={{ height: 120, border: '1px solid #e2e8f0' }} />
+      <div className="rounded-2xl p-4 mb-6 shimmer" style={{ height: 120, border: '1px solid var(--border)' }} />
     )
   }
 
@@ -71,19 +71,19 @@ export default function AIPickTeaser() {
 
   return (
     <div className="rounded-2xl overflow-hidden mb-6"
-      style={{ background: '#0f172a', border: '1px solid #1e293b', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+      style={{ background: 'var(--bg-secondary)', border: '1px solid var(--bg-elevated)', boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
 
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-2.5"
-        style={{ background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
+        style={{ background: 'linear-gradient(135deg, var(--bg-elevated) 0%, var(--bg-secondary) 100%)', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
         <div className="flex items-center gap-2">
-          <Zap size={14} style={{ color: '#f59e0b' }} />
-          <span className="text-xs font-bold tracking-wider" style={{ color: '#f59e0b' }}>
+          <Zap size={14} style={{ color: 'var(--gold)' }} />
+          <span className="text-xs font-bold tracking-wider" style={{ color: 'var(--gold)' }}>
             VEGA'S PICK OF THE DAY
           </span>
         </div>
         <span className="text-xs px-2 py-0.5 rounded-full font-semibold"
-          style={{ background: 'rgba(245,158,11,0.15)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+          style={{ background: 'rgba(245,158,11,0.15)', color: 'var(--gold)', border: '1px solid rgba(245,158,11,0.3)' }}>
           {pick.sport}
         </span>
       </div>
@@ -91,15 +91,15 @@ export default function AIPickTeaser() {
       {/* Pick content */}
       <div className="px-4 py-4">
         <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.78)' }}>{pick.game}</p>
-        <p className="text-xl font-black mb-1" style={{ color: '#ffffff' }}>{pick.pick}</p>
-        <p className="text-sm mb-3" style={{ color: '#f59e0b' }}>{pick.confidence}</p>
+        <p className="text-xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{pick.pick}</p>
+        <p className="text-sm mb-3" style={{ color: 'var(--gold)' }}>{pick.confidence}</p>
 
         {/* Bullet points */}
         {pick.bullets?.length > 0 && (
           <ul className="mb-3 space-y-1">
             {pick.bullets.map((b, i) => (
               <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.88)' }}>
-                <span style={{ color: '#f59e0b', marginTop: 2 }}>•</span>
+                <span style={{ color: 'var(--gold)', marginTop: 2 }}>•</span>
                 {b}
               </li>
             ))}
@@ -117,7 +117,7 @@ export default function AIPickTeaser() {
         <button
           onClick={() => navigate('/login')}
           className="w-full flex items-center justify-center gap-2 py-3 font-bold text-sm transition-all"
-          style={{ background: '#f59e0b', color: '#0f172a' }}
+          style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
         >
           <Star size={14} />
           Sign up free to see all picks + full analysis
@@ -127,7 +127,7 @@ export default function AIPickTeaser() {
         <button
           onClick={() => navigate('/picks')}
           className="w-full flex items-center justify-center gap-2 py-3 font-bold text-sm transition-all"
-          style={{ background: '#f59e0b', color: '#0f172a' }}
+          style={{ background: 'var(--gold)', color: 'var(--text-primary)' }}
         >
           <Star size={14} />
           View all picks + full analysis

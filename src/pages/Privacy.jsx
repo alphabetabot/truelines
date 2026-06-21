@@ -1,12 +1,12 @@
 export default function Privacy() {
   return (
     <div className="max-w-3xl mx-auto py-8">
-      <h1 className="text-2xl font-black mb-2" style={{ color: '#0f172a' }}>Privacy Policy</h1>
-      <p className="text-xs mb-6" style={{ color: '#64748b' }}>Last updated: May 2026</p>
+      <h1 className="text-2xl font-black mb-2" style={{ color: 'var(--text-primary)' }}>Privacy Policy</h1>
+      <p className="text-xs mb-6" style={{ color: 'var(--text-muted)' }}>Last updated: May 2026</p>
 
-      <div className="space-y-5 text-sm leading-relaxed" style={{ color: '#475569' }}>
+      <div className="space-y-5 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Information We Collect</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Information We Collect</h2>
           <p>
             TrueOddsIQ may collect account information such as your email address, authentication details,
             newsletter preferences, and basic usage analytics. We also process sports odds, scores, and AI
@@ -15,7 +15,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>How We Use Information</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>How We Use Information</h2>
           <p>
             We use information to operate the website, send requested newsletters, protect accounts, monitor
             performance, and improve product features. We do not sell your personal information.
@@ -23,7 +23,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Email Communications</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Email Communications</h2>
           <p>
             If you opt in to the newsletter, we may send daily picks and product updates. Every marketing
             email includes an unsubscribe link, and you can opt out at any time.
@@ -31,7 +31,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Analytics (Google Analytics 4)</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Analytics (Google Analytics 4)</h2>
           <p className="mb-2">
             We use Google Analytics 4 (GA4) to understand aggregate traffic and product usage. GA4 may set
             cookies or similar identifiers and collect information such as pages viewed, approximate location,
@@ -48,7 +48,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Cookies</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Cookies</h2>
           <p>
             We use essential cookies for authentication sessions where applicable. Analytics cookies (Google
             Analytics) load only if you choose <strong>Accept analytics</strong> in our cookie banner. You can
@@ -57,7 +57,7 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Service Providers</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Service Providers</h2>
           <p>
             We rely on third-party providers for hosting, authentication (Supabase), email delivery (Resend),
             odds data (The Odds API), and AI analysis (Anthropic, OpenAI). These providers process data only
@@ -66,10 +66,10 @@ export default function Privacy() {
         </section>
 
         <section>
-          <h2 className="font-bold mb-2" style={{ color: '#0f172a' }}>Contact</h2>
+          <h2 className="font-bold mb-2" style={{ color: 'var(--text-primary)' }}>Contact</h2>
           <p>
             Questions about privacy can be sent to{' '}
-            <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb' }}>info@trueoddsiq.com</a>.
+            <a href="mailto:info@trueoddsiq.com" style={{ color: 'var(--accent)' }}>info@trueoddsiq.com</a>.
           </p>
         </section>
       </div>
