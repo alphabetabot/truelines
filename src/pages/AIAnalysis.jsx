@@ -144,7 +144,7 @@ export default function AIAnalysis() {
         <OddsLoadError message={error?.message} onRetry={() => refetch()} />
       )}
 
-      <SportSelector selected={sport} onChange={s => { setSport(s); selectGame(null) }} />
+      <SportSelector selected={sport} onChange={s => { setSport(s); selectGame(null) }} bright />
 
       <RecentlyViewedGames
         page="analysis"
@@ -177,15 +177,20 @@ export default function AIAnalysis() {
       )}
 
       <div className="mb-5">
-        <label className="block text-xs font-semibold mb-2" style={{ color: 'var(--text-muted)' }}>
+        <label className="block font-semibold mb-2" style={{ color: 'var(--text-primary)', fontSize: 13 }}>
           SELECT UPCOMING GAME {games.length > 0 ? `(${games.length} this week)` : ''}
         </label>
         <div className="relative">
           <select
             value={selectedGame?.id || ''}
             onChange={e => handleGameSelect(e.target.value)}
-            className="w-full appearance-none px-4 py-3 rounded-xl text-sm outline-none pr-10"
-            style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', color: selectedGame ? 'var(--text-primary)' : 'var(--text-muted)' }}
+            className="w-full appearance-none px-4 py-3 rounded-xl outline-none pr-10"
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              color: 'var(--text-primary)',
+              fontSize: 15,
+            }}
           >
             <option value="">
               {isLoading || isFetching
@@ -204,7 +209,7 @@ export default function AIAnalysis() {
               </optgroup>
             ))}
           </select>
-          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-muted)' }} />
+          <ChevronDown size={16} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: 'var(--text-primary)' }} />
         </div>
       </div>
 
@@ -216,35 +221,35 @@ export default function AIAnalysis() {
 
       {/* Two analyze buttons */}
       <div className="flex gap-3 mb-6">
-        {/* Claude */}
         <button
           onClick={runClaude}
           disabled={!selectedGame || claudeLoading || authLoading}
-          className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+          className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            background: selectedGame && !claudeLoading && !authLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : '#f1f5f9',
-            color: selectedGame && !claudeLoading && !authLoading ? '#fff' : 'var(--text-muted)',
+            fontSize: 11,
+            background: selectedGame && !claudeLoading && !authLoading ? 'linear-gradient(135deg, #7c3aed, #4f46e5)' : 'rgba(255,255,255,0.08)',
+            color: selectedGame && !claudeLoading && !authLoading ? '#fff' : 'rgba(255,255,255,0.55)',
             cursor: selectedGame && !claudeLoading && !authLoading ? 'pointer' : 'not-allowed',
             boxShadow: selectedGame && !claudeLoading && !authLoading ? '0 4px 14px rgba(124,58,237,0.3)' : 'none',
           }}
         >
-          <Zap size={15} />
-          {claudeLoading ? 'Vega Analyzing...' : user ? 'Analyze with Vega (Claude)' : 'Sign in for Vega'}
+          <Zap size={12} />
+          {claudeLoading ? 'Vega Analyzing...' : user ? 'Analyze with Vega' : 'Sign in for Vega'}
         </button>
 
-        {/* GPT-4o */}
         <button
           onClick={runGPT}
           disabled={!selectedGame || gptLoading || authLoading}
-          className="flex-1 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all"
+          className="flex-1 py-3 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all"
           style={{
-            background: selectedGame && !gptLoading && !authLoading ? 'linear-gradient(135deg, var(--green), #15803d)' : '#f1f5f9',
-            color: selectedGame && !gptLoading && !authLoading ? '#fff' : 'var(--text-muted)',
+            fontSize: 11,
+            background: selectedGame && !gptLoading && !authLoading ? 'linear-gradient(135deg, var(--green), #15803d)' : 'rgba(255,255,255,0.08)',
+            color: selectedGame && !gptLoading && !authLoading ? '#fff' : 'rgba(255,255,255,0.55)',
             cursor: selectedGame && !gptLoading && !authLoading ? 'pointer' : 'not-allowed',
             boxShadow: selectedGame && !gptLoading && !authLoading ? '0 4px 14px rgba(22,163,74,0.3)' : 'none',
           }}
         >
-          <Brain size={15} />
+          <Brain size={12} />
           {gptLoading ? 'ChatGPT Analyzing...' : user ? 'Analyze with ChatGPT' : 'Sign in for ChatGPT'}
         </button>
       </div>
@@ -266,7 +271,7 @@ export default function AIAnalysis() {
       {!claudeData && !gptData && !claudeLoading && !gptLoading && !claudeError && !gptError && (
         <div className="text-center py-12">
           <Brain size={36} className="mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
-          <p className="text-sm" style={{ color: 'var(--text-muted)' }}>Select a game then choose your AI</p>
+          <p style={{ color: 'var(--text-primary)', fontSize: 13 }}>Select a game then choose your AI</p>
         </div>
       )}
     </div>
