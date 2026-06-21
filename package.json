@@ -14,6 +14,7 @@
     "test:store-picks": "node scripts/store-picks.test.js",
     "test:newsletter-guard": "node scripts/newsletter-send-guard.test.js",
     "test:newsletter-pipeline": "node scripts/newsletter-pipeline.test.js",
+    "test:newsletter-email": "node scripts/newsletter-email.test.js",
     "test:sport-context": "node scripts/sport-context.test.js",
     "test:billing": "node scripts/billing-utils.test.js",
     "test:admin": "node scripts/admin-utils.test.js",
