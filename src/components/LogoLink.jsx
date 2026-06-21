@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/AuthContext'
+import MarketingLogo from './marketing/MarketingLogo'
 
 export default function LogoLink({
   height = 48,
@@ -12,20 +13,13 @@ export default function LogoLink({
   const homeTo = user ? '/odds' : '/'
 
   if (theme === 'marketing') {
+    const logoSize = Math.round(height * 0.72)
     return (
-      <Link
-        to={homeTo}
+      <MarketingLogo
+        size={logoSize}
         className={className}
-        aria-label="TrueOddsIQ home"
-        style={{ display: 'inline-flex', alignItems: 'center', textDecoration: 'none', ...style }}
-      >
-        <span
-          className="font-black tracking-tight whitespace-nowrap"
-          style={{ fontSize: height > 32 ? 20 : 17, color: '#fafafa', lineHeight: 1 }}
-        >
-          TrueOdds<span style={{ color: 'var(--green)' }}>IQ</span>
-        </span>
-      </Link>
+        style={{ maxWidth, ...style }}
+      />
     )
   }
 
