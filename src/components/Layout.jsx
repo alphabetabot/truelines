@@ -99,7 +99,7 @@ export default function Layout({ children }) {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: marketingHome ? '#030712' : 'var(--bg-primary)' }}
+      style={{ background: marketingHome ? '#060606' : 'var(--bg-primary)' }}
     >
       {!hideRouteSEO && <RouteSEO />}
 
