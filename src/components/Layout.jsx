@@ -99,17 +99,18 @@ export default function Layout({ children }) {
   return (
     <div
       className="min-h-screen flex flex-col"
-      style={{ background: marketingHome ? '#030712' : 'var(--bg-primary)' }}
+      style={{ background: marketingHome ? '#060606' : 'var(--bg-primary)' }}
     >
       {!hideRouteSEO && <RouteSEO />}
 
-      {/* ── Top bar ── */}
-      <div style={{ background: marketingHome ? 'rgba(3, 7, 18, 0.85)' : '#0f172a', borderBottom: marketingHome ? '1px solid rgba(255,255,255,0.06)' : undefined }}>
+      {/* Homepage renders its own nav + footer inside Welcome.jsx */}
+      {!marketingHome && (
+      <div style={{ background: '#0f172a' }}>
         <div
-          className={`mx-auto px-4 sm:px-6 flex items-center justify-between ${marketingHome ? 'max-w-6xl' : 'max-w-5xl'}`}
-          style={{ height: marketingHome ? 56 : appWorkspace ? 56 : 68 }}
+          className="max-w-5xl mx-auto px-4 flex items-center justify-between"
+          style={{ height: appWorkspace ? 56 : 68 }}
         >
-          <LogoLink height={marketingHome ? 36 : 48} maxWidth={marketingHome ? 160 : 220} />
+          <LogoLink height={48} maxWidth={220} />
 
           <div className="flex items-center gap-3">
             {showInstall && (
@@ -125,15 +126,6 @@ export default function Layout({ children }) {
                 style={{ background: 'rgba(255,255,255,0.1)', color: '#fff', border: '1px solid rgba(255,255,255,0.2)' }}>
                 Sign Out
               </button>
-            ) : marketingHome ? (
-              <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="px-4 py-2 rounded-full text-xs font-semibold transition-colors hover:bg-white/10"
-                style={{ color: '#fafafa', border: '1px solid rgba(255,255,255,0.15)' }}
-              >
-                Sign In
-              </button>
             ) : (
               <button onClick={() => navigate('/login')}
                 className="px-3 py-1.5 rounded-lg text-xs font-bold"
@@ -141,16 +133,15 @@ export default function Layout({ children }) {
                 Sign In
               </button>
             )}
-            {!marketingHome && (
-              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
-                style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
-                <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
-                <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
+              style={{ background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.3)' }}>
+              <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: '#4ade80' }} />
+              <span style={{ color: '#4ade80', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
+            </div>
           </div>
         </div>
       </div>
+      )}
 
       {/* ── Nav tabs (hidden on marketing homepage — tools live on /odds, /compare, etc.) ── */}
       {!marketingHome && (
@@ -207,66 +198,40 @@ export default function Layout({ children }) {
 
       <CookieConsent />
 
+      {!marketingHome && (
       <footer
-        className={`px-4 pb-20 sm:pb-8 ${marketingHome ? 'pt-12' : 'py-4 sm:pb-4'}`}
-        style={{
-          borderTop: marketingHome ? '1px solid rgba(255,255,255,0.08)' : '1px solid #e2e8f0',
-          background: marketingHome ? '#030712' : '#fff',
-        }}
+        className="px-4 pb-20 sm:pb-6 py-4 sm:pb-4"
+        style={{ borderTop: '1px solid #e2e8f0', background: '#fff' }}
       >
-        <div className={`mx-auto flex flex-col gap-4 ${marketingHome ? 'max-w-6xl items-center' : 'max-w-5xl'}`}>
-          {marketingHome ? (
-            <>
-              <LogoLink height={32} maxWidth={140} />
-              <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs" style={{ color: '#71717a' }}>
-                <Link to="/privacy" className="hover:text-zinc-300 transition-colors">Privacy</Link>
-                <Link to="/terms" className="hover:text-zinc-300 transition-colors">Terms</Link>
-                <Link to="/disclaimer" className="hover:text-zinc-300 transition-colors">Disclaimer</Link>
-                <button
-                  type="button"
-                  onClick={openCookiePreferences}
-                  className="hover:text-zinc-300 transition-colors"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 12, color: 'inherit' }}
-                >
-                  Cookies
-                </button>
-              </div>
-              <p className="text-center text-xs" style={{ color: '#52525b' }}>
-                Must be 21+ · For informational use only · Gambling problem?{' '}
-                <a href="tel:1-800-426-2537" className="underline" style={{ color: '#71717a' }}>1-800-GAMBLER</a>
-              </p>
-            </>
-          ) : (
-            <>
-              <SeoFooterNav variant="default" />
-              <div className="text-center" style={{ color: '#334155', fontSize: 11 }}>
-                TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
-              </div>
-              <div className="text-center" style={{ fontSize: 11, color: '#334155' }}>
-                Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: '#16a34a', fontWeight: 700 }}>1-800-GAMBLER</a>
-                {' '}·{' '}
-                <Link to="/about" style={{ color: '#2563eb', fontWeight: 600 }}>About</Link>
-                {' '}·{' '}
-                <Link to="/disclaimer" style={{ color: '#2563eb', fontWeight: 600 }}>Site Disclaimer</Link>
-                {' '}·{' '}
-                <Link to="/privacy" style={{ color: '#2563eb', fontWeight: 600 }}>Privacy</Link>
-                {' '}·{' '}
-                <Link to="/terms" style={{ color: '#2563eb', fontWeight: 600 }}>Terms</Link>
-                {' '}·{' '}
-                <button
-                  type="button"
-                  onClick={openCookiePreferences}
-                  style={{ color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11 }}
-                >
-                  Cookie preferences
-                </button>
-                {' '}·{' '}
-                <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb', fontWeight: 600 }}>Contact Us</a>
-              </div>
-            </>
-          )}
+        <div className="max-w-5xl mx-auto flex flex-col gap-2">
+          <SeoFooterNav variant="default" />
+          <div className="text-center" style={{ color: '#334155', fontSize: 11 }}>
+            TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
+          </div>
+          <div className="text-center" style={{ fontSize: 11, color: '#334155' }}>
+            Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: '#16a34a', fontWeight: 700 }}>1-800-GAMBLER</a>
+            {' '}·{' '}
+            <Link to="/about" style={{ color: '#2563eb', fontWeight: 600 }}>About</Link>
+            {' '}·{' '}
+            <Link to="/disclaimer" style={{ color: '#2563eb', fontWeight: 600 }}>Site Disclaimer</Link>
+            {' '}·{' '}
+            <Link to="/privacy" style={{ color: '#2563eb', fontWeight: 600 }}>Privacy</Link>
+            {' '}·{' '}
+            <Link to="/terms" style={{ color: '#2563eb', fontWeight: 600 }}>Terms</Link>
+            {' '}·{' '}
+            <button
+              type="button"
+              onClick={openCookiePreferences}
+              style={{ color: '#2563eb', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11 }}
+            >
+              Cookie preferences
+            </button>
+            {' '}·{' '}
+            <a href="mailto:info@trueoddsiq.com" style={{ color: '#2563eb', fontWeight: 600 }}>Contact Us</a>
+          </div>
         </div>
       </footer>
+      )}
     </div>
   )
 }
