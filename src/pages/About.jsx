@@ -79,8 +79,8 @@ export default function About() {
       </div>
 
       <div className="p-5 rounded-2xl" style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
-        <h2 className="mb-2" style={{ color: '#92400e', fontSize: '1rem' }}>⚠️ Important</h2>
-        <p className="text-sm leading-relaxed" style={{ color: '#92400e' }}>
+        <h2 className="mb-2" style={{ color: 'var(--text-primary)', fontSize: '1rem' }}>⚠️ Important</h2>
+        <p className="text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
           TrueOddsIQ is an informational tool only. All picks, analysis, and odds data are for entertainment and research.
           We are not licensed gambling advisors. Past performance does not guarantee future results. Always bet responsibly. Must be 21+.
           Gambling problem? Call <strong>1-800-GAMBLER</strong>.

@@ -71,7 +71,7 @@ export function buildNewsletterEmailHtml(topPickText, date, unsubscribeHref = `$
     <p style="margin:6px 0 0;color:rgba(255,255,255,0.6);font-size:13px;">Today's Top Pick | ${date}</p>
   </div>
   <div style="background:#fff;padding:24px;border:1px solid #e2e8f0;border-top:none;">
-    <div style="background:#fffbeb;border-left:3px solid #f59e0b;padding:12px 14px;border-radius:6px;margin-bottom:16px;font-size:12px;color:#92400e;line-height:1.6;">
+    <div style="background:#121212;border-left:3px solid #f5b800;padding:12px 14px;border-radius:6px;margin-bottom:16px;font-size:12px;color:#fafafa;line-height:1.6;">
       <strong>Odds as of ${date}:</strong> Shop multiple books for the best line. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
     </div>
     ${lines}

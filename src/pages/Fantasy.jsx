@@ -165,7 +165,7 @@ export default function Fantasy() {
         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>Demo snapshot · Preview capped at {PREVIEW_MAX_PLAYERS} players per lineup</p>
       </div>
       <div className="rounded-xl p-3 mb-4" style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
-        <p className="text-xs leading-relaxed" style={{ color: '#92400e' }}>Preview mode: sample data only — not live DFS advice. DraftKings/FanDuel integrations are not active yet.</p>
+        <p className="text-xs leading-relaxed" style={{ color: 'var(--text-primary)' }}>Preview mode: sample data only — not live DFS advice. DraftKings/FanDuel integrations are not active yet.</p>
       </div>
       <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
         {SPORTS.map(s => (

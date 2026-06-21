@@ -159,7 +159,7 @@ export default function Auth({ onAuth = () => {} }) {
                 style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
                 <input type="checkbox" checked={disclaimer} onChange={e => setDisclaimer(e.target.checked)}
                   className="mt-0.5 w-4 h-4 accent-blue-600" />
-                <span className="text-xs leading-relaxed" style={{ color: '#92400e' }}>
+                <span className="text-xs leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                   ⚠️ I understand that AI picks and analysis are for informational purposes only.
                   TrueOddsIQ is not liable for any wagers placed based on content on this site.
                   All betting is at my own risk. I am 21+ and in a legal betting jurisdiction. <strong>(Required)</strong>
@@ -170,12 +170,12 @@ export default function Auth({ onAuth = () => {} }) {
 
           {/* Error / Success */}
           {error && (
-            <div className="p-3 rounded-xl text-xs" style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}>
+            <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid rgba(248,113,113,0.3)' }}>
               {error}
             </div>
           )}
           {success && (
-            <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--odds-bg-best)', color: 'var(--green)', border: '1px solid #bbf7d0' }}>
+            <div className="p-3 rounded-xl text-xs" style={{ background: 'var(--odds-bg-best)', color: 'var(--green)', border: '1px solid var(--green-border)' }}>
               {success}
             </div>
           )}

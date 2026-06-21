@@ -252,7 +252,7 @@ export default function AIPicks() {
       {!isPremium && (
         <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
           style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
-          <p className="text-sm" style={{ color: '#92400e' }}>
+          <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
             Today&apos;s top pick with a short summary below. Premium unlocks all {DAILY_NEWSLETTER_PICK_COUNT} picks
             with full write-ups, plus unlimited AI analysis on every game.
           </p>

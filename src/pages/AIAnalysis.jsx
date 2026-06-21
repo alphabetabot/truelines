@@ -209,7 +209,7 @@ export default function AIAnalysis() {
       </div>
 
       {!authLoading && !user && (
-        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)', color: '#92400e' }}>
+        <div className="mb-4 p-3 rounded-xl text-sm" style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)', color: 'var(--text-primary)' }}>
           Sign in to run AI analysis. Live odds remain free to browse.
         </div>
       )}
