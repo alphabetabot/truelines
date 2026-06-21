@@ -25,17 +25,19 @@ import {
   groupGamesByDay,
 } from '../lib/gameFilters'
 
-const ANALYZE_BTN_FONT = 13
-const ANALYZE_BTN_ICON = 14
+const ANALYZE_BTN_FONT = 15
+const ANALYZE_BTN_ICON = 15
+const NEON_GREEN = '#39ff66'
 
 function analyzeButtonStyle(enabled) {
   return {
     fontSize: ANALYZE_BTN_FONT,
-    background: enabled ? 'var(--green)' : 'rgba(255,255,255,0.08)',
-    color: enabled ? 'var(--text-on-cta)' : 'rgba(255,255,255,0.55)',
+    background: enabled ? NEON_GREEN : 'rgba(57, 255, 100, 0.14)',
+    color: enabled ? '#0a0a0a' : NEON_GREEN,
     cursor: enabled ? 'pointer' : 'not-allowed',
-    boxShadow: enabled ? '0 4px 18px rgba(57,255,100,0.35)' : 'none',
-    border: enabled ? '1px solid var(--green-border)' : '1px solid transparent',
+    boxShadow: enabled ? '0 4px 20px rgba(57, 255, 100, 0.45)' : 'none',
+    border: `1px solid ${enabled ? 'rgba(57, 255, 100, 0.55)' : 'rgba(57, 255, 100, 0.35)'}`,
+    opacity: enabled ? 1 : 0.85,
   }
 }
 
