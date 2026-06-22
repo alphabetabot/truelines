@@ -235,7 +235,12 @@ export default function Welcome() {
                 </ul>
               </div>
 
-              <div className="p-6 sm:p-8 flex flex-col items-center justify-center text-center">
+              <button
+                type="button"
+                onClick={() => ctaSignup('pick_unlock')}
+                className="p-6 sm:p-8 flex flex-col items-center justify-center text-center w-full h-full min-h-[220px] transition-colors hover:bg-white/[0.04] cursor-pointer"
+                style={{ background: 'transparent', border: 'none', color: 'inherit' }}
+              >
                 <div
                   className="w-14 h-14 rounded-full flex items-center justify-center mb-4"
                   style={{ background: 'rgba(57,255,100,0.1)', border: '1px solid rgba(57,255,100,0.3)' }}
@@ -246,15 +251,10 @@ export default function Welcome() {
                 <p className="text-sm mb-5 max-w-[220px] leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                   Unlock full analysis, player props &amp; best bets
                 </p>
-                <button
-                  type="button"
-                  onClick={() => ctaSignup('pick_unlock')}
-                  className="text-base font-bold transition-opacity hover:opacity-80"
-                  style={{ color: GOLD, background: 'none', border: 'none', cursor: 'pointer' }}
-                >
+                <span className="text-base font-bold" style={{ color: GOLD }}>
                   Get Free Pick →
-                </button>
-              </div>
+                </span>
+              </button>
             </div>
           </div>
         ) : (
