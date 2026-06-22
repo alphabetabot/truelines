@@ -145,26 +145,32 @@ export default function Welcome() {
         </div>
       </header>
 
-      <div
-        id="top-pick"
-        className="w-full mt-12 sm:mt-16 mb-12 sm:mb-16 py-6 sm:py-8"
-        style={{
-          background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`,
-          borderTop: '1px solid rgba(245, 184, 0, 0.45)',
-          borderBottom: '1px solid rgba(0, 0, 0, 0.25)',
-          boxShadow: '0 8px 32px rgba(245, 184, 0, 0.12)',
-        }}
-      >
-        <p
-          className="text-center font-black uppercase tracking-[0.14em] sm:tracking-[0.18em]"
+      <div style={{ background: BG }}>
+        <div className="h-16 sm:h-20 lg:h-24" aria-hidden />
+
+        <div
+          id="top-pick"
+          className="w-full py-4 sm:py-5"
           style={{
-            color: '#0a0a0a',
-            fontSize: 'clamp(2.25rem, 7vw, 2.75rem)',
-            lineHeight: 1.1,
+            background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`,
+            borderTop: '1px solid rgba(245, 184, 0, 0.45)',
+            borderBottom: '1px solid rgba(0, 0, 0, 0.25)',
+            boxShadow: '0 8px 32px rgba(245, 184, 0, 0.12)',
           }}
         >
-          TODAY&apos;S TOP PICK
-        </p>
+          <p
+            className="text-center font-black uppercase tracking-[0.12em] sm:tracking-[0.16em] px-4"
+            style={{
+              color: '#0a0a0a',
+              fontSize: 'clamp(1.6875rem, 5.25vw, 2.0625rem)',
+              lineHeight: 1.15,
+            }}
+          >
+            TODAY&apos;S TOP PICK
+          </p>
+        </div>
+
+        <div className="h-16 sm:h-20 lg:h-24" aria-hidden />
       </div>
 
       {/* ── TODAY'S TOP PICK ── */}
