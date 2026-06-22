@@ -24,6 +24,7 @@ const BUILD_SPORTS = [
 ]
 const LEG_OPTIONS = Array.from({ length: 9 }, (_, i) => i + 2)
 const STAKE = 100
+const WHITE_BOLD = { color: '#fafafa', fontWeight: 700 }
 
 const selectStyle = {
   width: '100%',
@@ -33,7 +34,7 @@ const selectStyle = {
   background: 'var(--bg-card)',
   color: 'var(--text-primary)',
   fontSize: 18,
-  fontWeight: 700,
+  fontWeight: 800,
 }
 
 export default function BuildYourOwnParlay({ embedded = false }) {
@@ -121,14 +122,14 @@ export default function BuildYourOwnParlay({ embedded = false }) {
               Build Your Own
             </h2>
           </div>
-          <p className="font-semibold leading-relaxed" style={{ fontSize: 17, color: 'var(--text-muted)' }}>
+          <p className="leading-relaxed" style={{ ...WHITE_BOLD, fontSize: 17 }}>
             Pick your own legs from today&apos;s slate. All odds are DraftKings moneylines, spreads, and totals.
           </p>
         </div>
       )}
 
       {embedded && (
-        <p className="font-semibold leading-relaxed mb-6" style={{ fontSize: 16, color: 'var(--text-muted)' }}>
+        <p className="leading-relaxed mb-6" style={{ ...WHITE_BOLD, fontSize: 16 }}>
           Pick your legs from today&apos;s DraftKings slate — ML, spread, or total on each game.
         </p>
       )}
@@ -137,7 +138,7 @@ export default function BuildYourOwnParlay({ embedded = false }) {
         className="rounded-2xl p-6 sm:p-8 mb-6"
         style={{ background: 'var(--bg-card)', border: '2px solid var(--green-border)' }}
       >
-        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
+        <label className="block mb-2 uppercase text-sm" style={{ ...WHITE_BOLD, letterSpacing: '0.08em' }}>
           Sport
         </label>
         <select
@@ -150,7 +151,7 @@ export default function BuildYourOwnParlay({ embedded = false }) {
           ))}
         </select>
 
-        <label className="block mb-2 font-bold uppercase text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
+        <label className="block mb-2 uppercase text-sm" style={{ ...WHITE_BOLD, letterSpacing: '0.08em' }}>
           How many legs?
         </label>
         <select
@@ -170,14 +171,14 @@ export default function BuildYourOwnParlay({ embedded = false }) {
           style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
         >
           <div className="flex items-center justify-between gap-3 mb-3">
-            <p className="text-xs font-bold uppercase" style={{ color: 'var(--gold)' }}>
+            <p className="text-xs uppercase" style={{ ...WHITE_BOLD, color: 'var(--gold)' }}>
               Your ticket ({selectedLegs.length}/{legCount})
             </p>
             <button
               type="button"
               onClick={clearTicket}
-              className="text-xs font-semibold"
-              style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+              className="text-xs"
+              style={{ ...WHITE_BOLD, background: 'none', border: 'none', cursor: 'pointer' }}
             >
               Clear all
             </button>
@@ -201,15 +202,15 @@ export default function BuildYourOwnParlay({ embedded = false }) {
                   {i + 1}
                 </button>
                 <div className="min-w-0 flex-1">
-                  <p className="font-bold text-sm truncate">{leg.label}</p>
-                  <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{leg.matchup}</p>
-                  <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--green)' }}>{leg.bet} · DK</p>
+                  <p className="text-sm truncate" style={WHITE_BOLD}>{leg.label}</p>
+                  <p className="text-xs truncate" style={WHITE_BOLD}>{leg.matchup}</p>
+                  <p className="text-xs mt-0.5" style={WHITE_BOLD}>{leg.bet} · DK</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => removeLeg(i)}
-                  className="text-xs font-semibold shrink-0"
-                  style={{ color: 'var(--text-muted)', background: 'none', border: 'none', cursor: 'pointer' }}
+                  className="text-xs shrink-0"
+                  style={{ ...WHITE_BOLD, background: 'none', border: 'none', cursor: 'pointer' }}
                 >
                   Remove
                 </button>
@@ -221,12 +222,12 @@ export default function BuildYourOwnParlay({ embedded = false }) {
 
       {showSlate && (
         <div className="mb-4">
-          <p className="font-bold uppercase text-sm mb-3" style={{ color: 'var(--green)', letterSpacing: '0.06em' }}>
+          <p className="uppercase text-sm mb-3" style={{ ...WHITE_BOLD, letterSpacing: '0.06em' }}>
             {editingLeg ? `Replace leg ${activeLegIndex + 1} of ${legCount}` : `Pick leg ${activeLegIndex + 1} of ${legCount}`}
           </p>
 
           {isLoading && (
-            <div className="flex items-center justify-center gap-2 py-12" style={{ color: 'var(--text-muted)' }}>
+            <div className="flex items-center justify-center gap-2 py-12" style={WHITE_BOLD}>
               <Loader2 size={20} className="animate-spin" />
               Loading DraftKings slate…
             </div>
@@ -242,7 +243,7 @@ export default function BuildYourOwnParlay({ embedded = false }) {
           )}
 
           {!isLoading && !isError && games.length === 0 && (
-            <p className="text-center py-8 font-semibold" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-center py-8" style={WHITE_BOLD}>
               No upcoming games with DraftKings lines for this sport right now.
             </p>
           )}
@@ -262,17 +263,17 @@ export default function BuildYourOwnParlay({ embedded = false }) {
                       type="button"
                       onClick={() => setExpandedGameId(expanded ? null : game.id)}
                       className="w-full flex items-center justify-between gap-3 px-4 py-3 text-left"
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', ...WHITE_BOLD }}
                     >
                       <div className="min-w-0">
-                        <p className="font-bold text-sm truncate">
+                        <p className="text-sm truncate" style={WHITE_BOLD}>
                           {game.away_team} @ {game.home_team}
                         </p>
-                        <p className="text-xs mt-0.5" style={{ color: 'var(--text-muted)' }}>
+                        <p className="text-xs mt-0.5" style={WHITE_BOLD}>
                           {getOddsGameTimeLabel(game.commence_time)}
                         </p>
                       </div>
-                      {expanded ? <ChevronUp size={18} style={{ color: 'var(--text-muted)' }} /> : <ChevronDown size={18} style={{ color: 'var(--text-muted)' }} />}
+                      {expanded ? <ChevronUp size={18} style={{ color: '#fafafa' }} /> : <ChevronDown size={18} style={{ color: '#fafafa' }} />}
                     </button>
 
                     {expanded && (
@@ -286,12 +287,12 @@ export default function BuildYourOwnParlay({ embedded = false }) {
                             style={{
                               background: 'rgba(255,255,255,0.04)',
                               border: '1px solid var(--border)',
-                              color: 'var(--text-primary)',
                               cursor: 'pointer',
+                              ...WHITE_BOLD,
                             }}
                           >
-                            <p className="text-sm font-bold">{opt.label}</p>
-                            <p className="text-xs font-bold mt-0.5" style={{ color: 'var(--green)' }}>
+                            <p className="text-sm" style={WHITE_BOLD}>{opt.label}</p>
+                            <p className="text-xs mt-0.5" style={WHITE_BOLD}>
                               {opt.bet}
                             </p>
                           </button>
@@ -312,19 +313,19 @@ export default function BuildYourOwnParlay({ embedded = false }) {
             className="px-5 py-4"
             style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}
           >
-            <p className="text-xs font-bold uppercase mb-1" style={{ color: 'var(--gold)' }}>
+            <p className="text-xs uppercase mb-1" style={{ ...WHITE_BOLD, color: 'var(--gold)' }}>
               {legCount}-leg parlay · DraftKings odds
             </p>
             <div className="grid sm:grid-cols-2 gap-4 mt-3">
               <div>
-                <p className="text-xs font-bold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>Combined (est.)</p>
-                <p className="text-3xl font-black" style={{ color: 'var(--green)', fontFamily: TEAM_FONT }}>
+                <p className="text-xs uppercase mb-1" style={WHITE_BOLD}>Combined (est.)</p>
+                <p className="text-3xl font-black" style={{ ...WHITE_BOLD, fontWeight: 900, fontFamily: TEAM_FONT }}>
                   {formatAmericanOdds(combined)}
                 </p>
               </div>
               <div>
-                <p className="text-xs font-bold uppercase mb-1" style={{ color: 'var(--text-muted)' }}>$100 pays</p>
-                <p className="text-3xl font-black" style={{ color: 'var(--green)', fontFamily: TEAM_FONT }}>
+                <p className="text-xs uppercase mb-1" style={WHITE_BOLD}>$100 pays</p>
+                <p className="text-3xl font-black" style={{ ...WHITE_BOLD, fontWeight: 900, fontFamily: TEAM_FONT }}>
                   ${payout100.toFixed(2)}
                 </p>
               </div>
@@ -334,13 +335,13 @@ export default function BuildYourOwnParlay({ embedded = false }) {
           <div className="px-5 py-4 space-y-3" style={{ background: 'var(--bg-card)' }}>
             {sameGame && (
               <div
-                className="rounded-lg px-3 py-2.5 text-sm font-semibold leading-relaxed"
-                style={{ background: 'rgba(245,184,0,0.12)', border: '1px solid var(--gold)', color: 'var(--text-primary)' }}
+                className="rounded-lg px-3 py-2.5 text-sm leading-relaxed"
+                style={{ background: 'rgba(245,184,0,0.12)', border: '1px solid var(--gold)', ...WHITE_BOLD }}
               >
-                <strong style={{ color: 'var(--gold)' }}>Estimated payout only.</strong> This ticket includes multiple legs on the same game. DraftKings uses special Same Game Parlay pricing — confirm the real payout on DraftKings before betting.
+                <strong>Estimated payout only.</strong> This ticket includes multiple legs on the same game. DraftKings uses special Same Game Parlay pricing — confirm the real payout on DraftKings before betting.
               </div>
             )}
-            <p className="text-sm font-semibold leading-relaxed" style={{ color: 'var(--text-muted)' }}>
+            <p className="text-sm leading-relaxed" style={WHITE_BOLD}>
               Illustrative math only — not a bet slip. Lines move fast. Must be 21+. Place wagers at a licensed sportsbook.
             </p>
             <button
@@ -349,10 +350,10 @@ export default function BuildYourOwnParlay({ embedded = false }) {
               className="w-full py-3 rounded-xl font-bold"
               style={{
                 background: 'transparent',
-                color: 'var(--green)',
                 border: '2px solid var(--green-border)',
                 fontSize: 15,
                 cursor: 'pointer',
+                ...WHITE_BOLD,
               }}
             >
               Start over
