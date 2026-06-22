@@ -24,10 +24,11 @@ export default function HomeNav() {
         borderBottom: '1px solid rgba(57, 255, 100, 0.1)',
       }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3 sm:gap-4">
-        <MarketingLogo size={34} />
+      <div className="relative max-w-6xl mx-auto w-full px-3 sm:px-6 h-16 flex items-center justify-between gap-2 min-w-0">
+        <MarketingLogo size={30} className="min-w-0 shrink-0 sm:hidden" />
+        <MarketingLogo size={34} className="min-w-0 shrink-0 hidden sm:inline-flex" />
 
-        <div className="hidden md:flex flex-1 items-center justify-center gap-8">
+        <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
           {LINKS.map(({ label, id }) => (
             <button
               key={label}
@@ -41,11 +42,11 @@ export default function HomeNav() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
           <button
             type="button"
             onClick={() => navigate('/login')}
-            className="inline-flex px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
+            className="inline-flex px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
             style={{
               background: 'transparent',
               color: '#fafafa',
@@ -57,7 +58,7 @@ export default function HomeNav() {
           <button
             type="button"
             onClick={() => navigate('/login', { state: { mode: 'signup' } })}
-            className="inline-flex px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
+            className="inline-flex px-2.5 py-1.5 sm:px-4 sm:py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
             style={{
               background: 'linear-gradient(135deg, #f5b800 0%, #e8a317 100%)',
               color: '#0a0a0a',
