@@ -113,7 +113,7 @@ export default function Welcome() {
 
       {/* ── HERO ── */}
       <header
-        className={`${PAGE} pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-16 lg:pb-20`}
+        className={`${PAGE} pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-24`}
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(57, 255, 100, 0.09), transparent 55%)',
         }}
@@ -146,7 +146,7 @@ export default function Welcome() {
       </header>
 
       {/* ── TODAY'S TOP PICK ── */}
-      <section id="top-pick" className={`${PAGE} py-14 sm:py-20`}>
+      <section id="top-pick" className={`${PAGE} pt-10 sm:pt-14 pb-14 sm:pb-20`}>
         <p className="text-center text-sm font-bold uppercase tracking-[0.25em] mb-10" style={{ color: GREEN }}>
           Today&apos;s Top Pick
         </p>
@@ -317,6 +317,7 @@ export default function Welcome() {
             </p>
             <ul className="space-y-3 mb-8 flex-1">
               <CheckItem>1 daily pick via email</CheckItem>
+              <CheckItem>Daily newsletter</CheckItem>
               <CheckItem>Live odds from top books</CheckItem>
               <CheckItem>Basic AI pick summary</CheckItem>
               <CheckItem>Public track record</CheckItem>
@@ -345,6 +346,7 @@ export default function Welcome() {
             </p>
             <ul className="space-y-3 mb-8 flex-1">
               {[
+                'Everything in free account',
                 '3 premium picks daily',
                 'Full AI analysis & write-ups',
                 'Sharp money & injury reports',
