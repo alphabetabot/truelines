@@ -113,7 +113,7 @@ export default function Welcome() {
 
       {/* ── HERO ── */}
       <header
-        className={`${PAGE} pt-8 pb-16 sm:pt-12 sm:pb-20 lg:pt-16 lg:pb-24`}
+        className={`${PAGE} pt-8 pb-8 sm:pt-12 sm:pb-10 lg:pt-16 lg:pb-12`}
         style={{
           background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(57, 255, 100, 0.09), transparent 55%)',
         }}
@@ -133,7 +133,7 @@ export default function Welcome() {
             </h1>
 
             <p
-              className="font-bold leading-relaxed max-w-xl mx-auto mb-6 sm:mb-8"
+              className="font-bold leading-relaxed max-w-xl mx-auto"
               style={{
                 color: '#fafafa',
                 fontSize: 'clamp(1.375rem, 3.5vw, 1.625rem)',
@@ -147,7 +147,7 @@ export default function Welcome() {
 
       <div
         id="top-pick"
-        className="w-full py-4 sm:py-5"
+        className="w-full mt-12 sm:mt-16 mb-12 sm:mb-16 py-6 sm:py-8"
         style={{
           background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`,
           borderTop: '1px solid rgba(245, 184, 0, 0.45)',
@@ -156,15 +156,19 @@ export default function Welcome() {
         }}
       >
         <p
-          className="text-center font-black uppercase tracking-[0.22em] sm:tracking-[0.28em] text-sm sm:text-base"
-          style={{ color: '#0a0a0a' }}
+          className="text-center font-black uppercase tracking-[0.14em] sm:tracking-[0.18em]"
+          style={{
+            color: '#0a0a0a',
+            fontSize: 'clamp(2.25rem, 7vw, 2.75rem)',
+            lineHeight: 1.1,
+          }}
         >
-          Today&apos;s Top Pick
+          TODAY&apos;S TOP PICK
         </p>
       </div>
 
       {/* ── TODAY'S TOP PICK ── */}
-      <section className={`${PAGE} pt-8 sm:pt-10 pb-14 sm:pb-20`}>
+      <section className={`${PAGE} pb-14 sm:pb-20`}>
         {pickLoading ? (
           <div className="rounded-xl animate-pulse h-64" style={{ background: 'rgba(57,255,100,0.04)' }} />
         ) : pick ? (
