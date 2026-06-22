@@ -162,8 +162,11 @@ export default function Welcome() {
             </h1>
 
             <p
-              className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-xl mx-auto mb-6 sm:mb-8"
-              style={{ color: 'var(--text-primary)' }}
+              className="font-bold leading-relaxed max-w-xl mx-auto mb-6 sm:mb-8"
+              style={{
+                color: '#fafafa',
+                fontSize: 'clamp(1.375rem, 3.5vw, 1.625rem)',
+              }}
             >
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
