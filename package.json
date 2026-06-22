@@ -19,6 +19,7 @@
     "test:billing": "node scripts/billing-utils.test.js",
     "test:admin": "node scripts/admin-utils.test.js",
     "test:parlay": "node scripts/parlay-math.test.js",
+    "test:draftkings-parlay": "node scripts/draftkings-parlay.test.js",
     "test:live-status": "node src/lib/liveGameStatus.test.js",
     "test:default-sport": "node src/lib/defaultSport.test.js",
     "test:pick-performance": "node src/lib/pickPerformance.test.js",

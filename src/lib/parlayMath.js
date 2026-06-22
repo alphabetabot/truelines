@@ -40,3 +40,10 @@ export function parlayPayout(stake, americanOddsList) {
   }
   return stakeNum * decimalProduct
 }
+
+/** True when two or more legs share the same gameId (same-game parlay). */
+export function parlayHasSameGameLegs(legs, gameIdKey = 'gameId') {
+  if (!legs?.length) return false
+  const ids = legs.map(leg => leg[gameIdKey]).filter(Boolean)
+  return new Set(ids).size < ids.length
+}

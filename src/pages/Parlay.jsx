@@ -6,6 +6,7 @@ import {
   formatAmericanOdds,
   parlayPayout,
 } from '../lib/parlayMath'
+import BuildYourOwnParlay from '../components/BuildYourOwnParlay'
 
 const TEAM_FONT = "'Oswald', 'Arial Narrow', system-ui, sans-serif"
 
@@ -139,6 +140,9 @@ export default function Parlay() {
         className="rounded-2xl p-6 sm:p-8 mb-6"
         style={{ background: 'var(--bg-card)', border: '2px solid var(--gold)', opacity: atDailyLimit ? 0.72 : 1 }}
       >
+        <p className="text-xs font-bold uppercase mb-4" style={{ color: 'var(--gold)', letterSpacing: '0.1em' }}>
+          Build with AI
+        </p>
         <label className="block mb-2 font-bold uppercase text-sm" style={{ color: 'var(--text-primary)', letterSpacing: '0.08em' }}>
           Sport
         </label>
@@ -301,6 +305,8 @@ export default function Parlay() {
           </div>
         </div>
       )}
+
+      <BuildYourOwnParlay />
     </div>
   )
 }
