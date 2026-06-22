@@ -126,7 +126,7 @@ function DateTab({ date, selected, onClick, label, displayLabel, gameCount }) {
       }}
     >
       <span>{displayLabel}</span>
-      <span style={{ fontSize: 10, opacity: 0.75, marginTop: 2 }}>
+      <span style={{ fontSize: 16, opacity: 0.75, marginTop: 2 }}>
         {gameCount > 0 ? `${gameCount} game${gameCount === 1 ? '' : 's'}` : 'No games'}
       </span>
     </button>

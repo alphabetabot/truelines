@@ -24,8 +24,8 @@ const NAV = [
 
 function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact, locked }) {
   const displayLabel = compact ? shortLabel : label
-  const iconSize = compact ? 13 : 14
-  const fontSize = compact ? 12 : 14
+  const iconSize = compact ? 16 : 17
+  const fontSize = compact ? 16 : 17
   const gap = compact ? 'gap-1' : 'gap-2'
   const px = compact ? 'px-2.5' : 'px-4'
 
@@ -37,7 +37,7 @@ function PrimaryNavLink({ to, label, shortLabel, icon: Icon, exact, compact, loc
       className={`flex items-center ${gap} ${px} h-full font-bold transition-all whitespace-nowrap shrink-0`}
       style={({ isActive }) => ({
         background: isActive ? 'var(--gold)' : 'transparent',
-        color: isActive ? 'var(--text-on-cta)' : 'rgba(255,255,255,0.8)',
+        color: isActive ? 'var(--text-on-cta)' : 'var(--text-primary)',
         fontSize,
       })}
     >
@@ -134,7 +134,7 @@ export default function Layout({ children }) {
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full"
               style={{ background: 'var(--green-dim)', border: '1px solid var(--green-border)' }}>
               <span className="live-dot w-2 h-2 rounded-full inline-block" style={{ background: 'var(--green-live)' }} />
-              <span style={{ color: 'var(--green-live)', fontSize: 11, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
+              <span style={{ color: 'var(--green-live)', fontSize: 16, fontWeight: 800, letterSpacing: '0.5px' }}>LIVE</span>
             </div>
           </div>
         </div>
@@ -200,10 +200,10 @@ export default function Layout({ children }) {
       >
         <div className="max-w-5xl mx-auto flex flex-col gap-2">
           <SeoFooterNav variant="default" />
-          <div className="text-center" style={{ color: 'var(--text-muted)', fontSize: 11 }}>
+          <div className="text-center" style={{ color: 'var(--text-primary)', fontSize: 16 }}>
             TrueOddsIQ · Odds via The Odds API · AI by Claude & ChatGPT · Must be 21+ to wager · For informational use only
           </div>
-          <div className="text-center" style={{ fontSize: 11, color: 'var(--text-muted)' }}>
+          <div className="text-center" style={{ fontSize: 16, color: 'var(--text-primary)' }}>
             Gambling problem? Call <a href="tel:1-800-426-2537" style={{ color: 'var(--green)', fontWeight: 700 }}>1-800-GAMBLER</a>
             {' '}·{' '}
             <Link to="/about" style={{ color: 'var(--accent)', fontWeight: 600 }}>About</Link>
@@ -217,7 +217,7 @@ export default function Layout({ children }) {
             <button
               type="button"
               onClick={openCookiePreferences}
-              style={{ color: 'var(--accent)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 11 }}
+              style={{ color: 'var(--accent)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontSize: 16 }}
             >
               Cookie preferences
             </button>

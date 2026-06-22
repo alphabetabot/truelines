@@ -8,7 +8,7 @@ export default function About() {
 
       <div className="p-5 rounded-2xl mb-6" style={{ background: 'var(--bg-secondary)' }}>
         <h2 className="text-white mb-3" style={{ fontSize: '1.1rem' }}>Our Mission</h2>
-        <p className="leading-relaxed" style={{ color: 'rgba(255,255,255,0.92)', fontSize: 16 }}>
+        <p className="leading-relaxed" style={{ color: 'var(--text-primary)', fontSize: 16 }}>
           TrueOddsIQ was built out of frustration. Jumping between multiple sportsbook tabs to find the best line
           wastes time — and that time costs money. We built one tool for real-time odds comparison, AI-assisted
           research, and a daily picks newsletter. Free to browse odds; Premium unlocks the full AI Picks and Analysis tabs.

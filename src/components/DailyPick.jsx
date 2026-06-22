@@ -73,14 +73,14 @@ export default function DailyPick() {
             style={{ background: (sportColor[pick.sport] || 'var(--text-muted)') + '30', color: sportColor[pick.sport] || 'var(--text-muted)' }}>
             {pick.sport}
           </span>
-          <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+          <span className="text-xs" style={{ color: 'var(--text-primary)' }}>
             {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
           </span>
         </div>
       </div>
 
       <div className="px-4 py-4">
-        <p className="text-xs mb-2" style={{ color: 'rgba(255,255,255,0.78)' }}>{pick.game}</p>
+        <p className="text-xs mb-2" style={{ color: 'var(--text-primary)' }}>{pick.game}</p>
         <div className="flex items-start justify-between gap-3 mb-3">
           <h3 className="font-black text-lg leading-tight" style={{ color: 'var(--text-primary)' }}>{pick.pick}</h3>
           <span className="text-sm flex-shrink-0 tracking-widest" style={{ color: 'var(--gold)' }}>
@@ -90,7 +90,7 @@ export default function DailyPick() {
           </span>
         </div>
         {edgeDisplay && (
-          <p className="text-xs mb-3 leading-relaxed" style={{ color: 'rgba(255,255,255,0.82)' }}>
+          <p className="text-xs mb-3 leading-relaxed" style={{ color: 'var(--text-primary)' }}>
             💡 {edgeDisplay}
           </p>
         )}
@@ -100,7 +100,7 @@ export default function DailyPick() {
           </p>
         )}
         <div className="flex items-center justify-between">
-          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}>
+          <span className="text-xs font-semibold px-2.5 py-1 rounded-lg" style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--text-primary)' }}>
             {pick.bet}
           </span>
           <button
@@ -114,7 +114,7 @@ export default function DailyPick() {
       </div>
 
       <div className="px-4 py-2" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-        <p className="text-xs" style={{ color: 'rgba(255,255,255,0.3)' }}>
+        <p className="text-xs" style={{ color: 'var(--text-primary)' }}>
           {isPremium
             ? 'For informational purposes only · Always bet responsibly · 21+'
             : 'Public preview — brief edge only · Premium = full card · 21+'}

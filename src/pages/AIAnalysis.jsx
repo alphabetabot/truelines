@@ -193,7 +193,7 @@ export default function AIAnalysis() {
       )}
 
       <div className="mb-5">
-        <label className="block font-semibold mb-2" style={{ color: 'var(--text-primary)', fontSize: 13 }}>
+        <label className="block font-semibold mb-2" style={{ color: 'var(--text-primary)', fontSize: 16 }}>
           SELECT UPCOMING GAME {games.length > 0 ? `(${games.length} this week)` : ''}
         </label>
         <div className="relative">
@@ -275,7 +275,7 @@ export default function AIAnalysis() {
       {!claudeData && !gptData && !claudeLoading && !gptLoading && !claudeError && !gptError && (
         <div className="text-center py-12">
           <Brain size={36} className="mx-auto mb-3 opacity-20" style={{ color: 'var(--text-muted)' }} />
-          <p style={{ color: 'var(--text-primary)', fontSize: 13 }}>Select a game then choose your AI</p>
+          <p style={{ color: 'var(--text-primary)', fontSize: 16 }}>Select a game then choose your AI</p>
         </div>
       )}
     </div>

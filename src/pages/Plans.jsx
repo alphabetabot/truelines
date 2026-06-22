@@ -46,7 +46,7 @@ export default function Plans() {
       <div className={`${PAGE_MAX} ${PAGE_PAD} pt-8 sm:pt-12`}>
         <p
           className="mb-3 font-extrabold uppercase"
-          style={{ fontSize: 14, color: 'var(--text-primary)', letterSpacing: '0.14em' }}
+          style={{ fontSize: 17, color: 'var(--text-primary)', letterSpacing: '0.14em' }}
         >
           Get started
         </p>
@@ -56,7 +56,7 @@ export default function Plans() {
         >
           Compare Free vs Premium
         </h1>
-        <p className="mb-10 max-w-2xl" style={{ fontSize: 18, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+        <p className="mb-10 max-w-2xl" style={{ fontSize: 21, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
           Start free with the morning newsletter and public tracker. Upgrade when you want the full daily card and unlimited AI analysis.
         </p>
 
@@ -111,7 +111,7 @@ export default function Plans() {
                 type="button"
                 onClick={() => ctaSignup('plans_free')}
                 className="w-full px-8 py-4 rounded-xl font-bold"
-                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 18 }}
+                style={{ background: 'var(--bg-secondary)', color: 'var(--text-primary)', fontSize: 21 }}
               >
                 Create Free Account
               </button>
@@ -146,7 +146,7 @@ export default function Plans() {
                 className="rounded-xl p-4 sm:p-5 mb-3 last:mb-0"
                 style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
               >
-                <strong className="block font-bold mb-1.5" style={{ fontSize: 18, color: 'var(--text-primary)' }}>{f.title}</strong>
+                <strong className="block font-bold mb-1.5" style={{ fontSize: 21, color: 'var(--text-primary)' }}>{f.title}</strong>
                 <span style={{ fontSize: 17, color: 'var(--border)', lineHeight: 1.45 }}>{f.detail}</span>
               </div>
             ))}
@@ -154,7 +154,7 @@ export default function Plans() {
               type="button"
               onClick={() => ctaSignup('plans_premium', { premium: true })}
               className="w-full mt-6 py-4 rounded-xl text-center font-extrabold"
-              style={{ background: 'var(--gold)', color: 'var(--text-primary)', fontSize: 18 }}
+              style={{ background: 'var(--gold)', color: 'var(--text-primary)', fontSize: 21 }}
             >
               Upgrade to Premium
             </button>

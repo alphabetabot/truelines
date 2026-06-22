@@ -36,7 +36,7 @@ function formatPickLinesHtml(picksText) {
     if (line.includes('@') && line.includes('→')) {
       const [matchup, pick] = line.split('→')
       return `<div style="background:${BRAND.bgElevated};border:1px solid ${BRAND.border};border-left:3px solid ${BRAND.gold};padding:14px 16px;border-radius:12px;margin:14px 0;">
-        <p style="margin:0 0 6px;font-size:13px;color:${BRAND.textMuted};font-weight:600;">${matchup.trim()}</p>
+        <p style="margin:0 0 6px;font-size:16px;color:${BRAND.textMuted};font-weight:600;">${matchup.trim()}</p>
         <p style="margin:0;font-size:16px;color:${BRAND.gold};font-weight:800;">${pick.trim()}</p>
       </div>`
     }
@@ -51,14 +51,14 @@ function formatPickLinesHtml(picksText) {
         `<span style="color:${BRAND.gold};font-weight:700;">$1</span>`,
       )
       const isEdge = /^edge:/i.test(content)
-      return `<p style="margin:${isEdge ? '10px' : '4px'} 0;padding-left:14px;color:${BRAND.textMuted};font-size:${isEdge ? '15px' : '14px'};line-height:1.65;">• ${highlighted}</p>`
+      return `<p style="margin:${isEdge ? '10px' : '4px'} 0;padding-left:14px;color:${BRAND.textMuted};font-size:${isEdge ? '18px' : '17px'};line-height:1.65;">• ${highlighted}</p>`
     }
     if (!line.trim()) return '<div style="height:10px"></div>'
     const isHeader = /^(TOP PICK|PICK\s*#?\d+)/i.test(line.trim())
     if (isHeader) {
-      return `<p style="margin:0 0 14px;font-weight:800;font-size:12px;color:${BRAND.green};letter-spacing:0.1em;text-transform:uppercase;">${line.trim()}</p>`
+      return `<p style="margin:0 0 14px;font-weight:800;font-size:15px;color:${BRAND.green};letter-spacing:0.1em;text-transform:uppercase;">${line.trim()}</p>`
     }
-    return `<p style="margin:4px 0;color:${BRAND.textMuted};font-size:14px;line-height:1.55;">${line}</p>`
+    return `<p style="margin:4px 0;color:${BRAND.textMuted};font-size:17px;line-height:1.55;">${line}</p>`
   }).join('')
 }
 
@@ -71,26 +71,26 @@ export function buildNewsletterEmailHtml(topPickText, date, unsubscribeHref = `$
   <div style="background:${BRAND.bgCard};border:1px solid ${BRAND.border};border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.45);">
     <div style="background:${BRAND.bgSecondary};padding:28px 24px;text-align:center;border-bottom:1px solid ${BRAND.greenBorder};">
       <h1 style="margin:0;color:${BRAND.text};font-size:28px;font-weight:900;letter-spacing:-0.02em;">TrueOdds<span style="color:${BRAND.green};">IQ</span></h1>
-      <p style="margin:8px 0 0;color:${BRAND.textMuted};font-size:13px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Today&apos;s Top Pick · ${date}</p>
+      <p style="margin:8px 0 0;color:${BRAND.textMuted};font-size:16px;font-weight:600;letter-spacing:0.04em;text-transform:uppercase;">Today&apos;s Top Pick · ${date}</p>
     </div>
     <div style="background:${BRAND.bgCard};padding:24px;">
-      <div style="background:${BRAND.bgSecondary};border-left:3px solid ${BRAND.gold};padding:14px 16px;border-radius:10px;margin-bottom:20px;font-size:12px;color:${BRAND.text};line-height:1.65;">
+      <div style="background:${BRAND.bgSecondary};border-left:3px solid ${BRAND.gold};padding:14px 16px;border-radius:10px;margin-bottom:20px;font-size:15px;color:${BRAND.text};line-height:1.65;">
         <strong style="color:${BRAND.gold};">Odds as of ${date}:</strong> Shop multiple books for the best line. AI-generated for informational purposes only. Always bet responsibly. Must be 21+.
       </div>
       ${lines}
-      <div style="background:${BRAND.bgElevated};border:1px solid ${BRAND.border};border-radius:12px;padding:16px 18px;margin-top:24px;font-size:13px;color:${BRAND.textMuted};line-height:1.6;">
+      <div style="background:${BRAND.bgElevated};border:1px solid ${BRAND.border};border-radius:12px;padding:16px 18px;margin-top:24px;font-size:16px;color:${BRAND.textMuted};line-height:1.6;">
         <strong style="color:${BRAND.text};">Want all 3 daily picks?</strong> Premium unlocks the full AI Picks slate with write-ups for every pick on the card.
       </div>
       <div style="text-align:center;margin-top:22px;">
-        <a href="${SITE_ORIGIN}/premium" style="background:linear-gradient(135deg, ${BRAND.gold} 0%, ${BRAND.goldDark} 100%);color:${BRAND.ctaText};padding:14px 32px;border-radius:12px;font-weight:800;font-size:14px;text-decoration:none;display:inline-block;box-shadow:0 4px 18px rgba(245,184,0,0.25);">Unlock Premium Picks</a>
+        <a href="${SITE_ORIGIN}/premium" style="background:linear-gradient(135deg, ${BRAND.gold} 0%, ${BRAND.goldDark} 100%);color:${BRAND.ctaText};padding:14px 32px;border-radius:12px;font-weight:800;font-size:17px;text-decoration:none;display:inline-block;box-shadow:0 4px 18px rgba(245,184,0,0.25);">Unlock Premium Picks</a>
       </div>
       <div style="text-align:center;margin-top:14px;">
-        <a href="${SITE_ORIGIN}/odds" style="color:${BRAND.green};font-size:13px;font-weight:700;text-decoration:none;">Compare live odds →</a>
+        <a href="${SITE_ORIGIN}/odds" style="color:${BRAND.green};font-size:16px;font-weight:700;text-decoration:none;">Compare live odds →</a>
       </div>
     </div>
     <div style="background:${BRAND.bgSecondary};padding:16px 20px;text-align:center;border-top:1px solid ${BRAND.border};">
-      <p style="margin:0;color:${BRAND.textDim};font-size:11px;line-height:1.6;">TrueOddsIQ · trueoddsiq.com · Must be 21+ · Gambling problem? <a href="tel:18004264537" style="color:${BRAND.green};font-weight:700;text-decoration:none;">1-800-GAMBLER</a></p>
-      <p style="margin:6px 0 0;"><a href="${unsubscribeHref}" style="color:${BRAND.textDim};font-size:11px;text-decoration:underline;">Unsubscribe</a></p>
+      <p style="margin:0;color:${BRAND.textDim};font-size:14px;line-height:1.6;">TrueOddsIQ · trueoddsiq.com · Must be 21+ · Gambling problem? <a href="tel:18004264537" style="color:${BRAND.green};font-weight:700;text-decoration:none;">1-800-GAMBLER</a></p>
+      <p style="margin:6px 0 0;"><a href="${unsubscribeHref}" style="color:${BRAND.textDim};font-size:14px;text-decoration:underline;">Unsubscribe</a></p>
     </div>
   </div>
 </div></body></html>`

@@ -17,10 +17,10 @@
   --bg-header: #000000;
   --bg-nav: rgba(0, 0, 0, 0.88);
 
-  /* Text */
+  /* Text — no faded gray; secondary/muted match primary white */
   --text-primary: #fafafa;
-  --text-secondary: #a3a3a3;
-  --text-muted: #737373;
+  --text-secondary: #fafafa;
+  --text-muted: #fafafa;
   --text-on-cta: #0a0a0a;
 
   /* UI */
@@ -47,7 +47,7 @@ body {
   background: var(--bg-primary);
   color: var(--text-primary);
   font-family: 'Instrument Sans', -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
-  font-size: 16px;
+  font-size: 19px;
   line-height: 1.5;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -58,9 +58,63 @@ a {
   color: var(--accent);
 }
 
-h1 { font-size: 1.75rem; font-weight: 900; letter-spacing: -0.5px; color: var(--text-primary); }
-h2 { font-size: 1.4rem; font-weight: 800; color: var(--text-primary); }
-h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
+h1 { font-size: calc(1.75rem + 3px); font-weight: 900; letter-spacing: -0.5px; color: var(--text-primary); }
+h2 { font-size: calc(1.4rem + 3px); font-weight: 800; color: var(--text-primary); }
+h3 { font-size: calc(1.1rem + 3px); font-weight: 700; color: var(--text-primary); }
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-primary);
+  opacity: 0.85;
+}
+
+/* Site-wide typography: +3px bump, no tiny fonts */
+.text-xs {
+  font-size: 1.0625rem !important;
+  line-height: 1.5rem !important;
+}
+
+.text-sm {
+  font-size: 1.1875rem !important;
+  line-height: 1.625rem !important;
+}
+
+.text-base {
+  font-size: 1.1875rem !important;
+  line-height: 1.625rem !important;
+}
+
+.text-lg {
+  font-size: 1.3125rem !important;
+  line-height: 1.75rem !important;
+}
+
+.text-xl {
+  font-size: 1.4375rem !important;
+  line-height: 1.875rem !important;
+}
+
+.text-2xl {
+  font-size: 1.6875rem !important;
+  line-height: 2rem !important;
+}
+
+.text-3xl {
+  font-size: 2.0625rem !important;
+  line-height: 2.25rem !important;
+}
+
+.text-4xl {
+  font-size: 2.4375rem !important;
+  line-height: 2.5rem !important;
+}
+
+.text-\[9px\],
+.text-\[10px\],
+.text-\[11px\] {
+  font-size: 1.0625rem !important;
+  line-height: 1.5rem !important;
+}
 
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -80,18 +134,4 @@ h3 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); }
   background: linear-gradient(90deg, #1a1a1a 25%, #252525 50%, #1a1a1a 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
-}
-
-main .text-xs {
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-}
-
-main .text-sm {
-  font-size: 1rem;
-  line-height: 1.5rem;
-}
-
-main .text-\[10px\] {
-  font-size: 0.75rem;
 }

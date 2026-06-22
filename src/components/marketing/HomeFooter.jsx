@@ -14,7 +14,7 @@ function SocialIcon({ href, label, children }) {
       rel="noopener noreferrer"
       aria-label={label}
       className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-white/5"
-      style={{ border: '1px solid rgba(255,255,255,0.1)', color: '#a3a3a3' }}
+      style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)' }}
     >
       {children}
     </a>
@@ -37,7 +37,7 @@ export default function HomeFooter() {
         <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-12">
           <div className="col-span-2 md:col-span-1">
             <MarketingLogo size={28} />
-            <p className="mt-4 text-sm leading-relaxed" style={{ color: '#737373' }}>
+            <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
               AI-powered sports betting picks backed by real data, sharp money tracking, and transparent results.
             </p>
             <div className="flex gap-2 mt-5">
@@ -53,8 +53,8 @@ export default function HomeFooter() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#a3a3a3' }}>Picks</p>
-            <ul className="space-y-2 text-sm" style={{ color: '#737373' }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-primary)' }}>Picks</p>
+            <ul className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
               <li><Link to="/picks" className="hover:text-white transition-colors">Today&apos;s Picks</Link></li>
               <li><Link to="/odds?tracker=1#pick-tracker" className="hover:text-white transition-colors">Track Record</Link></li>
               <li><Link to="/premium" className="hover:text-white transition-colors">Premium Picks</Link></li>
@@ -62,8 +62,8 @@ export default function HomeFooter() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#a3a3a3' }}>Company</p>
-            <ul className="space-y-2 text-sm" style={{ color: '#737373' }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-primary)' }}>Company</p>
+            <ul className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
               <li><Link to="/about" className="hover:text-white transition-colors">About</Link></li>
               <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
               <li><a href="mailto:info@trueoddsiq.com" className="hover:text-white transition-colors">Contact</a></li>
@@ -71,8 +71,8 @@ export default function HomeFooter() {
           </div>
 
           <div>
-            <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: '#a3a3a3' }}>Resources</p>
-            <ul className="space-y-2 text-sm" style={{ color: '#737373' }}>
+            <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-primary)' }}>Resources</p>
+            <ul className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
               <li><Link to="/odds" className="hover:text-white transition-colors">Live Odds</Link></li>
               <li><Link to="/compare" className="hover:text-white transition-colors">Line Compare</Link></li>
               <li><Link to="/plans" className="hover:text-white transition-colors">Compare Plans</Link></li>
@@ -83,7 +83,7 @@ export default function HomeFooter() {
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: GREEN }}>
               Get picks in your inbox
             </p>
-            <p className="text-sm mb-4" style={{ color: '#737373' }}>
+            <p className="text-sm mb-4" style={{ color: 'var(--text-primary)' }}>
               Free daily pick every morning. No credit card.
             </p>
             <form onSubmit={newsletterSubmit} className="flex flex-col gap-2">
@@ -112,7 +112,7 @@ export default function HomeFooter() {
 
         <div
           className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-8 text-xs"
-          style={{ borderTop: '1px solid rgba(255,255,255,0.06)', color: '#525252' }}
+          style={{ borderTop: '1px solid rgba(255,255,255,0.06)', color: 'var(--text-primary)' }}
         >
           <span>© {new Date().getFullYear()} TrueOddsIQ. All rights reserved.</span>
           <div className="flex flex-wrap justify-center gap-4">

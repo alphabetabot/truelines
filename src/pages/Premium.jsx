@@ -141,7 +141,7 @@ export default function Premium() {
             </em>
           </h1>
 
-          <p className="mb-6" style={{ fontSize: 18, color: 'rgba(255,255,255,0.92)', maxWidth: 520 }}>
+          <p className="mb-6" style={{ fontSize: 21, color: 'var(--text-primary)', maxWidth: 520 }}>
             Full daily card, deep matchup reports, and uncapped Vega research —{' '}
             <strong style={{ color: '#fde68a' }}>{PREMIUM_PRICE_DISPLAY}</strong>.
           </p>
@@ -209,14 +209,14 @@ export default function Premium() {
               to={isPremium ? '/picks' : '/login'}
               state={!user ? { from: '/premium' } : undefined}
               className="px-6 py-3.5 rounded-xl text-sm font-semibold inline-flex items-center"
-              style={{ background: 'transparent', color: 'rgba(255,255,255,0.85)', border: '1px solid rgba(255,255,255,0.2)' }}
+              style={{ background: 'transparent', color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.2)' }}
             >
               {!user ? 'Sign in first' : isPremium ? 'Go to AI Picks' : 'Preview locked tabs'}
             </Link>
           </div>
 
           {!authLoading && !user && (
-            <p className="mt-4" style={{ fontSize: 16, color: 'rgba(255,255,255,0.82)' }}>
+            <p className="mt-4" style={{ fontSize: 16, color: 'var(--text-primary)' }}>
               Sign in to subscribe. Free accounts keep odds, newsletter, and the public tracker.
             </p>
           )}
@@ -252,12 +252,12 @@ export default function Premium() {
               style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(245, 158, 11, 0.35)' }}
             >
               <strong className="block font-bold text-white mb-1" style={{ fontSize: 19 }}>{f.title}</strong>
-              <span className="italic leading-relaxed" style={{ fontSize: 18, color: 'var(--border)' }}>
+              <span className="italic leading-relaxed" style={{ fontSize: 21, color: 'var(--border)' }}>
                 {f.detail}
               </span>
             </div>
           ))}
-            <p className="mt-4 leading-relaxed" style={{ fontSize: 16, color: 'rgba(255,255,255,0.82)' }}>
+            <p className="mt-4 leading-relaxed" style={{ fontSize: 16, color: 'var(--text-primary)' }}>
             Odds, newsletter, and the public tracker stay free. Cancel Premium anytime from billing settings.
           </p>
         </section>

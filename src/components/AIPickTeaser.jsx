@@ -90,7 +90,7 @@ export default function AIPickTeaser() {
 
       {/* Pick content */}
       <div className="px-4 py-4">
-        <p className="text-xs mb-1" style={{ color: 'rgba(255,255,255,0.78)' }}>{pick.game}</p>
+        <p className="text-xs mb-1" style={{ color: 'var(--text-primary)' }}>{pick.game}</p>
         <p className="text-xl font-black mb-1" style={{ color: 'var(--text-primary)' }}>{pick.pick}</p>
         <p className="text-sm mb-3" style={{ color: 'var(--gold)' }}>{pick.confidence}</p>
 
@@ -98,7 +98,7 @@ export default function AIPickTeaser() {
         {pick.bullets?.length > 0 && (
           <ul className="mb-3 space-y-1">
             {pick.bullets.map((b, i) => (
-              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'rgba(255,255,255,0.88)' }}>
+              <li key={i} className="flex items-start gap-2 text-sm" style={{ color: 'var(--text-primary)' }}>
                 <span style={{ color: 'var(--gold)', marginTop: 2 }}>•</span>
                 {b}
               </li>
@@ -107,7 +107,7 @@ export default function AIPickTeaser() {
         )}
 
         {/* Teaser hook */}
-        <p className="text-xs italic" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <p className="text-xs italic" style={{ color: 'var(--text-primary)' }}>
           🔒 Full analysis + line value breakdown available to members
         </p>
       </div>

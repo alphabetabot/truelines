@@ -52,7 +52,7 @@ export default function AIResponse({ loading, error, data, label = 'AI Analysis'
             background: provider === 'ChatGPT' ? 'rgba(22,163,74,0.1)' : provider === 'Vega' ? 'rgba(245,158,11,0.1)' : 'var(--accent-dim)',
             color: provider === 'ChatGPT' ? 'var(--green)' : provider === 'Vega' ? 'var(--gold)' : 'var(--accent)',
             border: provider === 'ChatGPT' ? '1px solid rgba(22,163,74,0.3)' : provider === 'Vega' ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(56,139,253,0.3)',
-            fontSize: 10
+            fontSize: 16
           }}>
           {provider === 'Vega' ? '⚡ Vega' : provider}
         </span>
