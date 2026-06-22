@@ -19,10 +19,6 @@ function isPlaceholderBet(bet) {
   return !bet || bet.includes('-10000') || bet.includes('-99999')
 }
 
-function scrollToId(id) {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-}
-
 function confidencePercent(confidence) {
   if (!confidence) return null
   const stars = (String(confidence).match(/★/g) || []).length
@@ -162,14 +158,17 @@ export default function Welcome() {
             </h1>
 
             <p
-              className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-xl mx-auto mb-6 sm:mb-8"
-              style={{ color: 'var(--text-primary)' }}
+              className="font-bold leading-relaxed max-w-xl mx-auto mb-6 sm:mb-8"
+              style={{
+                color: '#fafafa',
+                fontSize: 'clamp(1.375rem, 3.5vw, 1.625rem)',
+              }}
             >
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
             </p>
 
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-xl mx-auto justify-center">
+            <div className="flex justify-center max-w-xl mx-auto">
               <button
                 type="button"
                 onClick={() => ctaSignup('hero_free_pick')}
@@ -177,14 +176,6 @@ export default function Welcome() {
                 style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
               >
                 Get Today&apos;s Free Pick →
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToId('top-pick')}
-                className="px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-lg transition-colors hover:bg-white/5"
-                style={{ color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.18)' }}
-              >
-                See How It Works
               </button>
             </div>
 
