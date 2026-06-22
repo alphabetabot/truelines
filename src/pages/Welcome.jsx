@@ -10,7 +10,6 @@ import HomeNav from '../components/marketing/HomeNav'
 import HomeFooter from '../components/marketing/HomeFooter'
 
 const PAGE = 'max-w-6xl mx-auto w-full px-4 sm:px-6'
-const VEGA_IMAGE = '/realvega.jpeg'
 const GREEN = '#39ff66'
 const GOLD = '#f5b800'
 const BG = '#000000'
@@ -55,76 +54,6 @@ function CheckItem({ children, accent = GREEN }) {
       <Check size={16} className="shrink-0 mt-0.5" style={{ color: accent }} />
       <span>{children}</span>
     </li>
-  )
-}
-
-function HeroChartDecor() {
-  return (
-    <>
-      <svg
-        className="absolute top-[8%] right-[5%] w-28 h-28 opacity-20 pointer-events-none"
-        viewBox="0 0 100 100"
-        fill="none"
-        aria-hidden
-      >
-        <circle cx="50" cy="50" r="40" stroke={GREEN} strokeWidth="1" />
-        <circle cx="50" cy="50" r="28" stroke={GREEN} strokeWidth="1" opacity="0.6" />
-        <circle cx="50" cy="50" r="16" stroke={GREEN} strokeWidth="1" opacity="0.4" />
-        <line x1="50" y1="10" x2="50" y2="90" stroke={GREEN} strokeWidth="0.5" opacity="0.5" />
-        <line x1="10" y1="50" x2="90" y2="50" stroke={GREEN} strokeWidth="0.5" opacity="0.5" />
-      </svg>
-      <svg
-        className="absolute bottom-[12%] left-[0%] w-36 h-20 opacity-25 pointer-events-none"
-        viewBox="0 0 140 60"
-        fill="none"
-        aria-hidden
-      >
-        <polyline
-          points="0,50 25,35 50,42 75,18 100,28 125,8 140,15"
-          stroke={GREEN}
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <polyline
-          points="0,55 25,48 50,50 75,38 100,42 125,30 140,35"
-          stroke={GREEN}
-          strokeWidth="1"
-          strokeLinecap="round"
-          opacity="0.5"
-        />
-      </svg>
-      <div
-        className="absolute inset-0 rounded-3xl blur-3xl opacity-25 pointer-events-none"
-        style={{ background: 'radial-gradient(circle at 55% 45%, rgba(57,255,100,0.45) 0%, transparent 65%)' }}
-        aria-hidden
-      />
-    </>
-  )
-}
-
-function VegaHeroImage({ size = 'desktop' }) {
-  const config = {
-    mobile: { maxWidth: 168, maxHeight: 228 },
-    compact: { maxWidth: 300, maxHeight: 260 },
-    desktop: { maxWidth: 500, maxHeight: 580 },
-  }[size] || { maxWidth: 500, maxHeight: 580 }
-
-  return (
-    <div className="relative shrink-0" style={{ width: config.maxWidth, maxWidth: '100%' }}>
-      <HeroChartDecor />
-      <img
-        src={VEGA_IMAGE}
-        alt="Vega AI Sports Analyst"
-        className="relative w-full h-auto rounded-xl z-10 ml-auto"
-        style={{
-          maxHeight: config.maxHeight,
-          objectFit: 'contain',
-          objectPosition: 'top right',
-          filter: 'drop-shadow(0 24px 48px rgba(0,0,0,0.55))',
-        }}
-      />
-    </div>
   )
 }
 
@@ -214,14 +143,13 @@ export default function Welcome() {
       <header
         className={`${PAGE} pt-8 pb-12 sm:pt-12 sm:pb-16 lg:pt-16 lg:pb-20`}
         style={{
-          background: 'radial-gradient(ellipse 90% 70% at 75% 15%, rgba(57, 255, 100, 0.09), transparent 55%)',
+          background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(57, 255, 100, 0.09), transparent 55%)',
         }}
       >
-        <div className="grid grid-cols-[minmax(0,1fr)_auto] lg:grid-cols-2 gap-3 sm:gap-6 lg:gap-8">
-          <div className="col-start-1 row-start-1 text-left min-w-0">
+        <div className="max-w-3xl text-left">
             <h1
               className="font-black leading-[1.08] tracking-tight mb-3 sm:mb-5"
-              style={{ fontSize: 'clamp(1.5rem, 5.5vw, 3.75rem)' }}
+              style={{ fontSize: 'clamp(1.75rem, 6vw, 3.75rem)' }}
             >
               <span style={{ color: '#fafafa' }}>Smarter Bets.</span>
               <br />
@@ -231,25 +159,14 @@ export default function Welcome() {
             </h1>
 
             <p
-              className="text-xs sm:text-base lg:text-lg leading-relaxed max-w-lg"
+              className="text-sm sm:text-base lg:text-lg leading-relaxed max-w-xl mb-6 sm:mb-8"
               style={{ color: '#a3a3a3' }}
             >
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
             </p>
-          </div>
 
-          <div className="col-start-2 row-start-1 row-span-2 lg:row-span-3 self-start justify-self-end">
-            <div className="lg:hidden">
-              <VegaHeroImage size="mobile" />
-            </div>
-            <div className="hidden lg:block">
-              <VegaHeroImage size="desktop" />
-            </div>
-          </div>
-
-          <div className="col-start-1 row-start-2 text-left">
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-2 sm:mt-4 max-w-xl">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 max-w-xl">
               <button
                 type="button"
                 onClick={() => ctaSignup('hero_free_pick')}
@@ -267,14 +184,9 @@ export default function Welcome() {
                 See How It Works
               </button>
             </div>
-          </div>
 
-          <div className="col-start-1 row-start-3 hidden lg:block">
-            <FeatureBar className="mt-10 justify-start" />
-          </div>
+            <FeatureBar className="mt-8 sm:mt-10" />
         </div>
-
-        <FeatureBar className="mt-8 lg:hidden" />
       </header>
 
       {/* ── TODAY'S TOP PICK ── */}
