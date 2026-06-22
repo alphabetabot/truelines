@@ -6,7 +6,7 @@ import App from './App.jsx'
 // Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js?v=32').catch(err => {
+    navigator.serviceWorker.register('/sw.js?v=33').catch(err => {
       console.warn('SW registration failed:', err)
     })
   })
