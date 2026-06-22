@@ -145,12 +145,26 @@ export default function Welcome() {
         </div>
       </header>
 
-      {/* ── TODAY'S TOP PICK ── */}
-      <section id="top-pick" className={`${PAGE} pt-10 sm:pt-14 pb-14 sm:pb-20`}>
-        <p className="text-center text-sm font-bold uppercase tracking-[0.25em] mb-10" style={{ color: GREEN }}>
+      <div
+        id="top-pick"
+        className="w-full py-4 sm:py-5"
+        style={{
+          background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`,
+          borderTop: '1px solid rgba(245, 184, 0, 0.45)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.25)',
+          boxShadow: '0 8px 32px rgba(245, 184, 0, 0.12)',
+        }}
+      >
+        <p
+          className="text-center font-black uppercase tracking-[0.22em] sm:tracking-[0.28em] text-sm sm:text-base"
+          style={{ color: '#0a0a0a' }}
+        >
           Today&apos;s Top Pick
         </p>
+      </div>
 
+      {/* ── TODAY'S TOP PICK ── */}
+      <section className={`${PAGE} pt-8 sm:pt-10 pb-14 sm:pb-20`}>
         {pickLoading ? (
           <div className="rounded-xl animate-pulse h-64" style={{ background: 'rgba(57,255,100,0.04)' }} />
         ) : pick ? (
