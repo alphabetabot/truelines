@@ -25,8 +25,7 @@ export default function HomeNav() {
       }}
     >
       <div className="relative max-w-6xl mx-auto w-full px-3 sm:px-6 h-16 flex items-center justify-between gap-2 min-w-0">
-        <MarketingLogo size={30} className="min-w-0 shrink-0 sm:hidden" />
-        <MarketingLogo size={34} className="min-w-0 shrink-0 hidden sm:inline-flex" />
+        <MarketingLogo size={32} className="min-w-0 shrink-0" />
 
         <div className="hidden md:flex absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 items-center gap-8">
           {LINKS.map(({ label, id }) => (
