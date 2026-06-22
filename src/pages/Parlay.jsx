@@ -129,12 +129,13 @@ export default function Parlay() {
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className="py-3 rounded-xl font-bold text-sm sm:text-base transition-all"
+              className="py-3 rounded-xl font-extrabold text-sm sm:text-base transition-all"
               style={{
                 background: isActive
                   ? (isAi ? 'var(--gold)' : 'var(--green)')
                   : 'var(--bg-card)',
-                color: isActive ? 'var(--text-on-cta)' : 'var(--text-muted)',
+                color: isActive ? 'var(--text-on-cta)' : '#fafafa',
+                fontWeight: 800,
                 border: `2px solid ${isActive ? (isAi ? 'var(--gold)' : 'var(--green)') : 'var(--border)'}`,
               }}
             >
