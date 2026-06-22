@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import {
-  Brain, TrendingUp, BarChart2, Check, Lock, Trophy, LineChart, Target, Shield,
+  Check, Lock, Trophy, LineChart, Target, Shield, BarChart2,
 } from 'lucide-react'
 import { usePickPerformance } from '../hooks/usePickPerformance'
 import { trackEvent } from '../lib/analytics'
@@ -51,31 +51,6 @@ function CheckItem({ children, accent = GREEN }) {
       <Check size={16} className="shrink-0 mt-0.5" style={{ color: accent }} />
       <span>{children}</span>
     </li>
-  )
-}
-
-function FeatureBar({ className = '' }) {
-  return (
-    <div className={`flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 ${className}`}>
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.22)' }}>
-          <Brain size={18} style={{ color: GREEN }} />
-        </div>
-        <span className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>AI-Powered Analysis</span>
-      </div>
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.22)' }}>
-          <TrendingUp size={18} style={{ color: GREEN }} />
-        </div>
-        <span className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>Sharp Money Tracking</span>
-      </div>
-      <div className="flex items-center gap-2.5">
-        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.22)' }}>
-          <BarChart2 size={18} style={{ color: GREEN }} />
-        </div>
-        <span className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>Live Odds From Top Books</span>
-      </div>
-    </div>
   )
 }
 
@@ -167,19 +142,6 @@ export default function Welcome() {
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
             </p>
-
-            <div className="flex justify-center max-w-xl mx-auto">
-              <button
-                type="button"
-                onClick={() => ctaSignup('hero_free_pick')}
-                className="inline-flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-bold text-sm sm:text-lg transition-opacity hover:opacity-90"
-                style={{ background: `linear-gradient(135deg, ${GOLD} 0%, #e8a317 100%)`, color: '#0a0a0a' }}
-              >
-                Get Today&apos;s Free Pick →
-              </button>
-            </div>
-
-            <FeatureBar className="mt-8 sm:mt-10 justify-center" />
         </div>
       </header>
 
