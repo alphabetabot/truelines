@@ -36,7 +36,7 @@ const selectStyle = {
   fontWeight: 700,
 }
 
-export default function BuildYourOwnParlay() {
+export default function BuildYourOwnParlay({ embedded = false }) {
   const [sport, setSport] = useState(BUILD_SPORTS[0].key)
   const [legCount, setLegCount] = useState(3)
   const [selectedLegs, setSelectedLegs] = useState([])
@@ -109,21 +109,29 @@ export default function BuildYourOwnParlay() {
   }
 
   return (
-    <section className="mt-10">
-      <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
-          <Layers size={22} style={{ color: 'var(--green)' }} />
-          <h2
-            className="text-xl font-black uppercase"
-            style={{ fontFamily: TEAM_FONT, color: 'var(--text-primary)' }}
-          >
-            Build Your Own
-          </h2>
+    <section className={embedded ? '' : 'mt-10'}>
+      {!embedded && (
+        <div className="mb-6">
+          <div className="flex items-center gap-2 mb-2">
+            <Layers size={22} style={{ color: 'var(--green)' }} />
+            <h2
+              className="text-xl font-black uppercase"
+              style={{ fontFamily: TEAM_FONT, color: 'var(--text-primary)' }}
+            >
+              Build Your Own
+            </h2>
+          </div>
+          <p className="font-semibold leading-relaxed" style={{ fontSize: 17, color: 'var(--text-muted)' }}>
+            Pick your own legs from today&apos;s slate. All odds are DraftKings moneylines, spreads, and totals.
+          </p>
         </div>
-        <p className="font-semibold leading-relaxed" style={{ fontSize: 17, color: 'var(--text-muted)' }}>
-          Pick your own legs from today&apos;s slate. All odds are DraftKings moneylines, spreads, and totals.
+      )}
+
+      {embedded && (
+        <p className="font-semibold leading-relaxed mb-6" style={{ fontSize: 16, color: 'var(--text-muted)' }}>
+          Pick your legs from today&apos;s DraftKings slate — ML, spread, or total on each game.
         </p>
-      </div>
+      )}
 
       <div
         className="rounded-2xl p-6 sm:p-8 mb-6"
