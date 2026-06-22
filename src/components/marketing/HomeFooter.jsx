@@ -1,25 +1,8 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail } from 'lucide-react'
-import MarketingLogo from './MarketingLogo'
 import { trackEvent } from '../../lib/analytics'
 
 const GREEN = '#39ff66'
-
-function SocialIcon({ href, label, children }) {
-  return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label={label}
-      className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-white/5"
-      style={{ border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text-primary)' }}
-    >
-      {children}
-    </a>
-  )
-}
 
 export default function HomeFooter() {
   const navigate = useNavigate()
@@ -34,24 +17,7 @@ export default function HomeFooter() {
   return (
     <footer style={{ background: '#000000', borderTop: '1px solid rgba(57, 255, 100, 0.08)' }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-10 mb-12">
-          <div className="col-span-2 md:col-span-1">
-            <MarketingLogo size={28} />
-            <p className="mt-4 text-sm leading-relaxed" style={{ color: 'var(--text-primary)' }}>
-              AI-powered sports betting picks backed by real data, sharp money tracking, and transparent results.
-            </p>
-            <div className="flex gap-2 mt-5">
-              <SocialIcon href="https://twitter.com/trueoddsiq" label="Twitter">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                </svg>
-              </SocialIcon>
-              <SocialIcon href="mailto:info@trueoddsiq.com" label="Email">
-                <Mail size={16} />
-              </SocialIcon>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
           <div>
             <p className="text-xs font-bold uppercase tracking-wider mb-4" style={{ color: 'var(--text-primary)' }}>Picks</p>
             <ul className="space-y-2 text-sm" style={{ color: 'var(--text-primary)' }}>
@@ -79,7 +45,7 @@ export default function HomeFooter() {
             </ul>
           </div>
 
-          <div className="col-span-2 md:col-span-1">
+          <div>
             <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: GREEN }}>
               Get picks in your inbox
             </p>
