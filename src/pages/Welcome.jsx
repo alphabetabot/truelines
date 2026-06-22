@@ -186,7 +186,7 @@ export default function Welcome() {
               boxShadow: '0 0 48px rgba(57, 255, 100, 0.07)',
             }}
           >
-            <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10">
+            <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-white/10 items-stretch">
               <div className="p-6 sm:p-8">
                 <div className="flex items-start gap-4 mb-5">
                   <div
@@ -235,26 +235,28 @@ export default function Welcome() {
                 </ul>
               </div>
 
-              <button
-                type="button"
-                onClick={() => ctaSignup('pick_unlock')}
-                className="p-6 sm:p-8 flex flex-col items-center justify-center text-center w-full h-full min-h-[220px] transition-colors hover:bg-white/[0.04] cursor-pointer"
-                style={{ background: 'transparent', border: 'none', color: 'inherit' }}
-              >
+              <div className="relative flex flex-col items-center justify-center text-center min-h-[220px] p-6 sm:p-8">
                 <div
-                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4"
+                  className="w-14 h-14 rounded-full flex items-center justify-center mb-4 pointer-events-none"
                   style={{ background: 'rgba(57,255,100,0.1)', border: '1px solid rgba(57,255,100,0.3)' }}
                 >
                   <Lock size={24} style={{ color: GREEN }} />
                 </div>
-                <p className="text-base font-semibold mb-1" style={{ color: '#fafafa' }}>Locked</p>
-                <p className="text-sm mb-5 max-w-[220px] leading-relaxed" style={{ color: 'var(--text-primary)' }}>
+                <p className="text-base font-semibold mb-1 pointer-events-none" style={{ color: '#fafafa' }}>Locked</p>
+                <p className="text-sm mb-5 max-w-[220px] leading-relaxed pointer-events-none" style={{ color: 'var(--text-primary)' }}>
                   Unlock full analysis, player props &amp; best bets
                 </p>
-                <span className="text-base font-bold" style={{ color: GOLD }}>
+                <span className="text-base font-bold pointer-events-none" style={{ color: GOLD }}>
                   Get Free Pick →
                 </span>
-              </button>
+                <Link
+                  to="/login"
+                  state={{ mode: 'signup' }}
+                  onClick={() => trackEvent('welcome_cta', { action: 'signup', source: 'pick_unlock' })}
+                  className="absolute inset-0 z-10 block cursor-pointer rounded-none transition-colors hover:bg-white/[0.04] active:bg-white/[0.07]"
+                  aria-label="Sign up to unlock full pick analysis"
+                />
+              </div>
             </div>
           </div>
         ) : (
