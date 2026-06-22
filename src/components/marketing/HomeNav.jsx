@@ -24,10 +24,10 @@ export default function HomeNav() {
         borderBottom: '1px solid rgba(57, 255, 100, 0.1)',
       }}
     >
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 grid grid-cols-[auto_1fr_auto] items-center gap-4">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center gap-3 sm:gap-4">
         <MarketingLogo size={34} />
 
-        <div className="hidden md:flex items-center justify-center gap-8">
+        <div className="hidden md:flex flex-1 items-center justify-center gap-8">
           {LINKS.map(({ label, id }) => (
             <button
               key={label}
@@ -41,7 +41,7 @@ export default function HomeNav() {
           ))}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 ml-auto">
           <button
             type="button"
             onClick={() => navigate('/login')}
