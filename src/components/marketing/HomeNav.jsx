@@ -41,18 +41,32 @@ export default function HomeNav() {
           ))}
         </div>
 
-        <button
-          type="button"
-          onClick={() => navigate('/login')}
-          className="inline-flex px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90 shrink-0"
-          style={{
-            background: 'linear-gradient(135deg, #f5b800 0%, #e8a317 100%)',
-            color: '#0a0a0a',
-            border: 'none',
-          }}
-        >
-          Sign In
-        </button>
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => navigate('/login')}
+            className="inline-flex px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
+            style={{
+              background: 'transparent',
+              color: '#fafafa',
+              border: '1px solid rgba(255,255,255,0.22)',
+            }}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate('/login', { state: { mode: 'signup' } })}
+            className="inline-flex px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-opacity hover:opacity-90"
+            style={{
+              background: 'linear-gradient(135deg, #f5b800 0%, #e8a317 100%)',
+              color: '#0a0a0a',
+              border: 'none',
+            }}
+          >
+            Sign Up
+          </button>
+        </div>
       </div>
     </nav>
   )
