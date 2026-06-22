@@ -113,7 +113,7 @@ function MatchupRow({ game, index, onSelect }) {
         {/* Time header */}
         <div className="flex items-center gap-2 px-3"
           style={{ height: 14, background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid var(--border-light)' }}>
-          <span style={{ color: 'var(--text-muted)', fontSize: 9 }}>{timeLabel}</span>
+          <span style={{ color: 'var(--text-muted)', fontSize: 16 }}>{timeLabel}</span>
         </div>
         {/* Away team */}
         <TeamCell name={game.away} isAway={true} />
@@ -128,10 +128,10 @@ function MatchupRow({ game, index, onSelect }) {
           return (
             <td key={book} style={{ borderLeft: '1px solid var(--border-light)', minWidth: 110, verticalAlign: 'top' }}>
               <div style={{ height: 36, borderBottom: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 16 }}>—</span>
               </div>
               <div style={{ height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: 'var(--text-muted)', fontSize: 11 }}>—</span>
+                <span style={{ color: 'var(--text-muted)', fontSize: 16 }}>—</span>
               </div>
             </td>
           )
@@ -201,7 +201,7 @@ export default function MatchupTable({ games, loading, onSelect }) {
               <th key={book} className="px-2 py-2 text-center text-xs font-semibold"
                 style={{ color: 'var(--text-secondary)', borderLeft: '1px solid var(--border)', minWidth: 110 }}>
                 {SPORTSBOOK_LABELS[book] || book}
-                <div style={{ color: 'var(--text-muted)', fontSize: 10, fontWeight: 400 }}>
+                <div style={{ color: 'var(--text-muted)', fontSize: 16, fontWeight: 400 }}>
                   Spread / Total
                 </div>
               </th>

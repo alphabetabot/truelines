@@ -145,7 +145,7 @@ export default function MatchupCard({ game, onSelect, isMLB = false, pitchers = 
               style={{
                 background: 'rgba(255,255,255,0.06)',
                 color: 'var(--text-primary)',
-                fontSize: 12,
+                fontSize: 16,
                 border: '1px solid rgba(255,255,255,0.08)',
               }}
             >

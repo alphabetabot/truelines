@@ -33,7 +33,7 @@ const selectStyle = {
   border: '2px solid var(--border)',
   background: 'var(--bg-card)',
   color: 'var(--text-primary)',
-  fontSize: 18,
+  fontSize: 21,
   fontWeight: 800,
 }
 

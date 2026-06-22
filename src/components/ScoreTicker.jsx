@@ -32,7 +32,7 @@ function TickerItem({ game, liveStatusMap }) {
       style={{ borderRight: '1px solid rgba(255,255,255,0.1)', height: '100%' }}>
       <span style={{
         color: isLive ? 'var(--green-live)' : isFinal ? 'var(--text-muted)' : 'var(--gold)',
-        fontSize: 9,
+        fontSize: 16,
         fontWeight: 700,
       }}>
         {statusLabel}
@@ -47,7 +47,7 @@ function TickerItem({ game, liveStatusMap }) {
           }}>
             {awayScore}
           </span>
-          <span style={{ color: 'rgba(255,255,255,0.3)' }}>–</span>
+          <span style={{ color: 'var(--text-primary)' }}>–</span>
           <span className="font-mono text-xs font-bold" style={{
             color: isLive ? '#fff' : homeWin ? 'var(--green-live)' : '#fff',
           }}>
@@ -55,7 +55,7 @@ function TickerItem({ game, liveStatusMap }) {
           </span>
         </>
       ) : isUpcoming ? null : (
-        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.45)' }}>vs</span>
+        <span className="text-xs" style={{ color: 'var(--text-primary)' }}>vs</span>
       )}
       <span className="text-xs font-semibold" style={{ color: homeWin ? '#fff' : 'rgba(255,255,255,0.82)' }}>
         {homeShort}
@@ -155,11 +155,11 @@ export default function ScoreTicker({ embedded = false }) {
     <div style={shellStyle} className="flex items-center">
       {loading && displayGames.length === 0 ? (
         <div className="flex items-center gap-2 px-4">
-          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>Loading scores...</span>
+          <span style={{ color: 'var(--text-primary)', fontSize: 16 }}>Loading scores...</span>
         </div>
       ) : displayGames.length === 0 ? (
         <div className="flex items-center gap-2 px-4">
-          <span style={{ color: 'rgba(255,255,255,0.3)', fontSize: 11 }}>No games on today&apos;s slate</span>
+          <span style={{ color: 'var(--text-primary)', fontSize: 16 }}>No games on today&apos;s slate</span>
         </div>
       ) : (
         <div ref={trackRef} className="flex items-center h-full" style={{ willChange: needsMarquee ? 'transform' : 'auto' }}>

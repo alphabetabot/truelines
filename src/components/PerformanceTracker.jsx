@@ -74,8 +74,8 @@ function PerformanceTrackerBody({
               {unavailable ? 'Unavailable' : '● Tracked'}
             </span>
             {expanded
-              ? <ChevronUp size={14} style={{ color: 'rgba(255,255,255,0.78)' }} />
-              : <ChevronDown size={14} style={{ color: 'rgba(255,255,255,0.78)' }} />
+              ? <ChevronUp size={14} style={{ color: 'var(--text-primary)' }} />
+              : <ChevronDown size={14} style={{ color: 'var(--text-primary)' }} />
             }
           </div>
         </div>
@@ -87,7 +87,7 @@ function PerformanceTrackerBody({
             { label: 'Last Graded', record: unavailable ? '—' : formatDate(latestDate), units: unavailable ? '—' : 'Auto-graded daily' },
           ].map(({ label, record, units }, i) => (
             <div key={label} className="text-center" style={{ borderRight: i < 2 ? '1px solid rgba(255,255,255,0.1)' : 'none' }}>
-              <p className="text-xs mb-0.5" style={{ color: 'rgba(255,255,255,0.4)' }}>{label}</p>
+              <p className="text-xs mb-0.5" style={{ color: 'var(--text-primary)' }}>{label}</p>
               <p className="text-base font-black text-white">{record}</p>
               <p className="text-xs font-semibold" style={{ color: 'var(--text-muted)' }}>{units}</p>
             </div>

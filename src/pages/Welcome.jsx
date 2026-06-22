@@ -51,7 +51,7 @@ function teamInitial(pick, game) {
 
 function CheckItem({ children, accent = GREEN }) {
   return (
-    <li className="flex items-start gap-2.5 text-base" style={{ color: '#a3a3a3' }}>
+    <li className="flex items-start gap-2.5 text-base" style={{ color: 'var(--text-primary)' }}>
       <Check size={16} className="shrink-0 mt-0.5" style={{ color: accent }} />
       <span>{children}</span>
     </li>
@@ -65,19 +65,19 @@ function FeatureBar({ className = '' }) {
         <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.22)' }}>
           <Brain size={18} style={{ color: GREEN }} />
         </div>
-        <span className="text-base font-medium" style={{ color: '#d4d4d4' }}>AI-Powered Analysis</span>
+        <span className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>AI-Powered Analysis</span>
       </div>
       <div className="flex items-center gap-2.5">
         <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.22)' }}>
           <TrendingUp size={18} style={{ color: GREEN }} />
         </div>
-        <span className="text-base font-medium" style={{ color: '#d4d4d4' }}>Sharp Money Tracking</span>
+        <span className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>Sharp Money Tracking</span>
       </div>
       <div className="flex items-center gap-2.5">
         <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: 'rgba(57, 255, 100, 0.1)', border: '1px solid rgba(57, 255, 100, 0.22)' }}>
           <BarChart2 size={18} style={{ color: GREEN }} />
         </div>
-        <span className="text-base font-medium" style={{ color: '#d4d4d4' }}>Live Odds From Top Books</span>
+        <span className="text-base font-medium" style={{ color: 'var(--text-primary)' }}>Live Odds From Top Books</span>
       </div>
     </div>
   )
@@ -163,7 +163,7 @@ export default function Welcome() {
 
             <p
               className="text-base sm:text-lg lg:text-xl leading-relaxed max-w-xl mx-auto mb-6 sm:mb-8"
-              style={{ color: '#a3a3a3' }}
+              style={{ color: 'var(--text-primary)' }}
             >
               Daily sports betting picks powered by AI analysis, sharp money tracking,
               injury intelligence, and real sportsbook data.
@@ -182,7 +182,7 @@ export default function Welcome() {
                 type="button"
                 onClick={() => scrollToId('top-pick')}
                 className="px-4 sm:px-6 py-2.5 sm:py-3.5 rounded-xl font-semibold text-sm sm:text-lg transition-colors hover:bg-white/5"
-                style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.18)' }}
+                style={{ color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.18)' }}
               >
                 See How It Works
               </button>
@@ -219,24 +219,24 @@ export default function Welcome() {
                     {teamInitial(pick.pick, pick.game)}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-sm font-semibold uppercase tracking-wider mb-1" style={{ color: '#737373' }}>
+                    <p className="text-sm font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-primary)' }}>
                       {pick.sport}
                     </p>
                     <p className="text-xl sm:text-2xl font-bold leading-snug" style={{ color: '#fafafa' }}>
                       {pick.pick}
                     </p>
                     {pick.game && (
-                      <p className="text-base mt-1" style={{ color: '#a3a3a3' }}>{pick.game}</p>
+                      <p className="text-base mt-1" style={{ color: 'var(--text-primary)' }}>{pick.game}</p>
                     )}
                   </div>
                 </div>
                 <div className="flex gap-8">
                   <div>
-                    <p className="text-xs uppercase tracking-wider mb-1 font-semibold" style={{ color: '#737373' }}>Edge</p>
+                    <p className="text-xs uppercase tracking-wider mb-1 font-semibold" style={{ color: 'var(--text-primary)' }}>Edge</p>
                     <p className="text-2xl font-black" style={{ color: GREEN }}>{edgePct || '—'}</p>
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wider mb-1 font-semibold" style={{ color: '#737373' }}>Confidence</p>
+                    <p className="text-xs uppercase tracking-wider mb-1 font-semibold" style={{ color: 'var(--text-primary)' }}>Confidence</p>
                     <p className="text-2xl font-black" style={{ color: '#fafafa' }}>{confPct != null ? `${confPct}%` : pick.confidence || '—'}</p>
                   </div>
                 </div>
@@ -266,7 +266,7 @@ export default function Welcome() {
                   <Lock size={24} style={{ color: GREEN }} />
                 </div>
                 <p className="text-base font-semibold mb-1" style={{ color: '#fafafa' }}>Locked</p>
-                <p className="text-sm mb-5 max-w-[220px] leading-relaxed" style={{ color: '#737373' }}>
+                <p className="text-sm mb-5 max-w-[220px] leading-relaxed" style={{ color: 'var(--text-primary)' }}>
                   Unlock full analysis, player props &amp; best bets
                 </p>
                 <button
@@ -286,7 +286,7 @@ export default function Welcome() {
             style={{ border: '1px solid rgba(57,255,100,0.15)', background: 'rgba(57,255,100,0.03)' }}
           >
             <p className="text-xl font-semibold mb-2" style={{ color: '#fafafa' }}>Picks publish every morning</p>
-            <p className="text-base mb-6" style={{ color: '#737373' }}>Pacific time · Sign up free to get today&apos;s pick by email</p>
+            <p className="text-base mb-6" style={{ color: 'var(--text-primary)' }}>Pacific time · Sign up free to get today&apos;s pick by email</p>
             <button
               type="button"
               onClick={() => ctaSignup('pick_empty')}
@@ -310,35 +310,35 @@ export default function Welcome() {
               <Trophy size={22} style={{ color: GREEN }} />
             </div>
             <p className="text-[2rem] sm:text-[2.375rem] font-black mb-1" style={{ color: '#fafafa' }}>{perf.loading ? '…' : winRate}</p>
-            <p className="text-sm uppercase tracking-wider" style={{ color: '#737373' }}>Win Rate</p>
+            <p className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>Win Rate</p>
           </div>
           <div className="text-center">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(57,255,100,0.08)', border: '1px solid rgba(57,255,100,0.15)' }}>
               <LineChart size={22} style={{ color: GREEN }} />
             </div>
             <p className="text-[2rem] sm:text-[2.375rem] font-black mb-1" style={{ color: '#fafafa' }}>{perf.loading ? '…' : unitsLabel}</p>
-            <p className="text-sm uppercase tracking-wider" style={{ color: '#737373' }}>Units Profit</p>
+            <p className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>Units Profit</p>
           </div>
           <div className="text-center">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(57,255,100,0.08)', border: '1px solid rgba(57,255,100,0.15)' }}>
               <Target size={22} style={{ color: GREEN }} />
             </div>
             <p className="text-[2rem] sm:text-[2.375rem] font-black mb-1" style={{ color: '#fafafa' }}>{perf.loading ? '…' : picksTracked}</p>
-            <p className="text-sm uppercase tracking-wider" style={{ color: '#737373' }}>Picks Tracked</p>
+            <p className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>Picks Tracked</p>
           </div>
           <div className="text-center">
             <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ background: 'rgba(57,255,100,0.08)', border: '1px solid rgba(57,255,100,0.15)' }}>
               <Shield size={22} style={{ color: GREEN }} />
             </div>
             <p className="text-[2rem] sm:text-[2.375rem] font-black mb-1" style={{ color: '#fafafa' }}>{perf.loading ? '…' : verifiedLabel}</p>
-            <p className="text-sm uppercase tracking-wider" style={{ color: '#737373' }}>Verified By Users</p>
+            <p className="text-sm uppercase tracking-wider" style={{ color: 'var(--text-primary)' }}>Verified By Users</p>
           </div>
         </div>
         <div className="text-center">
           <Link
             to="/odds?tracker=1#pick-tracker"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-base font-semibold transition-colors hover:bg-white/5"
-            style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.15)' }}
+            style={{ color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.15)' }}
           >
             View Full Track Record →
           </Link>
@@ -360,7 +360,7 @@ export default function Welcome() {
           >
             <p className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: GREEN }}>Free</p>
             <p className="text-[2rem] font-black mb-6" style={{ color: '#fafafa' }}>
-              $0 <span className="text-lg font-normal" style={{ color: '#737373' }}>/mo</span>
+              $0 <span className="text-lg font-normal" style={{ color: 'var(--text-primary)' }}>/mo</span>
             </p>
             <ul className="space-y-3 mb-8 flex-1">
               <CheckItem>1 daily pick via email</CheckItem>
@@ -388,7 +388,7 @@ export default function Welcome() {
           >
             <p className="text-sm font-bold uppercase tracking-widest mb-2" style={{ color: GOLD }}>Premium</p>
             <p className="text-[2rem] font-black mb-6" style={{ color: '#fafafa' }}>
-              $19.95 <span className="text-lg font-normal" style={{ color: '#737373' }}>/mo</span>
+              $19.95 <span className="text-lg font-normal" style={{ color: 'var(--text-primary)' }}>/mo</span>
             </p>
             <ul className="space-y-3 mb-8 flex-1">
               {[
@@ -397,7 +397,7 @@ export default function Welcome() {
                 'Sharp money & injury reports',
                 'Closing line value tracking',
               ].map(item => (
-                <li key={item} className="flex items-start gap-2.5 text-base" style={{ color: '#a3a3a3' }}>
+                <li key={item} className="flex items-start gap-2.5 text-base" style={{ color: 'var(--text-primary)' }}>
                   <Check size={16} className="shrink-0 mt-0.5" style={{ color: GOLD }} />
                   <span>{item}</span>
                 </li>
@@ -423,14 +423,14 @@ export default function Welcome() {
             >
               <BarChart2 size={28} style={{ color: GREEN }} />
             </div>
-            <p className="text-base leading-relaxed mb-8 flex-1" style={{ color: '#a3a3a3' }}>
+            <p className="text-base leading-relaxed mb-8 flex-1" style={{ color: 'var(--text-primary)' }}>
               Not sure which plan is right for you? Compare features side-by-side and choose what fits your betting style.
             </p>
             <Link
               to="/plans"
               onClick={() => trackEvent('welcome_cta', { action: 'plans', source: 'pricing_compare' })}
               className="w-full py-3 rounded-xl font-semibold text-center block transition-colors hover:bg-white/5"
-              style={{ color: '#e5e5e5', border: '1px solid rgba(255,255,255,0.15)' }}
+              style={{ color: 'var(--text-primary)', border: '1px solid rgba(255,255,255,0.15)' }}
             >
               Compare Plans →
             </Link>

@@ -1,7 +1,7 @@
 import { formatOdds, SPORTSBOOKS, SPORTSBOOK_LABELS, SPORTSBOOK_COLORS } from '../lib/oddsApi'
 
 function BestBadge() {
-  return <span style={{ color: 'var(--green)', fontSize: 10, fontWeight: 800, marginLeft: 2 }}>▲</span>
+  return <span style={{ color: 'var(--green)', fontSize: 16, fontWeight: 800, marginLeft: 2 }}>▲</span>
 }
 
 function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
@@ -55,9 +55,9 @@ function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
         <table style={{ width: '100%', minWidth: availableBooks.length * 100 + 130, borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ background: 'var(--bg-elevated)', borderBottom: '2px solid var(--border)' }}>
-              <th style={{ width: 130, padding: '8px 12px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 11, fontWeight: 700, position: 'sticky', left: 0, background: 'var(--bg-elevated)', zIndex: 2 }}>BOOK</th>
+              <th style={{ width: 130, padding: '8px 12px', textAlign: 'left', color: 'var(--text-muted)', fontSize: 16, fontWeight: 700, position: 'sticky', left: 0, background: 'var(--bg-elevated)', zIndex: 2 }}>BOOK</th>
               {availableBooks.map(book => (
-                <th key={book} style={{ minWidth: 100, padding: '8px 12px', textAlign: 'center', color: 'var(--text-primary)', fontSize: 12, fontWeight: 800, borderLeft: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
+                <th key={book} style={{ minWidth: 100, padding: '8px 12px', textAlign: 'center', color: 'var(--text-primary)', fontSize: 16, fontWeight: 800, borderLeft: '1px solid var(--border)', whiteSpace: 'nowrap' }}>
                   {SPORTSBOOK_LABELS[book] || book}
                 </th>
               ))}
@@ -67,7 +67,7 @@ function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
             {[labelA, labelB].map((label, rowIdx) => (
               <tr key={label} style={{ background: rowIdx % 2 === 0 ? 'var(--bg-card)' : '#f1f5f9', borderBottom: '1px solid var(--border)' }}>
                 {/* Row label */}
-                <td style={{ padding: '10px 12px', fontSize: 12, fontWeight: 700, color: 'var(--text-primary)', borderRight: '2px solid var(--border)', background: rowIdx % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-secondary)', whiteSpace: 'nowrap', position: 'sticky', left: 0, zIndex: 1 }}>
+                <td style={{ padding: '10px 12px', fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', borderRight: '2px solid var(--border)', background: rowIdx % 2 === 0 ? 'var(--bg-card)' : 'var(--bg-secondary)', whiteSpace: 'nowrap', position: 'sticky', left: 0, zIndex: 1 }}>
                   {marketKey === 'h2h' ? (rowIdx === 0 ? game.away : game.home) :
                    marketKey === 'totals' ? (rowIdx === 0 ? '⬆ Over' : '⬇ Under') :
                    (rowIdx === 0 ? `${game.away} Spread` : `${game.home} Spread`)}
@@ -82,17 +82,17 @@ function MarketSection({ game, marketKey, labelA, labelB, sectionTitle }) {
                       {d ? (
                         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
                           {d.point != null && (
-                            <span style={{ fontFamily: 'monospace', fontSize: 12, color: 'var(--text-muted)' }}>
+                            <span style={{ fontFamily: 'monospace', fontSize: 16, color: 'var(--text-muted)' }}>
                               {d.point > 0 ? '+' : ''}{d.point}
                             </span>
                           )}
-                          <span style={{ fontFamily: 'monospace', fontSize: 14, fontWeight: 900, color: isBest ? 'var(--green)' : 'var(--text-primary)' }}>
+                          <span style={{ fontFamily: 'monospace', fontSize: 17, fontWeight: 900, color: isBest ? 'var(--green)' : 'var(--text-primary)' }}>
                             {formatOdds(d.price)}
                           </span>
                           {isBest && <BestBadge />}
                         </div>
                       ) : (
-                        <span style={{ color: '#cbd5e1' }}>—</span>
+                        <span style={{ color: 'var(--text-primary)' }}>—</span>
                       )}
                     </td>
                   )

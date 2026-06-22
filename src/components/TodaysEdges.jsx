@@ -104,7 +104,7 @@ export default function TodaysEdges() {
           <TrendingUp size={15} style={{ color: 'var(--gold)' }} />
           <span className="text-sm font-black text-white">Best Available Value</span>
         </div>
-        <span className="text-xs" style={{ color: 'rgba(255,255,255,0.4)' }}>
+        <span className="text-xs" style={{ color: 'var(--text-primary)' }}>
           Line gaps across books — not sharp/public splits
         </span>
       </div>

@@ -34,7 +34,7 @@ export default function HomeNav() {
               type="button"
               onClick={() => scrollToId(id)}
               className="text-sm font-medium transition-colors hover:text-white"
-              style={{ color: '#a3a3a3', background: 'none', border: 'none', cursor: 'pointer' }}
+              style={{ color: 'var(--text-primary)', background: 'none', border: 'none', cursor: 'pointer' }}
             >
               {label}
             </button>

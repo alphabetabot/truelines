@@ -70,7 +70,7 @@ export default function PremiumTeaser({ showWaitlist = true }) {
           Premium
         </p>
         <p className="text-xl font-black mb-3" style={{ color: '#fde68a' }}>{PREMIUM_PRICE_DISPLAY}</p>
-        <ul className="text-sm space-y-2 mb-4 flex-1" style={{ color: 'rgba(255,255,255,0.85)' }}>
+        <ul className="text-sm space-y-2 mb-4 flex-1" style={{ color: 'var(--text-primary)' }}>
           {PREMIUM_FEATURES.map(f => (
             <li key={f} className="flex gap-2">
               <span style={{ color: 'var(--gold)' }}>✓</span>

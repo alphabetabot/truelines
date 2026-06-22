@@ -26,7 +26,7 @@ export default function CollapsibleScoreTicker() {
         type="button"
         onClick={() => setExpanded(v => !v)}
         className="w-full flex items-center justify-between px-4"
-        style={{ height: 32, color: 'rgba(255,255,255,0.85)' }}
+        style={{ height: 32, color: 'var(--text-primary)' }}
         aria-expanded={expanded}
       >
         <span className="text-xs font-bold tracking-wide">Scores</span>
