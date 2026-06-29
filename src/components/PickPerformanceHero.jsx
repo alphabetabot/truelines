@@ -23,6 +23,9 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
     ? '—'
     : `${stats.totalUnits > 0 ? '+' : ''}${stats.totalUnits.toFixed(2)}u`
 
+  const roiLabel = stats.roi != null ? `${stats.roi > 0 ? '+' : ''}${stats.roi}%` : '—'
+  const edgeLabel = stats.avgEdge != null ? `+${stats.avgEdge}%` : '—'
+
   const recordLabel = stats.count === 0
     ? '—'
     : stats.pushes > 0
@@ -64,16 +67,17 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
           <p className="text-xs" style={{ color: 'var(--text-muted)' }}>{error}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-3 gap-0">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-0">
           {[
             { label: 'Record', value: recordLabel, sub: stats.pushes > 0 ? 'W-L-P' : 'W-L' },
             { label: 'Win rate', value: winRateLabel, sub: stats.decided > 0 ? `${stats.decided} decided` : 'No decisions' },
-            { label: 'Units', value: unitsLabel, sub: `${stats.count} graded` },
-          ].map(({ label, value, sub }, i) => (
+            { label: 'ROI', value: roiLabel, sub: `${stats.count} graded` },
+            { label: 'Avg edge', value: edgeLabel, sub: stats.avgClv != null ? `CLV ${stats.avgClv > 0 ? '+' : ''}${stats.avgClv}%` : 'Edge vs market' },
+          ].map(({ label, value, sub }, i, arr) => (
             <div
               key={label}
               className="text-center py-4 px-2"
-              style={{ borderRight: i < 2 ? '1px solid #f1f5f9' : 'none' }}
+              style={{ borderRight: i < arr.length - 1 ? '1px solid #f1f5f9' : 'none' }}
             >
               <p className="text-xs font-semibold mb-1" style={{ color: 'var(--text-muted)' }}>{label}</p>
               <p className="text-xl font-black" style={{ color: 'var(--text-primary)' }}>{value}</p>

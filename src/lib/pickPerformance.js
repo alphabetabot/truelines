@@ -36,7 +36,7 @@ export function filterPicksByPeriod(picks, periodKey, now = new Date()) {
   })
 }
 
-export function aggregatePickPerformance(picks) {
+export function aggregatePickPerformance(picks, { includeByRecommendation = true } = {}) {
   const graded = (picks || []).filter(isGradedPick)
   const wins = graded.filter(p => String(p.result).trim().toUpperCase() === 'W').length
   const losses = graded.filter(p => String(p.result).trim().toUpperCase() === 'L').length
@@ -44,6 +44,30 @@ export function aggregatePickPerformance(picks) {
   const decided = wins + losses
   const totalUnits = graded.reduce((s, p) => s + (parseFloat(p.units) || 0), 0)
   const winRate = decided > 0 ? Math.round((wins / decided) * 100) : null
+  const roi = decided > 0 ? Math.round((totalUnits / decided) * 1000) / 10 : null
+
+  const withEdge = graded.filter(p => p.pick_meta?.calculated_edge != null || p.pickMeta?.calculated_edge != null)
+  const avgEdge = withEdge.length
+    ? Math.round(
+      withEdge.reduce((s, p) => {
+        const meta = p.pick_meta || p.pickMeta || {}
+        return s + (Number(meta.calculated_edge) || 0)
+      }, 0) / withEdge.length * 10
+    ) / 10
+    : null
+
+  const withClv = graded.filter(p => {
+    const meta = p.pick_meta || p.pickMeta || {}
+    return meta.closing_line_value != null || meta.closing_line_value === 0
+  })
+  const avgClv = withClv.length
+    ? Math.round(
+      withClv.reduce((s, p) => {
+        const meta = p.pick_meta || p.pickMeta || {}
+        return s + (Number(meta.closing_line_value) || 0)
+      }, 0) / withClv.length * 10
+    ) / 10
+    : null
 
   return {
     wins,
@@ -52,6 +76,26 @@ export function aggregatePickPerformance(picks) {
     decided,
     totalUnits,
     winRate,
+    roi,
+    avgEdge,
+    avgClv,
     count: graded.length,
+    ...(includeByRecommendation ? { byRecommendation: aggregateByRecommendation(graded) } : {}),
   }
+}
+
+export function aggregateByRecommendation(picks) {
+  const buckets = { BET: [], LEAN: [], PASS: [], AVOID: [], OTHER: [] }
+  for (const pick of picks || []) {
+    const rec = String(pick.recommendation || pick.pick_meta?.recommendation || pick.pickMeta?.recommendation || 'OTHER').toUpperCase()
+    const key = buckets[rec] ? rec : 'OTHER'
+    buckets[key].push(pick)
+  }
+
+  const summary = {}
+  for (const [key, rows] of Object.entries(buckets)) {
+    if (!rows.length) continue
+    summary[key] = aggregatePickPerformance(rows, { includeByRecommendation: false })
+  }
+  return summary
 }

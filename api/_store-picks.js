@@ -28,6 +28,7 @@ export function extractPicksFromResponse(claudeResponse) {
     const betLine = getField(section, ['Bet'])
     const confidenceLine = getField(section, ['Confidence'])
     const edgeLine = getField(section, ['Edge', 'Why', 'Reasoning'])
+    const recommendationLine = getField(section, ['Recommendation'])
 
     if (!rawHeadline || !betLine) continue
 
@@ -50,6 +51,7 @@ export function extractPicksFromResponse(claudeResponse) {
       bestBook: bet.bestBook,
       confidence: parseConfidence(confidenceLine),
       edge: edgeLine,
+      recommendation: normalizeRecommendation(recommendationLine),
       isFade: false,
     })
   }
@@ -143,6 +145,12 @@ function parseConfidence(confidenceStr) {
   return numMatch ? parseInt(numMatch[1], 10) : 3
 }
 
+function normalizeRecommendation(value) {
+  const rec = String(value || '').trim().toUpperCase()
+  if (['BET', 'LEAN', 'PASS', 'AVOID'].includes(rec)) return rec
+  return null
+}
+
 function parseBetLine(betLine, isFade) {
   if (!betLine) {
     return { betType: isFade ? 'Fade' : 'Pick', odds: null, bestBook: null }
@@ -200,6 +208,8 @@ export async function storePicks(picks, date) {
       odds: oddsNum,
       confidence: formatConfidence(pick.confidence),
       edge: pick.edge,
+      recommendation: pick.recommendation || pick.pickMeta?.recommendation || null,
+      pick_meta: pick.pickMeta || null,
       result: null,
       units: null,
       sort_order: index,

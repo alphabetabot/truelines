@@ -9,6 +9,7 @@ import {
   scoreGameDataQuality,
   selectPublishablePicks,
   validatePicksAgainstSlate,
+  mlbRecommendationAllowed,
 } from '../api/_pick-metrics.js'
 
 function assert(condition, message) {
@@ -122,5 +123,22 @@ const fallback = resolvePicksForPublish([
 
 assert(fallback.picks.length === 1, 'resolvePicksForPublish falls back when strict gates block')
 assert(fallback.tier === 'validated', 'uses validated tier on fallback')
+
+const enginePick = {
+  game: 'Team A @ Team B',
+  pickSelection: 'Team A ML',
+  bet: 'ML at -108 via DraftKings',
+  odds: -108,
+  confidence: 4,
+  edge: 'Model 56.2% vs market 51.8% on Team A (+4.4 pt edge). Starter score edge. Run environment favors away.',
+  recommendation: 'BET',
+  pickMeta: { recommendation: 'BET', calculated_edge: 4.4, confidence_score: 72 },
+}
+
+const engineResolved = resolvePicksForPublish([], slate, { enginePicks: [enginePick] })
+assert(engineResolved.picks.length === 1, 'uses engine picks when extracted empty')
+assert(engineResolved.tier === 'engine', 'engine tier')
+assert(mlbRecommendationAllowed('BET'), 'BET allowed')
+assert(!mlbRecommendationAllowed('PASS'), 'PASS blocked')
 
 console.log('pick-metrics.test.js: all assertions passed')

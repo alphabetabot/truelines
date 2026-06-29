@@ -20,6 +20,27 @@ import {
   recordNewsletterFailure,
 } from './_newsletter-send-guard.js'
 
+function normalizeMatchupKey(game) {
+  return String(game || '').toLowerCase().replace(/\s+/g, ' ').trim()
+}
+
+function mergeEnginePickMeta(extracted, enginePicks) {
+  const byGame = new Map(
+    (enginePicks || []).map(p => [normalizeMatchupKey(p.game), p])
+  )
+  return (extracted || []).map(pick => {
+    const engine = byGame.get(normalizeMatchupKey(pick.game))
+    if (!engine) return pick
+    return {
+      ...pick,
+      recommendation: pick.recommendation || engine.recommendation,
+      pickMeta: engine.pickMeta,
+      odds: pick.odds ?? engine.odds,
+      engineGenerated: engine.engineGenerated,
+    }
+  })
+}
+
 export function resolveNewsletterStep(req) {
   const step = String(req.query?.step || req.body?.step || '').toLowerCase()
   if (step === 'generate' || step === 'send' || step === 'social' || step === 'all') return step
@@ -101,7 +122,12 @@ export async function runGenerateStep({
     }
 
     const extracted = extractPicksFromResponse(picksText).filter(p => !p.isFade)
-    const { picks, warnings, tier } = resolvePicksForPublish(extracted, slate)
+    const enginePicks = (generated.mlbEnginePicks || []).map(ep => ({
+      ...ep,
+      recommendation: ep.recommendation || ep.pickMeta?.recommendation,
+    }))
+    const mergedExtracted = mergeEnginePickMeta(extracted, enginePicks)
+    const { picks, warnings, tier } = resolvePicksForPublish(mergedExtracted, slate, { enginePicks })
     if (warnings.length) console.warn('[pipeline:generate] quality warnings:', warnings.join(' | '))
 
     if (!picks.length) {
