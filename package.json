@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "test:grading": "node scripts/pick-grading.test.js",
     "test:pick-metrics": "node scripts/pick-metrics.test.js",
+    "test:mlb-engine": "node scripts/mlb-engine.test.js",
     "test:store-picks": "node scripts/store-picks.test.js",
     "test:newsletter-guard": "node scripts/newsletter-send-guard.test.js",
     "test:newsletter-pipeline": "node scripts/newsletter-pipeline.test.js",

@@ -6,6 +6,12 @@ import {
   rankGamesByDataQuality,
 } from './_pick-metrics.js'
 import {
+  analyzeMlbSlate,
+  selectMlbEnginePicks,
+  formatEngineBlockForPrompt,
+  engineAnalysisToPick,
+} from './_mlb-engine/index.js'
+import {
   appendGameStatsBlock,
   applySportContext,
   loadSportContextBundle,
@@ -75,16 +81,19 @@ async function getPitcherStats(pitcherId, pitcherName) {
         wins: stats.wins || 0,
         losses: stats.losses || 0,
         ip: stats.inningsPitched || 0,
+        gs: stats.gamesStarted || stats.gamesPlayed || 0,
+        gamesStarted: stats.gamesStarted || stats.gamesPlayed || 0,
         k9: stats.strikeoutsPer9Inn ? parseFloat(stats.strikeoutsPer9Inn).toFixed(1) : 'N/A',
+        bb9: stats.walksPer9Inn ? parseFloat(stats.walksPer9Inn).toFixed(1) : 'N/A',
         whip: stats.whip ? parseFloat(stats.whip).toFixed(2) : 'N/A',
         oppAvg: stats.avg || 'N/A',
         hr9: stats.homeRunsPer9 ? parseFloat(stats.homeRunsPer9).toFixed(1) : 'N/A',
       }
     }
-    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
+    return { era: 'N/A', wins: 0, losses: 0, ip: 0, gs: 0, gamesStarted: 0, k9: 'N/A', bb9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
   } catch {
     console.warn(`Pitcher stats fetch failed for ${pitcherName || pitcherId}`)
-    return { era: 'N/A', wins: 0, losses: 0, ip: 0, k9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
+    return { era: 'N/A', wins: 0, losses: 0, ip: 0, gs: 0, gamesStarted: 0, k9: 'N/A', bb9: 'N/A', whip: 'N/A', oppAvg: 'N/A', hr9: 'N/A' }
   }
 }
 
@@ -413,9 +422,30 @@ async function generatePicks(games) {
 
   const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ${gm.oddsSummary}`).join('\n')
 
+  const mlbAnalyses = analyzeMlbSlate(gamesWithStats)
+  const mlbEnginePicks = selectMlbEnginePicks(mlbAnalyses, { max: 3 })
+  const mlbEngineBlock = formatEngineBlockForPrompt(mlbAnalyses)
+  const mlbPreselected = mlbEnginePicks.map(engineAnalysisToPick)
+
   const systemPrompt = `You are Vega, TrueOddsIQ's sports betting analyst. You must be precise, evidence-based, and honest about missing data. Never invent stats, injuries, line movement, public betting splits, or sharp-money claims.`
 
+  const mlbEngineSection = mlbAnalyses.length
+    ? `
+VEGA MLB PROBABILITY ENGINE (authoritative for MLB sides — do NOT override BET/LEAN sides or odds):
+${mlbEngineBlock}
+
+MLB PRE-SELECTED ACTIONABLE PLAYS (only these MLB games may be published as picks):
+${mlbPreselected.length
+  ? mlbPreselected.map((p, i) => `${i + 1}. ${p.game} — ${p.recommendation} ${p.pickSelection} at ${p.odds} | Edge ${p.pickMeta.calculated_edge}%`).join('\n')
+  : 'None — no MLB game cleared BET/LEAN thresholds today. Do NOT force an MLB pick.'}
+
+MLB games marked PASS or AVOID must NOT appear as picks. Never pick based only on win probability — price must beat the market.
+`
+    : ''
+
   const prompt = `Today is ${date}.
+${mlbEngineSection}
+${statsContext}
 
 ${statsContext}
 Today's slate (MLB, NBA, NHL):
@@ -438,15 +468,19 @@ ${PICK_METRICS_PROMPT_RULES}
 MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
 ${gameReference}
 
-Give exactly 3 picks to BET (not fades or passes). Always lead with your single best bet clearly marked.
+Output 0 to 3 actionable picks total — never force a pick when edge is insufficient.
+- MLB: ONLY publish games from MLB PRE-SELECTED ACTIONABLE PLAYS above (BET or LEAN). Use the exact side and odds shown.
+- NBA/NHL: Select only when you see a genuine price edge (confidence 4+). Include at least one NBA/NHL pick when playoff games are on the slate with valid odds and MLB pre-selections leave room.
+- If no game qualifies, output zero picks and state "No qualifying plays today" — do not invent picks.
 
 CRITICAL: Each pick MUST include:
 1. Full matchup on its own line: "[Away Team] @ [Home Team]"
-2. Your pick with actual odds and book from MATCHUP REFERENCE
+2. Your pick with actual odds and book from MATCHUP REFERENCE or MLB engine
 3. Example matchup line: "Pirates @ Rockies"
 4. If odds show as "N/A", skip that game and move to next
 5. Moneyline picks must end in "ML" (example: "Dodgers ML"). Totals must include the number (example: "Under 8.5"). Spreads must include the number (example: "Yankees -1.5").
-6. Every pick is an actionable bet to place — never list a "fade", "avoid", or "pass" section.
+6. Add a line: "- Recommendation: BET or LEAN" (from engine for MLB; your assessment for NBA/NHL)
+7. Never publish PASS or AVOID plays.
 
 Format EXACTLY like this:
 
@@ -475,7 +509,7 @@ PICK #3
 - Confidence: [rating out of 5]
 - Edge: [2-3 sentences of specific analysis]
 
-Only pick games with genuine edge. Be specific with stats and reasoning. Output exactly 3 picks — no fourth section. Picks #2 and #3 are for Premium subscribers on the site; only the TOP PICK goes in the free newsletter email.`
+Only pick games with genuine edge vs the market price. Be specific with stats and reasoning. Output up to 3 picks — fewer is fine when edge is thin. Picks #2 and #3 are for Premium subscribers on the site; only the TOP PICK goes in the free newsletter email.`
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -496,18 +530,53 @@ Only pick games with genuine edge. Be specific with stats and reasoning. Output 
 
     if (!apiRes.ok) {
       console.error('Claude API error:', apiRes.status, apiRes.statusText)
-      return { picksText: '', slate: gamesWithStats }
+      if (mlbPreselected.length) {
+        return {
+          picksText: buildFallbackPicksText(mlbPreselected),
+          slate: gamesWithStats,
+          mlbAnalyses: mlbAnalyses.map(a => a.analysis),
+          mlbEnginePicks: mlbPreselected,
+          engineFallback: true,
+        }
+      }
+      return { picksText: '', slate: gamesWithStats, mlbAnalyses: [], mlbEnginePicks: [] }
     }
 
     const data = await apiRes.json()
+    const picksText = data.content?.[0]?.text || ''
     return {
-      picksText: data.content?.[0]?.text || '',
+      picksText,
       slate: gamesWithStats,
+      mlbAnalyses: mlbAnalyses.map(a => a.analysis),
+      mlbEnginePicks: mlbPreselected,
     }
   } catch (err) {
     console.error('Claude API fetch error:', err.message)
-    return { picksText: '', slate: gamesWithStats }
+    if (mlbPreselected.length) {
+      return {
+        picksText: buildFallbackPicksText(mlbPreselected),
+        slate: gamesWithStats,
+        mlbAnalyses: mlbAnalyses.map(a => a.analysis),
+        mlbEnginePicks: mlbPreselected,
+        engineFallback: true,
+      }
+    }
+    return { picksText: '', slate: gamesWithStats, mlbAnalyses: [], mlbEnginePicks: [] }
   }
+}
+
+function buildFallbackPicksText(enginePicks) {
+  const sections = enginePicks.map((pick, index) => {
+    const header = index === 0 ? 'TOP PICK OF THE DAY' : `PICK #${index + 1}`
+    return `${header}
+${pick.game}
+**MLB Pick: ${pick.pickSelection}**
+- Bet: ${pick.bet}
+- Recommendation: ${pick.recommendation}
+- Confidence: ${pick.confidence}/5
+- Edge: ${pick.edge}`
+  })
+  return sections.join('\n\n---\n\n')
 }
 
 export { getTodaysGames, generatePicks }

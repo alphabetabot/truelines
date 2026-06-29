@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/daily_picks?order=date.desc&limit=100&select=id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units`,
+      `${SUPABASE_URL}/rest/v1/daily_picks?order=date.desc&limit=100&select=id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,recommendation,pick_meta`,
       {
         headers: {
           apikey: SUPABASE_SERVICE_KEY,

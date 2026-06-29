@@ -22,6 +22,62 @@ import { useSubscription } from '../hooks/useSubscription'
 const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1', Mixed: 'var(--text-muted)' }
 const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
 
+const REC_STYLES = {
+  BET: { bg: '#14532d', color: '#86efac', label: 'BET' },
+  LEAN: { bg: '#1e3a5f', color: '#93c5fd', label: 'LEAN' },
+  PASS: { bg: '#374151', color: '#d1d5db', label: 'PASS' },
+  AVOID: { bg: '#450a0a', color: '#fca5a5', label: 'AVOID' },
+}
+
+function pickMeta(pick) {
+  return pick?.pick_meta || pick?.pickMeta || {}
+}
+
+function RecommendationBadge({ recommendation }) {
+  const rec = String(recommendation || '').toUpperCase()
+  const style = REC_STYLES[rec]
+  if (!style) return null
+  return (
+    <span className="text-xs px-2 py-0.5 rounded font-black tracking-wide"
+      style={{ background: style.bg, color: style.color }}>
+      {style.label}
+    </span>
+  )
+}
+
+function EngineMetrics({ pick }) {
+  const meta = pickMeta(pick)
+  if (!meta.calculated_edge && !meta.model_probability) return null
+  return (
+    <div className="grid grid-cols-2 gap-2 mb-3 text-xs">
+      {meta.model_probability != null && (
+        <div className="rounded-lg px-2 py-1.5" style={{ background: 'var(--bg-secondary)' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Model </span>
+          <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{meta.model_probability}%</span>
+        </div>
+      )}
+      {meta.market_implied != null && (
+        <div className="rounded-lg px-2 py-1.5" style={{ background: 'var(--bg-secondary)' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Market </span>
+          <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{meta.market_implied}%</span>
+        </div>
+      )}
+      {meta.calculated_edge != null && (
+        <div className="rounded-lg px-2 py-1.5" style={{ background: 'var(--bg-secondary)' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Edge </span>
+          <span className="font-bold" style={{ color: 'var(--gold)' }}>+{meta.calculated_edge}%</span>
+        </div>
+      )}
+      {meta.confidence_score != null && (
+        <div className="rounded-lg px-2 py-1.5" style={{ background: 'var(--bg-secondary)' }}>
+          <span style={{ color: 'var(--text-secondary)' }}>Confidence </span>
+          <span className="font-bold" style={{ color: 'var(--text-primary)' }}>{meta.confidence_score}/100</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function isFadePick(pick) {
   const betType = String(pick?.bet_type || pick?.betType || '').trim()
   if (/^fade$/i.test(betType)) return true
@@ -36,16 +92,21 @@ function actionablePicks(picks) {
 function StoredPickCard({ pick, index, isPublicPreview = false }) {
   const label = PICK_LABELS[index] || `Pick ${index + 1}`
   const edgeText = isPublicPreview ? briefEdgeSummary(pick.edge) : pick.edge
+  const meta = pickMeta(pick)
+  const recommendation = pick.recommendation || meta.recommendation
+  const reasons = meta.top_reasons || []
+  const biggestRisk = meta.biggest_risk
 
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
       <div className="flex items-center justify-between px-4 py-3"
         style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border)' }}>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs px-2 py-0.5 rounded font-bold"
             style={{ background: (sportColor[pick.sport] || 'var(--text-muted)') + '20', color: sportColor[pick.sport] || 'var(--text-muted)' }}>
             {pick.sport}
           </span>
+          <RecommendationBadge recommendation={recommendation} />
           <span className="text-xs font-bold" style={{ color: 'var(--gold)' }}>{label}</span>
         </div>
         <span className="text-xs tracking-widest" style={{ color: 'var(--gold)' }}>{pick.confidence}</span>
@@ -55,6 +116,24 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         <p className="font-bold text-base mb-2" style={{ color: 'var(--text-primary)' }}>{pick.pick}</p>
         {pick.bet && (
           <p className="text-sm font-semibold mb-2" style={{ color: 'var(--gold)' }}>{pick.bet}</p>
+        )}
+        <EngineMetrics pick={pick} />
+        {reasons.length > 0 && !isPublicPreview && (
+          <ul className="text-sm mb-2 space-y-1 list-disc pl-4" style={{ color: 'var(--text-secondary)' }}>
+            {reasons.slice(0, 3).map((reason, i) => (
+              <li key={i}>{reason}</li>
+            ))}
+          </ul>
+        )}
+        {biggestRisk && !isPublicPreview && (
+          <p className="text-xs mb-2" style={{ color: '#f87171' }}>
+            Biggest risk: {biggestRisk}
+          </p>
+        )}
+        {meta.data_quality_score != null && !isPublicPreview && (
+          <p className="text-xs mb-2" style={{ color: 'var(--text-secondary)' }}>
+            Data quality: {meta.data_quality_score}/100
+          </p>
         )}
         {edgeText && (
           <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>{edgeText}</p>

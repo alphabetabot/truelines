@@ -8,7 +8,7 @@ import { publicPickPreview } from './_pick-text.js'
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
-const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,sort_order'
+const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,sort_order,recommendation,pick_meta'
 const PICKS_SELECT_FALLBACK = 'id,date,pick,bet,confidence,edge,game,sport,result'
 const PICK_CACHE = 'public, s-maxage=300, stale-while-revalidate=3600'
 
