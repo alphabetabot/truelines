@@ -1,63 +1,82 @@
 import { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react'
 import { supabase } from './supabase'
+import {
+  ACTIVITY_EVENTS,
+  ACTIVITY_THROTTLE_MS,
+  INACTIVITY_CHECK_INTERVAL_MS,
+  INACTIVITY_SIGN_OUT_MS,
+  isIdleExpired,
+  mergeAuthUser,
+} from './authInactivity'
 
 const AuthContext = createContext(null)
 
-/** Sign out after this many ms without pointer/keyboard/scroll activity. */
-export const INACTIVITY_SIGN_OUT_MS = 10 * 60 * 1000
-
-const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart', 'click']
+export { INACTIVITY_SIGN_OUT_MS }
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const inactivityTimerRef = useRef(null)
+  const lastActivityAtRef = useRef(0)
+  const userId = user?.id ?? null
 
   const signOut = useCallback(() => supabase.auth.signOut(), [])
 
-  const clearInactivityTimer = useCallback(() => {
-    if (inactivityTimerRef.current) {
-      clearTimeout(inactivityTimerRef.current)
-      inactivityTimerRef.current = null
-    }
+  const recordActivity = useCallback(() => {
+    lastActivityAtRef.current = Date.now()
   }, [])
 
-  const scheduleInactivitySignOut = useCallback(() => {
-    clearInactivityTimer()
-    inactivityTimerRef.current = setTimeout(() => {
+  const checkIdleSignOut = useCallback(() => {
+    if (!userId) return
+    if (isIdleExpired(lastActivityAtRef.current)) {
       signOut()
-    }, INACTIVITY_SIGN_OUT_MS)
-  }, [clearInactivityTimer, signOut])
+    }
+  }, [signOut, userId])
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      setUser(prev => mergeAuthUser(prev, session))
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      setUser(prev => mergeAuthUser(prev, session))
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
   useEffect(() => {
-    if (!user) {
-      clearInactivityTimer()
+    if (!userId) {
+      lastActivityAtRef.current = 0
       return undefined
     }
 
-    const onActivity = () => scheduleInactivitySignOut()
+    recordActivity()
 
-    scheduleInactivitySignOut()
+    let lastBump = 0
+    const onActivity = () => {
+      const now = Date.now()
+      if (now - lastBump < ACTIVITY_THROTTLE_MS) return
+      lastBump = now
+      recordActivity()
+    }
+
+    const onVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        checkIdleSignOut()
+      }
+    }
+
     ACTIVITY_EVENTS.forEach(event => window.addEventListener(event, onActivity, { passive: true }))
+    document.addEventListener('visibilitychange', onVisibility)
+    const interval = window.setInterval(checkIdleSignOut, INACTIVITY_CHECK_INTERVAL_MS)
 
     return () => {
-      clearInactivityTimer()
       ACTIVITY_EVENTS.forEach(event => window.removeEventListener(event, onActivity))
+      document.removeEventListener('visibilitychange', onVisibility)
+      window.clearInterval(interval)
     }
-  }, [user, clearInactivityTimer, scheduleInactivitySignOut])
+  }, [userId, recordActivity, checkIdleSignOut])
 
   return (
     <AuthContext.Provider value={{ user, loading, signOut }}>

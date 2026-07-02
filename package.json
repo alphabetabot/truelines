@@ -24,6 +24,7 @@
     "test:live-status": "node src/lib/liveGameStatus.test.js",
     "test:default-sport": "node src/lib/defaultSport.test.js",
     "test:pick-performance": "node src/lib/pickPerformance.test.js",
+    "test:auth-inactivity": "node src/lib/authInactivity.test.js",
     "test:site-audit": "node scripts/site-audit.js",
     "preview": "vite preview"
   },
