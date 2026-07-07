@@ -134,9 +134,54 @@ assert(noFallback.tier === 'none', 'returns none tier')
 
 const engineResolved = resolvePicksForPublish([], slate, { enginePicks: [betPick] })
 assert(engineResolved.picks.length === 1, 'uses engine BET picks when extracted empty')
-assert(engineResolved.tier === 'engine', 'engine tier')
+assert(engineResolved.tier === 'partial', 'partial tier when one premium pick')
+
+const leanPick = {
+  ...betPick,
+  game: 'Colorado Rockies @ Los Angeles Dodgers',
+  pickSelection: 'Rockies ML',
+  bet: 'ML at +120 via DraftKings',
+  odds: 120,
+  recommendation: 'LEAN',
+  pickMeta: {
+    recommendation: 'LEAN',
+    calculated_edge: 4.2,
+    data_quality_score: 70,
+    confidence_score: 65,
+  },
+  edge: 'Model 52.1% vs market 48.3% on Rockies (+4.2 pt lean). Rockies starter at 3.10 ERA vs 4.20 ERA opponent. Run differential +8 vs -5.',
+}
+
+const slateTwo = [
+  ...slate,
+  {
+    sport: 'MLB',
+    away: 'Colorado Rockies',
+    home: 'Los Angeles Dodgers',
+    bookmakers: sampleBookmakers,
+    weather: { temp: '68' },
+    venue: 'Petco Park',
+    bestOdds: {
+      awayML: { book: 'DraftKings', price: 120 },
+      homeML: { book: 'FanDuel', price: -140 },
+    },
+    stats: {
+      awayPitcher: { era: '3.10', whip: '1.05', k9: '9.5' },
+      homePitcher: { era: '4.20', whip: '1.30', k9: '7.8' },
+      awayTeam: { wins: 28, losses: 22, runDiff: 8 },
+      homeTeam: { wins: 20, losses: 30, runDiff: -5 },
+    },
+  },
+]
+
+const twoPickSlate = resolvePicksForPublish([betPick], slateTwo, { enginePicks: [leanPick] })
+assert(twoPickSlate.picks.length === 2, 'fills premium slot #2 with LEAN when no second BET')
+assert(twoPickSlate.tier === 'full', 'full tier with two premium picks')
+assert(twoPickSlate.picks[1].recommendation === 'LEAN' || twoPickSlate.picks[1].pickMeta?.recommendation === 'LEAN', 'second slot may be LEAN')
+
 assert(mlbRecommendationAllowed('BET'), 'BET allowed')
-assert(!mlbRecommendationAllowed('LEAN'), 'LEAN blocked in BET-only mode')
+assert(!mlbRecommendationAllowed('LEAN', 0), 'LEAN blocked for newsletter slot')
+assert(mlbRecommendationAllowed('LEAN', 1), 'LEAN allowed for premium slot #2')
 assert(!mlbRecommendationAllowed('PASS'), 'PASS blocked')
 
 console.log('pick-metrics.test.js: all assertions passed')

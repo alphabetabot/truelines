@@ -11,11 +11,11 @@ import { trackEvent } from '../lib/analytics'
 const PREMIUM_FEATURES = [
   {
     title: 'Full AI Picks tab',
-    detail: 'All 3 daily picks with full write-ups, confidence scores, and on-demand generation.',
+    detail: '2 daily premium picks with full write-ups, confidence scores, and BET/LEAN labels.',
   },
   {
-    title: 'Unlimited AI analysis',
-    detail: 'Deep research on any game — injuries, weather, park factors, and advanced stats.',
+    title: 'Unlimited on-demand picks & analysis',
+    detail: 'Generate picks and deep research for any game on the board — not just the daily card.',
   },
   {
     title: 'Vega + ChatGPT research',

@@ -16,11 +16,11 @@ const FREE_FEATURES = [
 const PREMIUM_FEATURES = [
   {
     title: 'Full AI Picks tab',
-    detail: 'All 3 daily picks with full write-ups, confidence, and on-demand pick generation.',
+    detail: '2 daily premium picks with full write-ups, confidence, and BET/LEAN labels.',
   },
   {
-    title: 'Unlimited AI analysis',
-    detail: 'Run deep research on any game on the board, not just our three picks.',
+    title: 'Unlimited on-demand picks & analysis',
+    detail: 'Run deep research and generate picks for any game on the board — not just the daily card.',
   },
   {
     title: 'Closing line value (CLV)',

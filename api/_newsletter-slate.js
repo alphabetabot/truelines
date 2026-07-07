@@ -5,10 +5,10 @@ import {
   filterBettableGames,
   rankGamesByDataQuality,
 } from './_pick-metrics.js'
-import { MAX_DAILY_PICKS } from './_pick-thresholds.js'
+import { PREMIUM_DAILY_PICK_COUNT } from './_pick-thresholds.js'
 import {
   analyzeMlbSlate,
-  selectMlbEnginePicks,
+  selectMlbEngineSlateCandidates,
   formatEngineBlockForPrompt,
   engineAnalysisToPick,
 } from './_mlb-engine/index.js'
@@ -424,9 +424,9 @@ async function generatePicks(games) {
   const gameReference = gameMap.map(gm => `${gm.sport}: ${gm.matchup} | ${gm.oddsSummary}`).join('\n')
 
   const mlbAnalyses = analyzeMlbSlate(gamesWithStats)
-  const mlbEnginePicks = selectMlbEnginePicks(mlbAnalyses, { max: MAX_DAILY_PICKS })
+  const mlbSlate = selectMlbEngineSlateCandidates(mlbAnalyses)
   const mlbEngineBlock = formatEngineBlockForPrompt(mlbAnalyses)
-  const mlbPreselected = mlbEnginePicks.map(engineAnalysisToPick)
+  const mlbPreselected = mlbSlate.analyses.map(engineAnalysisToPick)
 
   const systemPrompt = `You are Vega, TrueOddsIQ's sports betting analyst. You must be precise, evidence-based, and honest about missing data. Never invent stats, injuries, line movement, public betting splits, or sharp-money claims.`
 
@@ -435,12 +435,12 @@ async function generatePicks(games) {
 VEGA MLB PROBABILITY ENGINE (authoritative for MLB sides — do NOT override BET sides or odds):
 ${mlbEngineBlock}
 
-MLB PRE-SELECTED BET PLAYS (only these MLB games may be published):
+MLB PRE-SELECTED PREMIUM SLATE (Pick #1 BET; Pick #2 BET or LEAN):
 ${mlbPreselected.length
-  ? mlbPreselected.map((p, i) => `${i + 1}. ${p.game} — BET ${p.pickSelection} at ${p.odds} | Edge ${p.pickMeta.calculated_edge}%`).join('\n')
+  ? mlbPreselected.map((p, i) => `${i + 1}. ${p.game} — ${p.recommendation} ${p.pickSelection} at ${p.odds} | Edge ${p.pickMeta.calculated_edge}%`).join('\n')
   : 'None — no MLB game cleared BET thresholds today. Do NOT force an MLB pick.'}
 
-MLB games marked LEAN, PASS, or AVOID must NOT appear as picks. Never pick based only on win probability — price must beat the market.
+PASS and AVOID games must NOT appear as picks.
 `
     : ''
 
@@ -467,10 +467,12 @@ ${PICK_METRICS_PROMPT_RULES}
 MATCHUP REFERENCE (LIVE MULTI-BOOK ODDS):
 ${gameReference}
 
-Output 0 to ${MAX_DAILY_PICKS} actionable BET picks total — never force a pick when edge is insufficient.
-- MLB: ONLY publish games from MLB PRE-SELECTED BET PLAYS above. Use the exact side and odds shown.
-- NBA/NHL: Only publish with confidence 5 and a stated price edge. Skip if uncertain.
-- If no game qualifies, output zero picks and state "No qualifying plays today" — do not invent picks.
+Output exactly ${PREMIUM_DAILY_PICK_COUNT} picks when the slate allows — never force a weak pick.
+- Pick #1 (TOP PICK / free newsletter): MUST be Recommendation BET with highest edge.
+- Pick #2 (Premium only): BET if available, otherwise LEAN from engine pre-selection.
+- MLB: use MLB PRE-SELECTED PREMIUM SLATE sides and odds.
+- NBA/NHL: only with confidence 5 and clear price edge for pick #2 if MLB only has one BET.
+- If only one game qualifies, output one pick only.
 
 CRITICAL: Each pick MUST include:
 1. Full matchup on its own line: "[Away Team] @ [Home Team]"
@@ -478,8 +480,8 @@ CRITICAL: Each pick MUST include:
 3. Example matchup line: "Pirates @ Rockies"
 4. If odds show as "N/A", skip that game and move to next
 5. Moneyline picks must end in "ML" (example: "Dodgers ML"). Totals must include the number (example: "Under 8.5"). Spreads must include the number (example: "Yankees -1.5").
-6. Add a line: "- Recommendation: BET"
-7. Never publish LEAN, PASS, or AVOID plays.
+6. Pick #1: "- Recommendation: BET". Pick #2: "- Recommendation: BET" or "- Recommendation: LEAN".
+7. Never publish PASS or AVOID plays.
 
 Format EXACTLY like this:
 
@@ -497,11 +499,9 @@ PICK #2
 [Away Team] @ [Home Team]
 **[SPORT] Pick: [Team/Total/Spread]**
 - Bet: [type] at [odds] via [best book]
-- Recommendation: BET
+- Recommendation: BET or LEAN
 - Confidence: [rating out of 5]
-- Edge: [2-3 sentences of specific analysis]
-
-Only pick games with genuine edge vs the market price. Be specific with stats and reasoning. Output up to ${MAX_DAILY_PICKS} BET picks — zero is fine when nothing clears the bar. Only the TOP PICK goes in the free newsletter email.`
+- Edge: [2-3 sentences of specific analysis] Be specific with stats and reasoning. Output up to ${PREMIUM_DAILY_PICK_COUNT} picks for the Premium daily card — pick #1 is the free newsletter top pick.`
 
   try {
     const apiRes = await fetch('https://api.anthropic.com/v1/messages', {

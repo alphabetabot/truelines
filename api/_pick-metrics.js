@@ -6,7 +6,9 @@ import {
   DATA_QUALITY_MIN,
   HEAVY_CHALK,
   HEAVY_CHALK_EDGE_MIN,
-  MAX_DAILY_PICKS,
+  LEAN_SLOT_MIN_DATA_QUALITY,
+  LEAN_SLOT_MIN_EDGE,
+  PREMIUM_DAILY_PICK_COUNT,
   PUBLISH_BET_ONLY,
 } from './_pick-thresholds.js'
 
@@ -19,9 +21,20 @@ export function isMlbEnginePick(pick) {
   return pick?.sport === 'MLB' && pick?.pickMeta?.recommendation
 }
 
-export function mlbRecommendationAllowed(rec) {
-  if (PUBLISH_BET_ONLY) return rec === 'BET'
-  return rec === 'BET' || rec === 'LEAN'
+export function isBetRecommendation(rec) {
+  return rec === 'BET'
+}
+
+export function isPremiumLeanSlotRecommendation(rec) {
+  return rec === 'LEAN'
+}
+
+/** Pick #1 (newsletter) must be BET; pick #2 may be BET or LEAN for Premium. */
+export function mlbRecommendationAllowed(rec, slotIndex = 0) {
+  if (isBetRecommendation(rec)) return true
+  if (slotIndex > 0 && isPremiumLeanSlotRecommendation(rec)) return true
+  if (!PUBLISH_BET_ONLY) return rec === 'BET' || rec === 'LEAN'
+  return false
 }
 
 export function countBooksWithMarket(game, marketKey) {
@@ -244,32 +257,167 @@ export function selectPublishablePicks(picks, slateEntries, {
 }
 
 /**
- * Strict publish path — BET-only, no weak fallbacks.
+ * Premium slate: up to 2 picks — BET for pick #1 (newsletter), BET or LEAN for pick #2.
  */
-export function resolvePicksForPublish(extracted, slate, { enginePicks = [] } = {}) {
-  const { picks: strict, warnings } = selectPublishablePicks(extracted, slate)
-  if (strict.length) {
-    return { picks: strict.slice(0, MAX_DAILY_PICKS), warnings, tier: 'strict' }
+export function buildPremiumDailySlate(extracted, slate, { enginePicks = [] } = {}) {
+  const warnings = []
+  const picks = []
+  const seenGames = new Set()
+
+  const tryAdd = (pick, { leanSlot = false } = {}) => {
+    if (picks.length >= PREMIUM_DAILY_PICK_COUNT) return false
+    const gameKey = String(pick.game || '').toLowerCase()
+    if (seenGames.has(gameKey)) return false
+
+    const entry = (slate || []).find(e => pickMatchesGame(pick, e))
+    if (!entry) {
+      warnings.push(`No slate match for pick: ${pick.game || pick.pickSelection}`)
+      return false
+    }
+
+    const rec = pick.recommendation || pick.pickMeta?.recommendation || pick.pick_meta?.recommendation
+    const slotIndex = picks.length
+    if (!mlbRecommendationAllowed(rec, slotIndex) && !(leanSlot && rec === 'LEAN')) {
+      return false
+    }
+
+    const ok = leanSlot || rec === 'LEAN'
+      ? validateLeanPickForPublish(pick, entry, warnings)
+      : validateBetPickForPublish(pick, entry, slotIndex, warnings)
+
+    if (!ok) return false
+    picks.push(pick)
+    seenGames.add(gameKey)
+    return true
   }
 
-  const engineOnly = (enginePicks || []).filter(p =>
-    mlbRecommendationAllowed(p.recommendation || p.pickMeta?.recommendation)
-    && (p.pickMeta?.data_quality_score ?? 100) >= DATA_QUALITY_MIN
-    && (p.pickMeta?.calculated_edge ?? 0) >= BET_EDGE_MIN
-  )
-  if (engineOnly.length) {
-    return {
-      picks: engineOnly.slice(0, MAX_DAILY_PICKS),
-      warnings: [...warnings, 'Using Vega MLB engine BET picks (Claude output did not pass strict gates)'],
-      tier: 'engine',
+  const { picks: strictBets, warnings: strictWarnings } = selectPublishablePicks(extracted, slate)
+  warnings.push(...strictWarnings)
+  for (const pick of strictBets) tryAdd(pick)
+
+  for (const pick of enginePicks || []) {
+    const rec = pick.recommendation || pick.pickMeta?.recommendation
+    if (rec === 'BET') tryAdd(pick)
+  }
+
+  if (picks.length < PREMIUM_DAILY_PICK_COUNT) {
+    const leanCandidates = [...(extracted || []), ...(enginePicks || [])]
+      .filter(p => (p.recommendation || p.pickMeta?.recommendation) === 'LEAN')
+
+    for (const pick of leanCandidates) {
+      if (picks.length >= PREMIUM_DAILY_PICK_COUNT) break
+      tryAdd(pick, { leanSlot: true })
     }
   }
 
-  return { picks: [], warnings: [...warnings, 'No picks passed strict BET-only gates'], tier: 'none' }
+  picks.sort((a, b) => {
+    const ra = a.recommendation || a.pickMeta?.recommendation
+    const rb = b.recommendation || b.pickMeta?.recommendation
+    if (ra === 'BET' && rb !== 'BET') return -1
+    if (rb === 'BET' && ra !== 'BET') return 1
+    return 0
+  })
+
+  let tier = 'none'
+  if (picks.length >= PREMIUM_DAILY_PICK_COUNT) tier = 'full'
+  else if (picks.length === 1) tier = 'partial'
+
+  return {
+    picks: picks.slice(0, PREMIUM_DAILY_PICK_COUNT),
+    warnings,
+    tier,
+  }
+}
+
+export function resolvePicksForPublish(extracted, slate, { enginePicks = [] } = {}) {
+  return buildPremiumDailySlate(extracted, slate, { enginePicks })
+}
+
+function validateBetPickForPublish(pick, entry, index, warnings) {
+  const pickOdds = pick.odds ?? parseAmericanOdds(pick.bet)
+  const refPrice = bestPriceForPick(pick, entry)
+  const slateQuality = scoreGameDataQuality(entry)
+  const confidence = Number(pick.confidence) || 0
+  const minConf = index === 0 ? MIN_TOP_PICK_CONFIDENCE : MIN_PUBLISH_CONFIDENCE
+  const meta = pick.pickMeta || pick.pick_meta || {}
+  const recommendation = pick.recommendation || meta.recommendation
+
+  if (!oddsRoughlyMatch(pickOdds, refPrice, ODDS_MATCH_TOLERANCE)) {
+    warnings.push(`Rejected odds mismatch for ${pick.game} (${pickOdds} vs ${refPrice})`)
+    return false
+  }
+  if (entry.sport === 'MLB' && !mlbHasPitcherStats(entry)) {
+    warnings.push(`Rejected MLB pick without both SP stat lines: ${pick.game}`)
+    return false
+  }
+  if (pickOdds != null && pickOdds <= HEAVY_CHALK && !passesChalkEdgeGate(pickOdds, meta)) {
+    warnings.push(`Rejected expensive chalk without ${HEAVY_CHALK_EDGE_MIN}%+ edge: ${pick.game}`)
+    return false
+  }
+  if (slateQuality < MIN_SLATE_QUALITY) {
+    warnings.push(`Rejected thin data quality (${slateQuality}) for ${pick.game}`)
+    return false
+  }
+  if (confidence < minConf) {
+    warnings.push(`Rejected confidence ${confidence} < ${minConf} for ${pick.game}`)
+    return false
+  }
+  if (recommendation && !isBetRecommendation(recommendation)) {
+    warnings.push(`Rejected non-BET recommendation for ${pick.game}`)
+    return false
+  }
+  if (meta?.calculated_edge != null) {
+    const edge = Number(meta.calculated_edge)
+    if (Number.isFinite(edge) && edge < BET_EDGE_MIN) {
+      warnings.push(`Rejected edge ${edge}% below BET minimum ${BET_EDGE_MIN}% for ${pick.game}`)
+      return false
+    }
+  }
+  if (meta?.data_quality_score != null && Number(meta.data_quality_score) < DATA_QUALITY_MIN) {
+    warnings.push(`Rejected data quality ${meta.data_quality_score} < ${DATA_QUALITY_MIN} for ${pick.game}`)
+    return false
+  }
+  if (!pick.edge || String(pick.edge).trim().length < 80) {
+    warnings.push(`Rejected short edge write-up for ${pick.game}`)
+    return false
+  }
+  return true
+}
+
+function validateLeanPickForPublish(pick, entry, warnings) {
+  const meta = pick.pickMeta || pick.pick_meta || {}
+  const recommendation = pick.recommendation || meta.recommendation
+  if (recommendation !== 'LEAN') return false
+
+  const pickOdds = pick.odds ?? parseAmericanOdds(pick.bet)
+  const refPrice = bestPriceForPick(pick, entry)
+  if (!oddsRoughlyMatch(pickOdds, refPrice, ODDS_MATCH_TOLERANCE)) {
+    warnings.push(`Rejected LEAN odds mismatch for ${pick.game}`)
+    return false
+  }
+  if (entry.sport === 'MLB' && !mlbHasPitcherStats(entry)) {
+    warnings.push(`Rejected LEAN MLB pick without both SP lines: ${pick.game}`)
+    return false
+  }
+  const edge = Number(meta.calculated_edge)
+  if (Number.isFinite(edge) && edge < LEAN_SLOT_MIN_EDGE) {
+    warnings.push(`Rejected LEAN edge ${edge}% below ${LEAN_SLOT_MIN_EDGE}% for ${pick.game}`)
+    return false
+  }
+  const dq = Number(meta.data_quality_score)
+  if (Number.isFinite(dq) && dq < LEAN_SLOT_MIN_DATA_QUALITY) {
+    warnings.push(`Rejected LEAN data quality ${dq} for ${pick.game}`)
+    return false
+  }
+  if (!pick.edge || String(pick.edge).trim().length < 60) {
+    warnings.push(`Rejected short LEAN write-up for ${pick.game}`)
+    return false
+  }
+  return true
 }
 
 export const PICK_METRICS_PROMPT_RULES = `
-METRICS & CONFIDENCE RULES (strict — July 2026 BET-only era):
+METRICS & CONFIDENCE RULES (strict — July 2026 era):
 11. Every Edge MUST cite at least TWO numeric facts from STATS or MATCHUP REFERENCE OR engine model vs market probabilities.
 12. Confidence rubric: 5 = MLB engine BET with ≥5% edge + 70+ confidence score + data quality ≥75; never 5 without two numeric facts in Edge.
 13. Avoid ML favorites worse than -150 unless model edge ≥6% — explain in Edge.
@@ -278,7 +426,7 @@ METRICS & CONFIDENCE RULES (strict — July 2026 BET-only era):
 16. Bet line odds and book MUST match MATCHUP REFERENCE or MLB engine best price exactly.
 17. NBA/NHL: only publish with confidence 5 and a clear price edge — otherwise skip.
 18. MLB totals/spreads must weigh weather (wind/temp) and listed injuries when relevant.
-19. Publish zero picks rather than forcing weak plays. Maximum ${MAX_DAILY_PICKS} picks per day.
+19. Premium daily card: ${PREMIUM_DAILY_PICK_COUNT} picks — Pick #1 must be BET (free newsletter). Pick #2 may be BET or LEAN (Premium only).
 20. Prefer underdogs and plus-money when model edge is similar; expensive favorites need ≥6% edge.
-21. Include "- Recommendation: BET" on every published pick. LEAN and PASS must NOT be published.
+21. Pick #1: "- Recommendation: BET". Pick #2: "- Recommendation: BET" or "- Recommendation: LEAN".
 `.trim()

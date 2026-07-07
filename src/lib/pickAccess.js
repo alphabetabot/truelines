@@ -2,7 +2,7 @@
  * Pick access tiers:
  * - Public: homepage shows tracker + plans CTA (no pick preview card).
  * - Free account: live odds, line compare, newsletter email (one top pick), public tracker.
- * - Premium: /picks + /analysis, full DAILY_PREMIUM_SLATE_PICK_COUNT-pick slate, unlimited AI research.
+ * - Premium: /picks + /analysis, DAILY_PREMIUM_SLATE_PICK_COUNT guaranteed daily picks, unlimited on-demand picks & analysis on any game.
  */
 export const FREE_PUBLIC_PICK_COUNT = 1
 /** Top pick only — full write-up in the morning newsletter email. */
