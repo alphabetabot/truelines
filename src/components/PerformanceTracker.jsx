@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react'
 import { usePickPerformanceData } from '../hooks/usePickPerformanceData'
-import { aggregatePickPerformance } from '../lib/pickPerformance'
+import { aggregatePickPerformance, filterPicksByPeriod, TRACK_RECORD_ERA_LABEL } from '../lib/pickPerformance'
 
 const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1' }
 
@@ -32,8 +32,11 @@ function PerformanceTrackerBody({
     setExpanded(defaultExpanded)
   }, [defaultExpanded])
 
-  const picksWithResults = picks.filter(p => p.result && p.result !== '')
-  const season = aggregatePickPerformance(picksWithResults)
+  const picksWithResults = filterPicksByPeriod(
+    picks.filter(p => p.result && p.result !== ''),
+    'since_july',
+  )
+  const season = aggregatePickPerformance(picksWithResults, { includeByRecommendation: false })
   const wins = season.wins
   const losses = season.losses
   const totalUnits = season.totalUnits
@@ -150,7 +153,7 @@ function PerformanceTrackerBody({
             </div>
           )}
           <p className="text-xs text-center mt-3" style={{ color: 'var(--text-muted)' }}>
-            Results matched to the game on each pick&apos;s date · Re-verified after every scores cron · Past results don&apos;t guarantee future performance
+            {TRACK_RECORD_ERA_LABEL} · Results matched to each pick&apos;s game date · Past results don&apos;t guarantee future performance
           </p>
         </div>
       )}

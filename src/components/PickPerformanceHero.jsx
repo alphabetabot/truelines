@@ -2,13 +2,14 @@ import { useState, useEffect, useMemo } from 'react'
 import { TrendingUp, AlertTriangle } from 'lucide-react'
 import {
   PERFORMANCE_PERIODS,
+  TRACK_RECORD_ERA_LABEL,
   filterPicksByPeriod,
   aggregatePickPerformance,
 } from '../lib/pickPerformance'
 import { trackPickPerformanceView } from '../lib/analytics'
 
 export default function PickPerformanceHero({ picks = [], loading = false, error = null }) {
-  const [period, setPeriod] = useState('7d')
+  const [period, setPeriod] = useState('since_july')
 
   useEffect(() => {
     trackPickPerformanceView(period)
@@ -88,7 +89,7 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
       )}
 
       <p className="text-xs text-center px-4 py-2.5" style={{ color: 'var(--text-muted)', borderTop: '1px solid #f1f5f9' }}>
-        Graded to the game on each pick&apos;s date · Past results don&apos;t guarantee future performance
+        {TRACK_RECORD_ERA_LABEL} uses tightened BET-only filters · Graded to each pick&apos;s game date · Past results don&apos;t guarantee future performance
       </p>
     </section>
   )

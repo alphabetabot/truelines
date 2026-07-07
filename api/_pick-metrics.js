@@ -1,20 +1,26 @@
 /** Slate quality, odds gates, and pick validation for Vega daily picks. */
 
 import { parseAmericanOdds } from './_pick-utils.js'
+import {
+  BET_EDGE_MIN,
+  DATA_QUALITY_MIN,
+  HEAVY_CHALK,
+  HEAVY_CHALK_EDGE_MIN,
+  MAX_DAILY_PICKS,
+  PUBLISH_BET_ONLY,
+} from './_pick-thresholds.js'
 
-const HEAVY_CHALK = -180
-const MIN_SLATE_QUALITY = 5
-const MIN_PUBLISH_CONFIDENCE = 4
-const MIN_TOP_PICK_CONFIDENCE = 4
+const MIN_SLATE_QUALITY = 6
+const MIN_PUBLISH_CONFIDENCE = 5
+const MIN_TOP_PICK_CONFIDENCE = 5
 const ODDS_MATCH_TOLERANCE = 15
-const MLB_LEAN_EDGE_MIN = 2
-const MLB_BET_EDGE_MIN = 4
 
 export function isMlbEnginePick(pick) {
   return pick?.sport === 'MLB' && pick?.pickMeta?.recommendation
 }
 
 export function mlbRecommendationAllowed(rec) {
+  if (PUBLISH_BET_ONLY) return rec === 'BET'
   return rec === 'BET' || rec === 'LEAN'
 }
 
@@ -43,7 +49,7 @@ export function mlbHasPitcherStats(game) {
   const away = game.stats?.awayPitcher
   const home = game.stats?.homePitcher
   const valid = p => p && p.era && p.era !== 'N/A' && p.whip && p.whip !== 'N/A'
-  return Boolean(valid(away) || valid(home))
+  return Boolean(valid(away) && valid(home))
 }
 
 /** Higher = richer metrics for Claude (sort slate priority). */
@@ -158,6 +164,12 @@ export function validatePicksAgainstSlate(picks, slateEntries) {
   return { picks: validated, warnings }
 }
 
+function passesChalkEdgeGate(pickOdds, meta) {
+  if (pickOdds == null || pickOdds > HEAVY_CHALK) return true
+  const edge = Number(meta?.calculated_edge)
+  return Number.isFinite(edge) && edge >= HEAVY_CHALK_EDGE_MIN
+}
+
 /**
  * Stricter gate before storing/sending picks — rejects thin data, bad odds, low confidence.
  */
@@ -178,13 +190,19 @@ export function selectPublishablePicks(picks, slateEntries, {
     const slateQuality = scoreGameDataQuality(entry)
     const confidence = Number(pick.confidence) || 0
     const minConf = index === 0 ? minTopPickConfidence : minConfidence
+    const meta = pick.pickMeta || pick.pick_meta || {}
+    const recommendation = pick.recommendation || meta.recommendation
 
     if (!oddsRoughlyMatch(pickOdds, refPrice, ODDS_MATCH_TOLERANCE)) {
       warnings.push(`Rejected odds mismatch for ${pick.game} (${pickOdds} vs ${refPrice})`)
       return
     }
-    if (pickOdds != null && pickOdds <= HEAVY_CHALK && entry.sport === 'MLB' && !mlbHasPitcherStats(entry)) {
-      warnings.push(`Rejected heavy chalk without pitcher stats: ${pick.game}`)
+    if (entry.sport === 'MLB' && !mlbHasPitcherStats(entry)) {
+      warnings.push(`Rejected MLB pick without both SP stat lines: ${pick.game}`)
+      return
+    }
+    if (pickOdds != null && pickOdds <= HEAVY_CHALK && !passesChalkEdgeGate(pickOdds, meta)) {
+      warnings.push(`Rejected expensive chalk without ${HEAVY_CHALK_EDGE_MIN}%+ edge: ${pick.game}`)
       return
     }
     if (slateQuality < minSlateQuality) {
@@ -196,23 +214,22 @@ export function selectPublishablePicks(picks, slateEntries, {
       return
     }
 
-    if (pick.recommendation && !mlbRecommendationAllowed(pick.recommendation)) {
-      warnings.push(`Rejected ${pick.recommendation} recommendation for ${pick.game}`)
+    if (recommendation && !mlbRecommendationAllowed(recommendation)) {
+      warnings.push(`Rejected ${recommendation} recommendation for ${pick.game}`)
       return
     }
 
-    const meta = pick.pickMeta
-    if (meta?.recommendation && !mlbRecommendationAllowed(meta.recommendation)) {
-      warnings.push(`Rejected engine ${meta.recommendation} for ${pick.game}`)
-      return
-    }
-    if (meta?.calculated_edge != null && entry.sport === 'MLB') {
+    if (meta?.calculated_edge != null) {
       const edge = Number(meta.calculated_edge)
-      const minEdge = meta.recommendation === 'BET' ? MLB_BET_EDGE_MIN : MLB_LEAN_EDGE_MIN
-      if (Number.isFinite(edge) && edge < minEdge) {
-        warnings.push(`Rejected MLB edge ${edge}% below ${minEdge}% for ${pick.game}`)
+      if (Number.isFinite(edge) && edge < BET_EDGE_MIN) {
+        warnings.push(`Rejected edge ${edge}% below BET minimum ${BET_EDGE_MIN}% for ${pick.game}`)
         return
       }
+    }
+
+    if (meta?.data_quality_score != null && Number(meta.data_quality_score) < DATA_QUALITY_MIN) {
+      warnings.push(`Rejected data quality ${meta.data_quality_score} < ${DATA_QUALITY_MIN} for ${pick.game}`)
+      return
     }
 
     if (!pick.edge || String(pick.edge).trim().length < 80) {
@@ -227,55 +244,41 @@ export function selectPublishablePicks(picks, slateEntries, {
 }
 
 /**
- * Prefer strict quality gates. Fall back only for non-MLB picks without engine metadata.
+ * Strict publish path — BET-only, no weak fallbacks.
  */
 export function resolvePicksForPublish(extracted, slate, { enginePicks = [] } = {}) {
   const { picks: strict, warnings } = selectPublishablePicks(extracted, slate)
   if (strict.length) {
-    return { picks: strict.slice(0, 3), warnings, tier: 'strict' }
+    return { picks: strict.slice(0, MAX_DAILY_PICKS), warnings, tier: 'strict' }
   }
 
-  const engineOnly = (enginePicks || []).filter(p => mlbRecommendationAllowed(p.recommendation || p.pickMeta?.recommendation))
+  const engineOnly = (enginePicks || []).filter(p =>
+    mlbRecommendationAllowed(p.recommendation || p.pickMeta?.recommendation)
+    && (p.pickMeta?.data_quality_score ?? 100) >= DATA_QUALITY_MIN
+    && (p.pickMeta?.calculated_edge ?? 0) >= BET_EDGE_MIN
+  )
   if (engineOnly.length) {
     return {
-      picks: engineOnly.slice(0, 3),
-      warnings: [...warnings, 'Using Vega MLB engine picks (Claude output did not pass strict gates)'],
+      picks: engineOnly.slice(0, MAX_DAILY_PICKS),
+      warnings: [...warnings, 'Using Vega MLB engine BET picks (Claude output did not pass strict gates)'],
       tier: 'engine',
     }
   }
 
-  const nonEngineExtracted = (extracted || []).filter(p => !isMlbEnginePick(p))
-  const { picks: validated, warnings: validatedWarnings } = validatePicksAgainstSlate(nonEngineExtracted, slate)
-  if (validated.length) {
-    return {
-      picks: validated.slice(0, 3),
-      warnings: [...warnings, ...validatedWarnings, 'Fell back to validated picks (strict gates blocked all)'],
-      tier: 'validated',
-    }
-  }
-
-  if (nonEngineExtracted.length) {
-    return {
-      picks: nonEngineExtracted.slice(0, 3),
-      warnings: [...warnings, 'Fell back to extracted picks (no validated matches)'],
-      tier: 'extracted',
-    }
-  }
-
-  return { picks: [], warnings, tier: 'none' }
+  return { picks: [], warnings: [...warnings, 'No picks passed strict BET-only gates'], tier: 'none' }
 }
 
 export const PICK_METRICS_PROMPT_RULES = `
-METRICS & CONFIDENCE RULES (strict):
-11. Every Edge MUST cite at least TWO numeric facts from STATS or MATCHUP REFERENCE (ERA, WHIP, K/9, W-L, run diff, odds, spread, total line) OR engine model vs market probabilities.
-12. Confidence rubric: 5 = MLB engine BET with ≥4% edge + 60+ confidence score; 4 = LEAN or strong NBA/NHL with records + injuries + price edge; 3 = thin data; never 5 without two numeric facts in Edge.
-13. Avoid ML favorites worse than -180 unless model edge ≥4% and factors agree — explain in Edge.
-14. If both SPs are TBD or stats missing, mark PASS — do not publish.
+METRICS & CONFIDENCE RULES (strict — July 2026 BET-only era):
+11. Every Edge MUST cite at least TWO numeric facts from STATS or MATCHUP REFERENCE OR engine model vs market probabilities.
+12. Confidence rubric: 5 = MLB engine BET with ≥5% edge + 70+ confidence score + data quality ≥75; never 5 without two numeric facts in Edge.
+13. Avoid ML favorites worse than -150 unless model edge ≥6% — explain in Edge.
+14. If both SPs are TBD or stats missing, PASS — do not publish.
 15. Do not cite ballpark, weather, records, injuries, or goalies unless shown in STATS for that matchup.
 16. Bet line odds and book MUST match MATCHUP REFERENCE or MLB engine best price exactly.
-17. NBA picks should reference PPG/OPP PPG or home/road splits when provided; NHL picks should reference GF/GA, goalie names, and injury list when provided.
+17. NBA/NHL: only publish with confidence 5 and a clear price edge — otherwise skip.
 18. MLB totals/spreads must weigh weather (wind/temp) and listed injuries when relevant.
-19. Newsletter TOP PICK must be BET or LEAN with edge ≥2% — output zero picks rather than forcing weak plays.
-20. Prefer underdogs and plus-money when model edge is similar; expensive favorites need clearly higher model probability than market.
-21. Include "- Recommendation: BET" or "- Recommendation: LEAN" on every published pick.
+19. Publish zero picks rather than forcing weak plays. Maximum ${MAX_DAILY_PICKS} picks per day.
+20. Prefer underdogs and plus-money when model edge is similar; expensive favorites need ≥6% edge.
+21. Include "- Recommendation: BET" on every published pick. LEAN and PASS must NOT be published.
 `.trim()

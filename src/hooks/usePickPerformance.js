@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { aggregatePickPerformance, filterPicksByPeriod } from '../lib/pickPerformance'
 
 export function usePickPerformance() {
   const [stats, setStats] = useState({
@@ -22,20 +23,23 @@ export function usePickPerformance() {
         const picks = await res.json()
         if (cancelled) return
 
-        const graded = Array.isArray(picks) ? picks.filter(p => p.result && p.result !== '') : []
-        const wins = graded.filter(p => p.result === 'W').length
-        const losses = graded.filter(p => p.result === 'L').length
-        const totalUnits = graded.reduce((s, p) => s + (parseFloat(p.units) || 0), 0)
+        const graded = Array.isArray(picks)
+          ? filterPicksByPeriod(picks.filter(p => p.result && p.result !== ''), 'since_july')
+          : []
+        const agg = aggregatePickPerformance(graded, { includeByRecommendation: false })
+        const wins = agg.wins
+        const losses = agg.losses
+        const totalUnits = agg.totalUnits
 
         setStats({
           loading: false,
           error: null,
           wins,
           losses,
-          winRate: graded.length ? Math.round((wins / graded.length) * 100) : null,
+          winRate: agg.decided > 0 ? agg.winRate : null,
           totalUnits,
-          gradedCount: graded.length,
-          hasRecord: graded.length > 0,
+          gradedCount: agg.count,
+          hasRecord: agg.count > 0,
         })
       } catch (e) {
         if (!cancelled) {

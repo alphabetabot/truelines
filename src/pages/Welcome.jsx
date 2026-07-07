@@ -280,8 +280,11 @@ export default function Welcome() {
 
       {/* ── VERIFIED RESULTS ── */}
       <section id="results" className={`${PAGE} py-14 sm:py-20`}>
-        <p className="text-center text-base font-bold uppercase tracking-[0.2em] mb-12" style={{ color: GREEN }}>
+        <p className="text-center text-base font-bold uppercase tracking-[0.2em] mb-3" style={{ color: GREEN }}>
           Our Picks. Verified. Transparent.
+        </p>
+        <p className="text-center text-sm mb-12" style={{ color: 'var(--text-primary)' }}>
+          Track record since July 1, 2026 — BET-only era with tightened edge filters.
         </p>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
           <div className="text-center">
