@@ -105,7 +105,7 @@ export function getPicksSportFaqs(sport) {
     },
     {
       question: 'How do I see the full daily pick slate?',
-      answer: 'Subscribe to Premium to unlock all three daily picks on the AI Picks tab, plus unlimited AI analysis. Free accounts get one top pick in the morning newsletter, live odds tools, and the public tracker.',
+      answer: 'Subscribe to Premium to unlock 2 daily picks on the AI Picks tab, plus unlimited on-demand analysis and picks on any game. Free accounts get one top pick in the morning newsletter, live odds tools, and the public tracker.',
     },
   ]
 }
@@ -113,7 +113,7 @@ export function getPicksSportFaqs(sport) {
 export const AI_PICKS_FAQS = [
   {
     question: 'What are AI sports picks on TrueOddsIQ?',
-    answer: 'Each morning our pipeline reviews live odds and matchup data to surface a short list of bets. The homepage shows a free top pick preview; Premium subscribers get the full three-pick slate.',
+    answer: 'Each morning our pipeline reviews live odds and matchup data to surface a short list of bets. The homepage shows a free top pick preview; Premium subscribers get 2 daily picks plus unlimited on-demand analysis on any game.',
   },
   {
     question: 'Is this a sportsbook?',

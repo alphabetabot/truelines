@@ -79,7 +79,7 @@ export function buildNewsletterEmailHtml(topPickText, date, unsubscribeHref = `$
       </div>
       ${lines}
       <div style="background:${BRAND.bgElevated};border:1px solid ${BRAND.border};border-radius:12px;padding:16px 18px;margin-top:24px;font-size:16px;color:${BRAND.textMuted};line-height:1.6;">
-        <strong style="color:${BRAND.text};">Want all 3 daily picks?</strong> Premium unlocks the full AI Picks slate with write-ups for every pick on the card.
+        <strong style="color:${BRAND.text};">Want the full daily card?</strong> Premium unlocks 2 daily picks with full write-ups, plus unlimited on-demand analysis on any game.
       </div>
       <div style="text-align:center;margin-top:22px;">
         <a href="${SITE_ORIGIN}/premium" style="background:linear-gradient(135deg, ${BRAND.gold} 0%, ${BRAND.goldDark} 100%);color:${BRAND.ctaText};padding:14px 32px;border-radius:12px;font-weight:800;font-size:17px;text-decoration:none;display:inline-block;box-shadow:0 4px 18px rgba(245,184,0,0.25);">Unlock Premium Picks</a>
@@ -103,7 +103,7 @@ export function buildNewsletterEmailPlainText(topPickText, date, unsubscribeHref
     '',
     topPickText.trim(),
     '',
-    'Premium unlocks all 3 daily picks with full write-ups: ' + `${SITE_ORIGIN}/premium`,
+    'Premium unlocks 2 daily picks plus unlimited on-demand analysis: ' + `${SITE_ORIGIN}/premium`,
     'Live odds: ' + `${SITE_ORIGIN}/odds`,
     '',
     `Unsubscribe: ${unsubscribeHref}`,

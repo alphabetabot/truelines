@@ -8,8 +8,8 @@ import { startPremiumCheckout } from '../lib/billingApi'
 import { PREMIUM_PRICE_DISPLAY } from '../lib/pickAccess'
 
 const PREMIUM_FEATURES = [
-  'Full AI Picks tab — all 3 daily picks',
-  'Unlimited AI analysis on any game',
+  'Full AI Picks tab — 2 daily premium picks',
+  'Unlimited on-demand picks & analysis on any game',
   'Injury, weather & advanced stats',
   'On-demand pick generation',
 ]

@@ -96,7 +96,7 @@ export default function DailyPick() {
         )}
         {!isPremium && pick.edge && edgeDisplay !== pick.edge && (
           <p className="text-xs mb-3" style={{ color: 'rgba(245,158,11,0.85)' }}>
-            Premium unlocks full write-ups for all 3 picks plus injury, weather &amp; stat deep dives
+            Premium unlocks 2 daily picks with full write-ups plus unlimited on-demand analysis on any game
           </p>
         )}
         <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ export default function DailyPick() {
             className="flex items-center gap-1 text-xs font-bold"
             style={{ color: 'var(--gold)' }}
           >
-            {isPremium ? 'View all picks' : 'Unlock all 3 picks'} <ChevronRight size={13} />
+            {isPremium ? 'View all picks' : 'Unlock Premium picks'} <ChevronRight size={13} />
           </button>
         </div>
       </div>

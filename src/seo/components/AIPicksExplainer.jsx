@@ -48,11 +48,11 @@ export default function AIPicksExplainer({ sportLabel, pickSport }) {
       <div className="space-y-3 text-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
         <p>
           Each morning (Pacific time) our system reviews the slate when games are available, compares odds across
-          six books, and publishes up to three actionable bets — not fades or pass plays.
+          six books, and publishes up to two premium daily picks — not fades or pass plays.
         </p>
         <p>
-          Everyone sees a <strong>free top pick preview</strong> on the homepage. Premium unlocks all three picks
-          on the AI Picks tab. Free accounts get one top pick in the morning newsletter and the public performance tracker.
+          Everyone sees a <strong>free top pick preview</strong> on the homepage. Premium unlocks both daily picks
+          on the AI Picks tab, plus unlimited on-demand analysis and picks on any game. Free accounts get one top pick in the morning newsletter and the public performance tracker.
         </p>
       </div>
 

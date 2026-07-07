@@ -11,7 +11,9 @@ import {
   HEAVY_CHALK,
   HEAVY_CHALK_EDGE_MIN,
   LEAN_EDGE_MIN,
+  LEAN_SLOT_MIN_DATA_QUALITY,
   MAX_DAILY_PICKS,
+  PREMIUM_DAILY_PICK_COUNT,
   PUBLISH_BET_ONLY,
 } from '../_pick-thresholds.js'
 
@@ -263,8 +265,8 @@ export function analyzeMlbSlate(games) {
     .map(g => ({ game: g, analysis: analyzeMlbGame(g) }))
 }
 
-/** Select publishable MLB picks (BET-only by default), sorted by edge. */
-export function selectMlbEnginePicks(analyses, { max = MAX_DAILY_PICKS, betOnly = PUBLISH_BET_ONLY } = {}) {
+/** Select publishable MLB BET picks for the premium slate. */
+export function selectMlbEnginePicks(analyses, { max = PREMIUM_DAILY_PICK_COUNT, betOnly = PUBLISH_BET_ONLY } = {}) {
   return analyses
     .filter(({ analysis }) => {
       if (betOnly) {
@@ -276,6 +278,23 @@ export function selectMlbEnginePicks(analyses, { max = MAX_DAILY_PICKS, betOnly 
     .sort((a, b) => (b.analysis.calculatedEdge || 0) - (a.analysis.calculatedEdge || 0))
     .slice(0, max)
     .map(({ analysis }) => analysis)
+}
+
+/** BET picks plus optional LEAN for premium pick #2 when no second BET exists. */
+export function selectMlbEngineSlateCandidates(analyses) {
+  const bets = selectMlbEnginePicks(analyses, { max: PREMIUM_DAILY_PICK_COUNT, betOnly: true })
+  const usedGames = new Set(bets.map(b => b.game))
+  const leans = analyses
+    .filter(({ analysis }) =>
+      analysis.recommendation === 'LEAN'
+      && (analysis.dataQualityScore ?? 0) >= LEAN_SLOT_MIN_DATA_QUALITY
+      && !usedGames.has(analysis.game)
+    )
+    .sort((a, b) => (b.analysis.calculatedEdge || 0) - (a.analysis.calculatedEdge || 0))
+    .slice(0, 1)
+    .map(({ analysis }) => analysis)
+
+  return { bets, leans, analyses: [...bets, ...leans] }
 }
 
 export function formatEngineBlockForPrompt(analyses) {

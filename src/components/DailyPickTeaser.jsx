@@ -54,7 +54,7 @@ export default function DailyPickTeaser() {
         <p className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Today&apos;s AI picks</p>
         <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>
           No picks published yet today. New picks land every morning (Pacific time).
-          {isPremium ? ' Check /picks for the full slate once they drop.' : ' Premium unlocks all 3 daily picks with full write-ups.'}
+          {isPremium ? ' Check /picks for the full slate once they drop.' : ' Premium unlocks 2 daily picks plus unlimited on-demand analysis on any game.'}
         </p>
       </div>
     )
@@ -115,8 +115,8 @@ export default function DailyPickTeaser() {
         ) : (
           <p className="text-xs px-1" style={{ color: 'var(--text-muted)' }}>
             {user
-              ? 'Free account: today\'s top pick with a short summary. Premium unlocks all 3 picks with full write-ups.'
-              : 'One pick preview free · Premium unlocks all 3 daily picks with full write-ups.'}
+              ? 'Free account: today\'s top pick with a short summary. Premium unlocks 2 daily picks plus unlimited on-demand analysis.'
+              : 'One pick preview free · Premium unlocks 2 daily picks plus unlimited on-demand analysis.'}
           </p>
         )}
       </div>

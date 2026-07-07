@@ -376,8 +376,8 @@ export default function Welcome() {
             <ul className="space-y-3 mb-8 flex-1">
               {[
                 'Everything in free account',
-                '3 premium picks daily',
-                'Full AI analysis & write-ups',
+                '2 premium picks daily',
+                'Unlimited AI analysis & picks on any game',
                 'Sharp money & injury reports',
                 'Closing line value tracking',
               ].map(item => (

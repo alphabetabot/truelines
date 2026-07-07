@@ -20,7 +20,7 @@ import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
 import { useSubscription } from '../hooks/useSubscription'
 
 const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1', Mixed: 'var(--text-muted)' }
-const PICK_LABELS = ['Top Pick', 'Pick #2', 'Pick #3']
+const PICK_LABELS = ['Top Pick', 'Pick #2']
 
 const REC_STYLES = {
   BET: { bg: '#14532d', color: '#86efac', label: 'BET' },
@@ -140,7 +140,7 @@ function StoredPickCard({ pick, index, isPublicPreview = false }) {
         )}
         {isPublicPreview && pick.edgePreview && (
           <p className="text-xs mt-2" style={{ color: 'var(--gold)' }}>
-            Premium unlocks full write-ups for all {DAILY_NEWSLETTER_PICK_COUNT} daily picks plus deeper injury and weather breakdowns.
+            Premium unlocks {DAILY_NEWSLETTER_PICK_COUNT} daily picks with full write-ups plus unlimited on-demand analysis on any game.
           </p>
         )}
         {pick.result && (
@@ -300,7 +300,7 @@ export default function AIPicks() {
 
   const subtitle = isPremium
     ? 'Your full Premium daily slate · Updated each morning (Pacific)'
-    : `Today's top pick · Premium unlocks all ${DAILY_NEWSLETTER_PICK_COUNT} picks with full write-ups`
+    : `Today's top pick · Premium unlocks ${DAILY_NEWSLETTER_PICK_COUNT} daily picks plus unlimited on-demand analysis`
 
   const lockedCount = Math.max(
     0,
@@ -332,8 +332,8 @@ export default function AIPicks() {
         <div className="rounded-xl p-4 mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3"
           style={{ background: 'var(--gold-dim)', border: '1px solid var(--gold)' }}>
           <p className="text-sm" style={{ color: 'var(--text-primary)' }}>
-            Today&apos;s top pick with a short summary below. Premium unlocks all {DAILY_NEWSLETTER_PICK_COUNT} picks
-            with full write-ups, plus unlimited AI analysis on every game.
+            Today&apos;s top pick with a short summary below. Premium unlocks {DAILY_NEWSLETTER_PICK_COUNT} daily picks
+            plus unlimited on-demand analysis on any game.
           </p>
           <button type="button" onClick={() => navigate('/premium')}
             className="px-5 py-2.5 rounded-xl font-bold text-sm shrink-0"
@@ -427,7 +427,7 @@ export default function AIPicks() {
                     {lockedCount} more pick{lockedCount === 1 ? '' : 's'} today
                   </p>
                   <p className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-                    Premium unlocks the full {DAILY_NEWSLETTER_PICK_COUNT}-pick daily slate with complete write-ups.
+                    Premium unlocks the full {DAILY_NEWSLETTER_PICK_COUNT}-pick daily slate plus unlimited on-demand analysis on any game.
                   </p>
                   <button
                     type="button"

@@ -19,6 +19,7 @@ export {
   analyzeMlbGame,
   analyzeMlbSlate,
   selectMlbEnginePicks,
+  selectMlbEngineSlateCandidates,
   formatEngineBlockForPrompt,
   engineAnalysisToPick,
 } from './analyze.js'
