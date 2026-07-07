@@ -51,6 +51,22 @@ const richMlbGame = {
   },
 }
 
+const betPick = {
+  game: 'Team A @ Team B',
+  pickSelection: 'Team A ML',
+  bet: 'ML at -108 via DraftKings',
+  odds: -108,
+  confidence: 5,
+  recommendation: 'BET',
+  pickMeta: {
+    recommendation: 'BET',
+    calculated_edge: 5.4,
+    data_quality_score: 80,
+    confidence_score: 72,
+  },
+  edge: 'Model 56.2% vs market 51.8% on Team A (+5.4 pt edge). Team A starter at 3.20 ERA vs 4.50 ERA opponent. Run differential +15 vs -10.',
+}
+
 assert(countBooksWithMarket(richMlbGame, 'h2h') === 2, 'should count h2h books')
 assert(hasActionableOdds(richMlbGame), 'rich game has actionable odds')
 assert(!hasActionableOdds({ sport: 'MLB', away: 'A', home: 'B' }), 'no books fails')
@@ -66,17 +82,15 @@ const slate = [{
   sport: 'MLB',
   away: 'Team A',
   home: 'Team B',
+  bookmakers: richMlbGame.bookmakers,
+  weather: richMlbGame.weather,
+  venue: richMlbGame.venue,
   bestOdds: richMlbGame.bestOdds,
   stats: richMlbGame.stats,
 }]
 
 const validation = validatePicksAgainstSlate([
-  {
-    game: 'Team A @ Team B',
-    pickSelection: 'Team A ML',
-    bet: 'ML at -108 via DraftKings',
-    odds: -108,
-  },
+  betPick,
   {
     game: 'Fake @ Game',
     pickSelection: 'Fake ML',
@@ -89,56 +103,40 @@ assert(validation.picks.length === 1, 'drops unknown matchup')
 assert(validation.warnings.some(w => w.includes('No slate match')), 'warns on orphan pick')
 
 const publishable = selectPublishablePicks([
+  betPick,
   {
-    game: 'Team A @ Team B',
-    pickSelection: 'Team A ML',
-    bet: 'ML at -108 via DraftKings',
-    odds: -108,
-    confidence: 4,
-    edge: 'Team A starter at 3.20 ERA vs 4.50 ERA opponent. Run differential +15 vs -10. Price holds at -108 with two-book confirmation.',
-  },
-  {
-    game: 'Team A @ Team B',
-    pickSelection: 'Team A ML',
-    bet: 'ML at -250 via DraftKings',
+    ...betPick,
     odds: -250,
-    confidence: 5,
+    bet: 'ML at -250 via DraftKings',
+    pickMeta: { ...betPick.pickMeta, calculated_edge: 3.1 },
     edge: 'Short edge.',
   },
-], slate)
-
-assert(publishable.picks.length === 1, 'rejects heavy chalk / short edge')
-assert(publishable.warnings.some(w => /Rejected/.test(w)), 'explains rejections')
-
-const fallback = resolvePicksForPublish([
   {
-    game: 'Team A @ Team B',
-    pickSelection: 'Team A ML',
-    bet: 'ML at -108 via DraftKings',
-    odds: -108,
-    confidence: 3,
-    edge: 'Thin edge with 3.20 ERA vs 4.50 and run diff +15 vs -10.',
+    ...betPick,
+    recommendation: 'LEAN',
+    pickMeta: { ...betPick.pickMeta, recommendation: 'LEAN' },
   },
 ], slate)
 
-assert(fallback.picks.length === 1, 'resolvePicksForPublish falls back when strict gates block')
-assert(fallback.tier === 'validated', 'uses validated tier on fallback')
+assert(publishable.picks.length === 1, 'keeps only strict BET pick')
+assert(publishable.warnings.some(w => /Rejected/.test(w)), 'explains rejections')
 
-const enginePick = {
-  game: 'Team A @ Team B',
-  pickSelection: 'Team A ML',
-  bet: 'ML at -108 via DraftKings',
-  odds: -108,
-  confidence: 4,
-  edge: 'Model 56.2% vs market 51.8% on Team A (+4.4 pt edge). Starter score edge. Run environment favors away.',
-  recommendation: 'BET',
-  pickMeta: { recommendation: 'BET', calculated_edge: 4.4, confidence_score: 72 },
-}
+const noFallback = resolvePicksForPublish([
+  {
+    ...betPick,
+    confidence: 3,
+    edge: 'Thin edge with 3.20 ERA vs 4.50 and run diff +15 vs -10 but below confidence gate.',
+  },
+], slate)
 
-const engineResolved = resolvePicksForPublish([], slate, { enginePicks: [enginePick] })
-assert(engineResolved.picks.length === 1, 'uses engine picks when extracted empty')
+assert(noFallback.picks.length === 0, 'no validated fallback when strict gates block')
+assert(noFallback.tier === 'none', 'returns none tier')
+
+const engineResolved = resolvePicksForPublish([], slate, { enginePicks: [betPick] })
+assert(engineResolved.picks.length === 1, 'uses engine BET picks when extracted empty')
 assert(engineResolved.tier === 'engine', 'engine tier')
 assert(mlbRecommendationAllowed('BET'), 'BET allowed')
+assert(!mlbRecommendationAllowed('LEAN'), 'LEAN blocked in BET-only mode')
 assert(!mlbRecommendationAllowed('PASS'), 'PASS blocked')
 
 console.log('pick-metrics.test.js: all assertions passed')

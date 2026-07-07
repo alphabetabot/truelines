@@ -1,9 +1,13 @@
 /** Aggregate graded pick rows for performance UI. */
 
+export const TRACK_RECORD_ERA_START = '2026-07-01'
+export const TRACK_RECORD_ERA_LABEL = 'Since July 1, 2026'
+
 export const PERFORMANCE_PERIODS = [
+  { key: 'since_july', label: 'Since July' },
   { key: '7d', label: '7 Days' },
   { key: '30d', label: '30 Days' },
-  { key: 'all', label: 'Total' },
+  { key: 'all', label: 'All time' },
 ]
 
 export function parsePickDate(dateStr) {
@@ -25,14 +29,25 @@ export function filterPicksByPeriod(picks, periodKey, now = new Date()) {
   const graded = (picks || []).filter(isGradedPick)
   if (periodKey === 'all') return graded
 
+  if (periodKey === 'since_july') {
+    const start = parsePickDate(TRACK_RECORD_ERA_START)
+    return graded.filter(p => {
+      const d = parsePickDate(p.date)
+      return d && start && d >= start
+    })
+  }
+
   const days = periodKey === '7d' ? 7 : 30
   const cutoff = new Date(now)
   cutoff.setHours(12, 0, 0, 0)
   cutoff.setDate(cutoff.getDate() - days)
+  const eraStart = parsePickDate(TRACK_RECORD_ERA_START)
 
   return graded.filter(p => {
     const d = parsePickDate(p.date)
-    return d && d >= cutoff
+    if (!d || d < cutoff) return false
+    if (eraStart && d < eraStart) return false
+    return true
   })
 }
 

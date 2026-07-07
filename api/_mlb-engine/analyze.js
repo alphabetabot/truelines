@@ -3,12 +3,18 @@
 import { getMarketMoneylineSnapshot } from './odds.js'
 import { scorePitcher, starterDepthScore } from './pitcher.js'
 import { evaluateMlbFactors } from './factors.js'
+import {
+  BET_EDGE_MIN,
+  BET_CONFIDENCE_MIN,
+  BET_FACTORS_MIN,
+  DATA_QUALITY_MIN,
+  HEAVY_CHALK,
+  HEAVY_CHALK_EDGE_MIN,
+  LEAN_EDGE_MIN,
+  MAX_DAILY_PICKS,
+  PUBLISH_BET_ONLY,
+} from '../_pick-thresholds.js'
 
-const BET_EDGE_MIN = 4
-const LEAN_EDGE_MIN = 2
-const BET_CONFIDENCE_MIN = 60
-const BET_FACTORS_MIN = 4
-const HEAVY_FAVORITE = -180
 const HOME_FIELD_LOGIT = 0.12
 
 function clamp(n, min, max) {
@@ -85,7 +91,7 @@ function computeConfidence(game, factorEval, edge, side, pickOdds) {
   score += (factorsAgree - 5) * 2
   score += clamp(edge * 2.5, -4, 8)
 
-  if (pickOdds != null && pickOdds <= HEAVY_FAVORITE && edge < BET_EDGE_MIN) score -= 12
+  if (pickOdds != null && pickOdds <= HEAVY_CHALK && edge < HEAVY_CHALK_EDGE_MIN) score -= 12
 
   return clamp(Math.round(score), 0, 100)
 }
@@ -130,7 +136,7 @@ function buildReasons(factorEval, side, game, edge, marketImplied, modelProb) {
 function biggestRisk(factorEval, side, game, pickOdds) {
   if (factorEval.conflictingSignals()) return 'Factor signals conflict — model edge may be noise'
   if (factorEval.missingCritical()) return 'Missing or incomplete starting pitcher data'
-  if (pickOdds != null && pickOdds <= HEAVY_FAVORITE) return 'Expensive favorite price — win probability alone does not justify lay'
+  if (pickOdds != null && pickOdds <= HEAVY_CHALK) return 'Expensive favorite price — win probability alone does not justify lay'
   if (factorEval.factors.some(f => f.key === 'bullpen' && f.missing)) {
     return 'Bullpen workload unknown — late-inning leverage risk'
   }
@@ -141,25 +147,25 @@ function biggestRisk(factorEval, side, game, pickOdds) {
   return opp ? `${opp} can steal outs if offense stalls` : 'Market can correct before first pitch'
 }
 
-function resolveRecommendation(edge, confidence, factorEval, side, pickOdds) {
+function resolveRecommendation(edge, confidence, factorEval, side, pickOdds, dataQuality) {
   if (factorEval.missingCritical() || factorEval.conflictingSignals()) {
     return 'AVOID'
   }
 
-  if (pickOdds != null && pickOdds <= HEAVY_FAVORITE && edge < BET_EDGE_MIN) {
+  if (pickOdds != null && pickOdds <= HEAVY_CHALK && edge < HEAVY_CHALK_EDGE_MIN) {
     return 'PASS'
   }
 
   const factorsAgree = factorEval.countAgreeing(side)
-  if (edge >= BET_EDGE_MIN && confidence >= BET_CONFIDENCE_MIN && factorsAgree >= BET_FACTORS_MIN) {
-    return 'BET'
-  }
-  if (edge >= LEAN_EDGE_MIN && edge < BET_EDGE_MIN) {
-    return 'LEAN'
-  }
-  if (edge >= BET_EDGE_MIN && (confidence < BET_CONFIDENCE_MIN || factorsAgree < BET_FACTORS_MIN)) {
-    return 'LEAN'
-  }
+  const qualifiesBet = edge >= BET_EDGE_MIN
+    && confidence >= BET_CONFIDENCE_MIN
+    && factorsAgree >= BET_FACTORS_MIN
+    && dataQuality >= DATA_QUALITY_MIN
+
+  if (qualifiesBet) return 'BET'
+
+  if (edge >= LEAN_EDGE_MIN && edge < BET_EDGE_MIN) return 'LEAN'
+  if (edge >= BET_EDGE_MIN && !qualifiesBet) return 'LEAN'
   if (edge < LEAN_EDGE_MIN) return 'PASS'
   return 'PASS'
 }
@@ -199,9 +205,9 @@ export function analyzeMlbGame(game) {
   const edge = modelProb - marketImplied
   const pickOdds = side === 'home' ? market.homeOdds : market.awayOdds
   const confidenceScore = computeConfidence(enriched, factorEval, edge * 100, side, pickOdds)
-  const recommendation = resolveRecommendation(edge * 100, confidenceScore, factorEval, side, pickOdds)
-  const teamName = side === 'home' ? game.home : game.away
   const dq = dataQualityScore(enriched, factorEval)
+  const recommendation = resolveRecommendation(edge * 100, confidenceScore, factorEval, side, pickOdds, dq)
+  const teamName = side === 'home' ? game.home : game.away
 
   return {
     sport: 'MLB',
@@ -257,17 +263,17 @@ export function analyzeMlbSlate(games) {
     .map(g => ({ game: g, analysis: analyzeMlbGame(g) }))
 }
 
-/** Select publishable MLB picks (BET/LEAN), sorted by edge. */
-export function selectMlbEnginePicks(analyses, { max = 3 } = {}) {
+/** Select publishable MLB picks (BET-only by default), sorted by edge. */
+export function selectMlbEnginePicks(analyses, { max = MAX_DAILY_PICKS, betOnly = PUBLISH_BET_ONLY } = {}) {
   return analyses
-    .filter(({ analysis }) => analysis.recommendation === 'BET' || analysis.recommendation === 'LEAN')
-    .sort((a, b) => {
-      const recOrder = { BET: 0, LEAN: 1 }
-      const ra = recOrder[a.analysis.recommendation] ?? 2
-      const rb = recOrder[b.analysis.recommendation] ?? 2
-      if (ra !== rb) return ra - rb
-      return (b.analysis.calculatedEdge || 0) - (a.analysis.calculatedEdge || 0)
+    .filter(({ analysis }) => {
+      if (betOnly) {
+        return analysis.recommendation === 'BET'
+          && (analysis.dataQualityScore ?? 0) >= DATA_QUALITY_MIN
+      }
+      return analysis.recommendation === 'BET' || analysis.recommendation === 'LEAN'
     })
+    .sort((a, b) => (b.analysis.calculatedEdge || 0) - (a.analysis.calculatedEdge || 0))
     .slice(0, max)
     .map(({ analysis }) => analysis)
 }
