@@ -1,11 +1,9 @@
 -- TrueOddsIQ pick publish workflow
--- Supabase: SQL Editor -> New query -> paste ALL of this -> Run
--- Safe to run more than once. Expected: Success. No rows returned.
+-- Supabase: SQL Editor -> New query -> paste ALL -> Run
+-- Safe to re-run. Expected: Success. No rows returned.
 
--- ---------------------------------------------------------------------------
--- STEP 1: daily_picks (create if missing + add every column the app needs)
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS daily_picks (
+-- STEP 1: daily_picks
+CREATE TABLE IF NOT EXISTS public.daily_picks (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   date DATE NOT NULL,
   sport TEXT NOT NULL,
@@ -25,27 +23,25 @@ CREATE TABLE IF NOT EXISTS daily_picks (
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-ALTER TABLE daily_picks DROP CONSTRAINT IF EXISTS daily_picks_date_key;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS bet TEXT;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS bet_type TEXT;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS odds DOUBLE PRECISION;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS units DOUBLE PRECISION;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS sort_order INTEGER;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS recommendation TEXT;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS pick_meta JSONB;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE public.daily_picks DROP CONSTRAINT IF EXISTS daily_picks_date_key;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS bet TEXT;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS bet_type TEXT;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS odds DOUBLE PRECISION;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS units DOUBLE PRECISION;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS sort_order INTEGER;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS recommendation TEXT;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS pick_meta JSONB;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS status TEXT;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS tier TEXT;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS pick_number INTEGER;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS edge_score DOUBLE PRECISION;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
+ALTER TABLE public.daily_picks ADD COLUMN IF NOT EXISTS notification_sent_at TIMESTAMPTZ;
 
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS status TEXT;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS tier TEXT;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS pick_number INTEGER;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS edge_score DOUBLE PRECISION;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS published_at TIMESTAMPTZ;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS approved_at TIMESTAMPTZ;
-ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS notification_sent_at TIMESTAMPTZ;
-
--- Mark every existing pick as published so the site keeps working
-UPDATE daily_picks
+UPDATE public.daily_picks
 SET
   status = 'published',
   tier = CASE
@@ -57,21 +53,17 @@ WHERE published_at IS NULL
    OR status IS NULL
    OR status IN ('draft', 'approved');
 
-CREATE INDEX IF NOT EXISTS idx_daily_picks_date ON daily_picks (date DESC);
-CREATE INDEX IF NOT EXISTS idx_daily_picks_status ON daily_picks (date DESC, status);
+CREATE INDEX IF NOT EXISTS idx_daily_picks_date ON public.daily_picks (date DESC);
+CREATE INDEX IF NOT EXISTS idx_daily_picks_status ON public.daily_picks (date DESC, status);
 CREATE INDEX IF NOT EXISTS idx_daily_picks_published
-  ON daily_picks (date DESC, published_at DESC)
+  ON public.daily_picks (date DESC, published_at DESC)
   WHERE status = 'published';
 
--- ---------------------------------------------------------------------------
--- STEP 2: pick_notification_events (NO foreign key — that caused errors)
--- ---------------------------------------------------------------------------
-ALTER TABLE IF EXISTS pick_notification_events
-  DROP CONSTRAINT IF EXISTS pick_notification_events_pick_id_fkey;
+-- STEP 2: pick_notification_events
+-- Drop broken partial table from earlier failed runs, then recreate clean.
+DROP TABLE IF EXISTS public.pick_notification_events CASCADE;
 
-ALTER TABLE IF EXISTS pick_notification_events DISABLE ROW LEVEL SECURITY;
-
-CREATE TABLE IF NOT EXISTS pick_notification_events (
+CREATE TABLE public.pick_notification_events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   pick_id UUID,
   event_type TEXT NOT NULL,
@@ -84,16 +76,16 @@ CREATE TABLE IF NOT EXISTS pick_notification_events (
   sent_at TIMESTAMPTZ
 );
 
-CREATE INDEX IF NOT EXISTS idx_pick_notification_events_pick
-  ON pick_notification_events (pick_id, created_at DESC);
+CREATE INDEX idx_pick_notification_events_pick
+  ON public.pick_notification_events (pick_id, created_at DESC);
 
-CREATE INDEX IF NOT EXISTS idx_pick_notification_events_type_date
-  ON pick_notification_events (event_type, created_at DESC);
+CREATE INDEX idx_pick_notification_events_type_date
+  ON public.pick_notification_events (event_type, created_at DESC);
 
--- ---------------------------------------------------------------------------
 -- STEP 3: pick_publish_log
--- ---------------------------------------------------------------------------
-CREATE TABLE IF NOT EXISTS pick_publish_log (
+DROP TABLE IF EXISTS public.pick_publish_log CASCADE;
+
+CREATE TABLE public.pick_publish_log (
   date DATE PRIMARY KEY,
   free_pick_published BOOLEAN NOT NULL DEFAULT FALSE,
   no_free_pick_notified BOOLEAN NOT NULL DEFAULT FALSE,

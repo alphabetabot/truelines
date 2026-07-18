@@ -7,37 +7,30 @@
   <style>
     * { box-sizing: border-box; }
     body {
-      font-family: system-ui, -apple-system, sans-serif;
+      font-family: system-ui, sans-serif;
       max-width: 900px;
       margin: 0 auto;
       padding: 24px;
       background: #0a0a0a;
       color: #f5f5f5;
     }
-    h1 { font-size: 1.35rem; margin: 0 0 12px; }
+    h1 { font-size: 1.3rem; margin: 0 0 12px; }
     p, li { color: #b3b3b3; line-height: 1.6; }
-    ol { padding-left: 1.2rem; }
-    .actions { display: flex; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
     button {
       background: #f5b800;
       color: #0a0a0a;
       border: none;
       border-radius: 8px;
-      padding: 14px 22px;
+      padding: 14px 24px;
       font-size: 16px;
       font-weight: 700;
       cursor: pointer;
+      margin: 12px 0 16px;
     }
-    button:active { transform: scale(0.98); }
-    #status {
-      min-height: 1.5rem;
-      color: #4ade80;
-      font-weight: 600;
-      margin-bottom: 8px;
-    }
+    #status { color: #4ade80; font-weight: 600; min-height: 1.5rem; }
     textarea {
       width: 100%;
-      min-height: 420px;
+      min-height: 400px;
       padding: 16px;
       border-radius: 12px;
       border: 1px solid #333;
@@ -50,40 +43,28 @@
   </style>
 </head>
 <body>
-  <h1>Supabase SQL — pick publish workflow</h1>
-  <ol>
-    <li>Go to <strong>Supabase → SQL Editor → New query</strong></li>
-    <li>Click <strong>Copy SQL</strong> below</li>
-    <li>Paste and click <strong>Run</strong></li>
-    <li>You should see: <strong>Success. No rows returned.</strong></li>
-  </ol>
+  <h1>Supabase SQL</h1>
+  <p>Supabase &rarr; SQL Editor &rarr; New query &rarr; paste &rarr; Run</p>
+  <p>Expected: <strong>Success. No rows returned.</strong></p>
+  <button type="button" id="copyBtn">Copy SQL</button>
   <div id="status"></div>
-  <div class="actions">
-    <button type="button" id="copyBtn">Copy SQL</button>
-  </div>
   <textarea id="sql" readonly spellcheck="false"></textarea>
+  <script src="/supabase-migration.sql.js"></script>
   <script>
-    fetch('/supabase-migration.sql')
-      .then(r => r.ok ? r.text() : Promise.reject())
-      .then(sql => { document.getElementById('sql').value = sql; window.__sql = sql; })
-      .catch(() => {
-        document.getElementById('status').textContent = 'Open this page from your deployed site, or copy from SUPABASE-RUN-THIS.sql in the repo.';
-      });
-
-    document.getElementById('copyBtn').addEventListener('click', async () => {
-      const sql = window.__sql || document.getElementById('sql').value;
-      if (!sql) return;
+    const sql = window.SUPABASE_MIGRATION_SQL || '';
+    document.getElementById('sql').value = sql;
+    document.getElementById('copyBtn').onclick = async () => {
       const status = document.getElementById('status');
       try {
         await navigator.clipboard.writeText(sql);
-        status.textContent = 'Copied! Paste into Supabase SQL Editor and click Run.';
+        status.textContent = 'Copied! Paste in Supabase and click Run.';
       } catch {
         const ta = document.getElementById('sql');
         ta.focus();
         ta.select();
-        status.textContent = 'Selected — press Cmd/Ctrl+C to copy.';
+        status.textContent = 'Selected — press Cmd/Ctrl+C';
       }
-    });
+    };
   </script>
 </body>
 </html>
