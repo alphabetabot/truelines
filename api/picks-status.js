@@ -9,6 +9,11 @@ import { isStaleNewsletterClaim, getPipelinePhase } from './_newsletter-send-gua
 import { requireSupabaseUser } from './_auth-utils.js'
 import { buildAiParlayTicket } from './_parlay-builder.js'
 import { consumeParlayBuild, getParlayUsage, PARLAY_DAILY_LIMIT, refundParlayBuild } from './_parlay-usage.js'
+import { publishPickRow } from './_pick-publish-store.js'
+import { NOTIFICATION_EVENTS } from './_notifications/events.js'
+import { dispatchNotification } from './_notifications/dispatcher.js'
+import { PICK_STATUS } from './_pick-lifecycle.js'
+import { Resend } from 'resend'
 
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
@@ -275,6 +280,54 @@ async function handleNewsletterRecovery(req, res) {
   })
 }
 
+async function handlePublishPick(req, res) {
+  if (!verifyCronSecret(req)) {
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  const pickId = req.body?.pickId || req.query?.pickId
+  if (!pickId) {
+    return res.status(400).json({ error: 'pickId required' })
+  }
+
+  const supabase = getSupabase()
+  const { data: row, error } = await supabase
+    .from('daily_picks')
+    .select('*')
+    .eq('id', pickId)
+    .maybeSingle()
+
+  if (error || !row) {
+    return res.status(404).json({ error: 'Pick not found' })
+  }
+
+  if (row.status !== PICK_STATUS.APPROVED) {
+    return res.status(409).json({ error: `Pick status is ${row.status}, expected approved` })
+  }
+
+  const result = await publishPickRow(supabase, row)
+  if (!result.published) {
+    return res.status(409).json({ error: result.reason || 'Publish failed' })
+  }
+
+  const eventType = row.tier === 'premium'
+    ? NOTIFICATION_EVENTS.PREMIUM_PICK_PUBLISHED
+    : NOTIFICATION_EVENTS.FREE_PICK_PUBLISHED
+
+  const resend = new Resend(process.env.RESEND_API_KEY)
+  const notifications = await dispatchNotification(
+    { type: eventType, pick: result.row },
+    { supabase, resend },
+  )
+
+  await supabase
+    .from('daily_picks')
+    .update({ notification_sent_at: new Date().toISOString() })
+    .eq('id', result.row.id)
+
+  return res.json({ ok: true, pick: result.row, notifications })
+}
+
 async function fetchStoredNewsletterText(supabase, dateKey) {
   const { data, error } = await supabase
     .from('newsletter_daily_sends')
@@ -444,6 +497,10 @@ export default async function handler(req, res) {
 
     if (req.query?.action === 'newsletter-recovery') {
       return handleNewsletterRecovery(req, res)
+    }
+
+    if (req.method === 'POST' && req.query?.action === 'publish-pick') {
+      return handlePublishPick(req, res)
     }
 
     if (req.query?.action === 'ai-parlay') {

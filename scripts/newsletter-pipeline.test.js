@@ -32,6 +32,7 @@ assert.equal(isPipelineStatus(PIPELINE.GENERATING), true)
 assert.equal(isPipelineStatus('0 14 * * *'), false)
 
 assert.equal(resolveNewsletterStep({ query: { step: 'generate' } }), 'generate')
+assert.equal(resolveNewsletterStep({ query: { step: 'pipeline' } }), 'pipeline')
 assert.equal(resolveNewsletterStep({ query: { catchup: 'true' } }), 'send')
 assert.equal(resolveNewsletterStep({ query: {} }), 'all')
 

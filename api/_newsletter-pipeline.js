@@ -43,7 +43,7 @@ function mergeEnginePickMeta(extracted, enginePicks) {
 
 export function resolveNewsletterStep(req) {
   const step = String(req.query?.step || req.body?.step || '').toLowerCase()
-  if (step === 'generate' || step === 'send' || step === 'social' || step === 'all') return step
+  if (step === 'generate' || step === 'send' || step === 'social' || step === 'pipeline' || step === 'all') return step
   if (req.query?.catchup === 'true' || req.body?.catchup === true) return 'send'
   if (req.query?.emailsOnly === 'true' || req.body?.emailsOnly === true) return 'send'
   return 'all'

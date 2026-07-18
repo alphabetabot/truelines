@@ -6,9 +6,6 @@
     "api/picks-status.js": {
       "maxDuration": 60
     },
-    "api/cron-pick-pipeline.js": {
-      "maxDuration": 300
-    },
     "api/cron-newsletter.js": {
       "maxDuration": 300
     }
@@ -26,8 +23,8 @@
     { "source": "/api/cron-midday-post", "destination": "/api/cron-posts" },
     { "source": "/api/cron-evening-post", "destination": "/api/cron-posts?evening=true" },
     { "source": "/api/cron-blogs-weekly", "destination": "/api/cron-blogs?weekly=true" },
-    { "source": "/api/cron-pick-pipeline", "destination": "/api/cron-pick-pipeline" },
-    { "source": "/api/cron-newsletter-generate", "destination": "/api/cron-pick-pipeline" },
+    { "source": "/api/cron-pick-pipeline", "destination": "/api/cron-newsletter?step=pipeline" },
+    { "source": "/api/cron-newsletter-generate", "destination": "/api/cron-newsletter?step=pipeline" },
     { "source": "/api/cron-newsletter-send", "destination": "/api/cron-newsletter?step=send" },
     { "source": "/api/cron-newsletter-send-catchup", "destination": "/api/cron-newsletter?step=send&catchup=true" },
     { "source": "/api/cron-newsletter-social", "destination": "/api/cron-newsletter?step=social" },
@@ -39,7 +36,11 @@
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [
-    { "path": "/api/cron-pick-pipeline", "schedule": "0 14-23 * * *" },
+    { "path": "/api/cron-pick-pipeline", "schedule": "0 14 * * *" },
+    { "path": "/api/cron-pick-pipeline", "schedule": "0 16 * * *" },
+    { "path": "/api/cron-pick-pipeline", "schedule": "0 18 * * *" },
+    { "path": "/api/cron-pick-pipeline", "schedule": "0 20 * * *" },
+    { "path": "/api/cron-pick-pipeline", "schedule": "0 22 * * *" },
     { "path": "/api/cron-blogs", "schedule": "0 7 * * *" },
     { "path": "/api/cron-blogs-weekly", "schedule": "0 8 * * 1" },
     { "path": "/api/cron-midday-post", "schedule": "0 12 * * *" },
