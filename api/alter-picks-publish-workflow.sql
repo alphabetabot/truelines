@@ -1,5 +1,6 @@
 -- Pick publish workflow: lifecycle states, tiers, notification audit.
 -- Run in Supabase SQL Editor after create-picks-table.sql
+-- Safe to re-run (idempotent).
 
 ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS status TEXT DEFAULT 'draft';
 ALTER TABLE daily_picks ADD COLUMN IF NOT EXISTS tier TEXT DEFAULT 'free';
@@ -17,12 +18,18 @@ CREATE INDEX IF NOT EXISTS idx_daily_picks_status
   ON daily_picks (date DESC, status);
 
 -- Backfill: existing rows treated as published so the site keeps working.
+-- Note: ADD COLUMN DEFAULT fills status='draft' / tier='free', so we must
+-- overwrite (not COALESCE) for rows that have never been published.
 UPDATE daily_picks
 SET
-  status = COALESCE(status, 'published'),
-  tier = COALESCE(tier, CASE WHEN sort_order = 0 THEN 'free' ELSE 'premium' END),
-  published_at = COALESCE(published_at, created_at)
-WHERE status IS NULL OR status = 'draft' AND created_at < NOW();
+  status = 'published',
+  tier = CASE
+    WHEN sort_order IS NULL OR sort_order = 0 THEN 'free'
+    ELSE 'premium'
+  END,
+  published_at = COALESCE(published_at, created_at, NOW())
+WHERE published_at IS NULL
+  AND (status IS NULL OR status = 'draft');
 
 CREATE TABLE IF NOT EXISTS pick_notification_events (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
