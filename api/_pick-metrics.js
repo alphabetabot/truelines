@@ -2,14 +2,22 @@
 
 import { parseAmericanOdds } from './_pick-utils.js'
 import {
+  passesUnitEconomicsGate,
+} from './_pick-economics.js'
+import {
   BET_EDGE_MIN,
   DATA_QUALITY_MIN,
   HEAVY_CHALK,
   HEAVY_CHALK_EDGE_MIN,
   LEAN_SLOT_MIN_DATA_QUALITY,
   LEAN_SLOT_MIN_EDGE,
+  MIN_EXPECTED_UNITS,
+  MODEL_PROB_BUFFER,
+  MODERATE_CHALK,
+  MODERATE_CHALK_EDGE_MIN,
   PREMIUM_DAILY_PICK_COUNT,
   PUBLISH_BET_ONLY,
+  PUBLISH_LEAN_SLOT,
 } from './_pick-thresholds.js'
 
 const MIN_SLATE_QUALITY = 6
@@ -29,10 +37,10 @@ export function isPremiumLeanSlotRecommendation(rec) {
   return rec === 'LEAN'
 }
 
-/** Pick #1 (newsletter) must be BET; pick #2 may be BET or LEAN for Premium. */
+/** Pick #1 (newsletter) must be BET; pick #2 may be BET or LEAN for Premium when enabled. */
 export function mlbRecommendationAllowed(rec, slotIndex = 0) {
   if (isBetRecommendation(rec)) return true
-  if (slotIndex > 0 && isPremiumLeanSlotRecommendation(rec)) return true
+  if (slotIndex > 0 && PUBLISH_LEAN_SLOT && isPremiumLeanSlotRecommendation(rec)) return true
   if (!PUBLISH_BET_ONLY) return rec === 'BET' || rec === 'LEAN'
   return false
 }
@@ -178,9 +186,28 @@ export function validatePicksAgainstSlate(picks, slateEntries) {
 }
 
 function passesChalkEdgeGate(pickOdds, meta) {
-  if (pickOdds == null || pickOdds > HEAVY_CHALK) return true
+  if (pickOdds == null) return true
   const edge = Number(meta?.calculated_edge)
-  return Number.isFinite(edge) && edge >= HEAVY_CHALK_EDGE_MIN
+  if (!Number.isFinite(edge)) return pickOdds > HEAVY_CHALK
+
+  if (pickOdds <= HEAVY_CHALK) {
+    return edge >= HEAVY_CHALK_EDGE_MIN
+  }
+  if (pickOdds <= MODERATE_CHALK) {
+    return edge >= MODERATE_CHALK_EDGE_MIN
+  }
+  return true
+}
+
+function passesPublishEconomics(pickOdds, meta, warnings, gameLabel) {
+  if (!passesUnitEconomicsGate(pickOdds, meta, {
+    buffer: MODEL_PROB_BUFFER,
+    minExpectedUnits: MIN_EXPECTED_UNITS,
+  })) {
+    warnings.push(`Rejected juice economics for ${gameLabel} at ${pickOdds} — model edge does not clear breakeven + buffer`)
+    return false
+  }
+  return true
 }
 
 /**
@@ -215,7 +242,10 @@ export function selectPublishablePicks(picks, slateEntries, {
       return
     }
     if (pickOdds != null && pickOdds <= HEAVY_CHALK && !passesChalkEdgeGate(pickOdds, meta)) {
-      warnings.push(`Rejected expensive chalk without ${HEAVY_CHALK_EDGE_MIN}%+ edge: ${pick.game}`)
+      warnings.push(`Rejected expensive chalk without sufficient edge for ${pick.game}`)
+      return
+    }
+    if (!passesPublishEconomics(pickOdds, meta, warnings, pick.game)) {
       return
     }
     if (slateQuality < minSlateQuality) {
@@ -300,7 +330,7 @@ export function buildPremiumDailySlate(extracted, slate, { enginePicks = [] } = 
     if (rec === 'BET') tryAdd(pick)
   }
 
-  if (picks.length < PREMIUM_DAILY_PICK_COUNT) {
+  if (picks.length < PREMIUM_DAILY_PICK_COUNT && PUBLISH_LEAN_SLOT) {
     const leanCandidates = [...(extracted || []), ...(enginePicks || [])]
       .filter(p => (p.recommendation || p.pickMeta?.recommendation) === 'LEAN')
 
@@ -351,7 +381,10 @@ function validateBetPickForPublish(pick, entry, index, warnings) {
     return false
   }
   if (pickOdds != null && pickOdds <= HEAVY_CHALK && !passesChalkEdgeGate(pickOdds, meta)) {
-    warnings.push(`Rejected expensive chalk without ${HEAVY_CHALK_EDGE_MIN}%+ edge: ${pick.game}`)
+    warnings.push(`Rejected expensive chalk without sufficient edge: ${pick.game}`)
+    return false
+  }
+  if (!passesPublishEconomics(pickOdds, meta, warnings, pick.game)) {
     return false
   }
   if (slateQuality < MIN_SLATE_QUALITY) {
@@ -427,6 +460,7 @@ METRICS & CONFIDENCE RULES (strict — July 2026 era):
 17. NBA/NHL: only publish with confidence 5 and a clear price edge — otherwise skip.
 18. MLB totals/spreads must weigh weather (wind/temp) and listed injuries when relevant.
 19. Premium daily card: ${PREMIUM_DAILY_PICK_COUNT} picks — Pick #1 must be BET (free newsletter). Pick #2 may be BET or LEAN (Premium only).
-20. Prefer underdogs and plus-money when model edge is similar; expensive favorites need ≥6% edge.
+20. Prefer underdogs and plus-money when model edge is similar; expensive favorites need model win % above breakeven + 2.5 pts and ≥${MODERATE_CHALK_EDGE_MIN}% edge (-115 to -130) or ≥${HEAVY_CHALK_EDGE_MIN}% below -130.
+21. Never publish a minus-money favorite unless expected units per 1u bet is positive at the listed price.
 21. Pick #1: "- Recommendation: BET". Pick #2: "- Recommendation: BET" or "- Recommendation: LEAN".
 `.trim()

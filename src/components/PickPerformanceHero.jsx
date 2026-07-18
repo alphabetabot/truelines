@@ -3,6 +3,7 @@ import { TrendingUp, AlertTriangle } from 'lucide-react'
 import {
   PERFORMANCE_PERIODS,
   TRACK_RECORD_ERA_LABEL,
+  ODDS_BUCKET_LABELS,
   filterPicksByPeriod,
   aggregatePickPerformance,
 } from '../lib/pickPerformance'
@@ -33,7 +34,15 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
       ? `${stats.wins}-${stats.losses}-${stats.pushes}`
       : `${stats.wins}-${stats.losses}`
 
-  const winRateLabel = stats.winRate != null ? `${stats.winRate}%` : '—'
+  const avgOddsLabel = stats.avgOdds == null
+    ? '—'
+    : stats.avgOdds > 0
+      ? `+${stats.avgOdds}`
+      : `${stats.avgOdds}`
+
+  const juiceNote = stats.avgOdds != null && stats.avgOdds < -115 && stats.winRate != null
+    ? `Avg price ${avgOddsLabel} needs ~${Math.round((Math.abs(stats.avgOdds) / (Math.abs(stats.avgOdds) + 100)) * 100)}% to break even on units`
+    : null
 
   return (
     <section className="rounded-2xl overflow-hidden mb-5" style={{ border: '2px solid var(--gold)', background: 'var(--bg-card)' }}>
@@ -72,8 +81,8 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
           {[
             { label: 'Record', value: recordLabel, sub: stats.pushes > 0 ? 'W-L-P' : 'W-L' },
             { label: 'Win rate', value: winRateLabel, sub: stats.decided > 0 ? `${stats.decided} decided` : 'No decisions' },
-            { label: 'ROI', value: roiLabel, sub: `${stats.count} graded` },
-            { label: 'Avg edge', value: edgeLabel, sub: stats.avgClv != null ? `CLV ${stats.avgClv > 0 ? '+' : ''}${stats.avgClv}%` : 'Edge vs market' },
+            { label: 'Units', value: unitsLabel, sub: stats.roi != null ? `${stats.roi > 0 ? '+' : ''}${stats.roi}% ROI` : `${stats.count} graded` },
+            { label: 'Avg price', value: avgOddsLabel, sub: stats.avgEdge != null ? `Avg edge +${stats.avgEdge}%` : 'Listed bet odds' },
           ].map(({ label, value, sub }, i, arr) => (
             <div
               key={label}
@@ -89,8 +98,25 @@ export default function PickPerformanceHero({ picks = [], loading = false, error
       )}
 
       <p className="text-xs text-center px-4 py-2.5" style={{ color: 'var(--text-muted)', borderTop: '1px solid #f1f5f9' }}>
-        {TRACK_RECORD_ERA_LABEL} uses tightened BET-only filters · Graded to each pick&apos;s game date · Past results don&apos;t guarantee future performance
+        {TRACK_RECORD_ERA_LABEL} uses juice-aware BET-only filters · Graded to each pick&apos;s game date
+        {juiceNote ? ` · ${juiceNote}` : ''}
+        {' · '}Past results don&apos;t guarantee future performance
       </p>
+      {stats.byOddsBucket && Object.keys(stats.byOddsBucket).length > 1 && (
+        <div className="px-4 pb-3 grid gap-2 sm:grid-cols-2">
+          {Object.entries(stats.byOddsBucket).map(([key, bucket]) => (
+            <div key={key} className="rounded-lg px-3 py-2 text-xs" style={{ background: 'var(--bg-secondary)' }}>
+              <p className="font-bold mb-0.5" style={{ color: 'var(--text-primary)' }}>{ODDS_BUCKET_LABELS[key] || key}</p>
+              <p style={{ color: 'var(--text-muted)' }}>
+                {bucket.wins}-{bucket.losses}
+                {bucket.winRate != null ? ` (${bucket.winRate}%)` : ''}
+                {' · '}
+                {bucket.totalUnits > 0 ? '+' : ''}{bucket.totalUnits.toFixed(2)}u
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   )
 }
