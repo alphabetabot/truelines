@@ -60,11 +60,12 @@ const betPick = {
   recommendation: 'BET',
   pickMeta: {
     recommendation: 'BET',
-    calculated_edge: 5.4,
+    calculated_edge: 6.4,
+    model_probability: 58.2,
     data_quality_score: 80,
-    confidence_score: 72,
+    confidence_score: 74,
   },
-  edge: 'Model 56.2% vs market 51.8% on Team A (+5.4 pt edge). Team A starter at 3.20 ERA vs 4.50 ERA opponent. Run differential +15 vs -10.',
+  edge: 'Model 58.2% vs market 51.8% on Team A (+6.4 pt edge). Team A starter at 3.20 ERA vs 4.50 ERA opponent. Run differential +15 vs -10.',
 }
 
 assert(countBooksWithMarket(richMlbGame, 'h2h') === 2, 'should count h2h books')
@@ -175,13 +176,12 @@ const slateTwo = [
 ]
 
 const twoPickSlate = resolvePicksForPublish([betPick], slateTwo, { enginePicks: [leanPick] })
-assert(twoPickSlate.picks.length === 2, 'fills premium slot #2 with LEAN when no second BET')
-assert(twoPickSlate.tier === 'full', 'full tier with two premium picks')
-assert(twoPickSlate.picks[1].recommendation === 'LEAN' || twoPickSlate.picks[1].pickMeta?.recommendation === 'LEAN', 'second slot may be LEAN')
+assert(twoPickSlate.picks.length === 1, 'LEAN slot disabled — only strict BET picks publish')
+assert(twoPickSlate.tier === 'partial', 'partial tier when only one BET clears juice gates')
 
 assert(mlbRecommendationAllowed('BET'), 'BET allowed')
 assert(!mlbRecommendationAllowed('LEAN', 0), 'LEAN blocked for newsletter slot')
-assert(mlbRecommendationAllowed('LEAN', 1), 'LEAN allowed for premium slot #2')
+assert(!mlbRecommendationAllowed('LEAN', 1), 'LEAN slot disabled in BET-only mode')
 assert(!mlbRecommendationAllowed('PASS'), 'PASS blocked')
 
 console.log('pick-metrics.test.js: all assertions passed')

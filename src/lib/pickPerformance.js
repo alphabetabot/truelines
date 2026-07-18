@@ -51,7 +51,52 @@ export function filterPicksByPeriod(picks, periodKey, now = new Date()) {
   })
 }
 
-export function aggregatePickPerformance(picks, { includeByRecommendation = true } = {}) {
+export function parsePickOdds(pick) {
+  if (pick?.displayOdds != null) {
+    const n = Number(pick.displayOdds)
+    if (Number.isFinite(n)) return n
+  }
+  if (pick?.odds != null) {
+    const n = Number(pick.odds)
+    if (Number.isFinite(n)) return n
+  }
+  const match = String(pick?.bet || '').match(/([+-]\d{3,})/)
+  return match ? parseInt(match[1], 10) : null
+}
+
+export function oddsBucketForPick(pick) {
+  const odds = parsePickOdds(pick)
+  if (!Number.isFinite(odds)) return 'unknown'
+  if (odds >= 100) return 'dog'
+  if (odds >= -115) return 'pickem'
+  if (odds >= -150) return 'chalk'
+  return 'heavy'
+}
+
+export const ODDS_BUCKET_LABELS = {
+  dog: 'Plus money (+100+)',
+  pickem: 'Pick’em (-114 to +99)',
+  chalk: 'Chalk (-115 to -149)',
+  heavy: 'Heavy chalk (-150+)',
+  unknown: 'Unknown odds',
+}
+
+export function aggregateByOddsBucket(picks) {
+  const buckets = { dog: [], pickem: [], chalk: [], heavy: [], unknown: [] }
+  for (const pick of picks || []) {
+    const key = oddsBucketForPick(pick)
+    buckets[key].push(pick)
+  }
+
+  const summary = {}
+  for (const [key, rows] of Object.entries(buckets)) {
+    if (!rows.length) continue
+    summary[key] = aggregatePickPerformance(rows, { includeByRecommendation: false, includeByOddsBucket: false })
+  }
+  return summary
+}
+
+export function aggregatePickPerformance(picks, { includeByRecommendation = true, includeByOddsBucket = true } = {}) {
   const graded = (picks || []).filter(isGradedPick)
   const wins = graded.filter(p => String(p.result).trim().toUpperCase() === 'W').length
   const losses = graded.filter(p => String(p.result).trim().toUpperCase() === 'L').length
@@ -84,6 +129,13 @@ export function aggregatePickPerformance(picks, { includeByRecommendation = true
     ) / 10
     : null
 
+  const withOdds = graded
+    .map(p => ({ pick: p, odds: parsePickOdds(p) }))
+    .filter(x => Number.isFinite(x.odds))
+  const avgOdds = withOdds.length
+    ? Math.round(withOdds.reduce((s, x) => s + x.odds, 0) / withOdds.length)
+    : null
+
   return {
     wins,
     losses,
@@ -94,8 +146,10 @@ export function aggregatePickPerformance(picks, { includeByRecommendation = true
     roi,
     avgEdge,
     avgClv,
+    avgOdds,
     count: graded.length,
     ...(includeByRecommendation ? { byRecommendation: aggregateByRecommendation(graded) } : {}),
+    ...(includeByOddsBucket ? { byOddsBucket: aggregateByOddsBucket(graded) } : {}),
   }
 }
 

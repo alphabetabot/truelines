@@ -4,6 +4,11 @@ import { getMarketMoneylineSnapshot } from './odds.js'
 import { scorePitcher, starterDepthScore } from './pitcher.js'
 import { evaluateMlbFactors } from './factors.js'
 import {
+  breakevenWinProbability,
+  expectedUnits,
+  unitEconomicsSortScore,
+} from '../_pick-economics.js'
+import {
   BET_EDGE_MIN,
   BET_CONFIDENCE_MIN,
   BET_FACTORS_MIN,
@@ -12,9 +17,14 @@ import {
   HEAVY_CHALK_EDGE_MIN,
   LEAN_EDGE_MIN,
   LEAN_SLOT_MIN_DATA_QUALITY,
+  MIN_EXPECTED_UNITS,
+  MODEL_PROB_BUFFER,
+  MODERATE_CHALK,
+  MODERATE_CHALK_EDGE_MIN,
   MAX_DAILY_PICKS,
   PREMIUM_DAILY_PICK_COUNT,
   PUBLISH_BET_ONLY,
+  PUBLISH_LEAN_SLOT,
 } from '../_pick-thresholds.js'
 
 const HOME_FIELD_LOGIT = 0.12
@@ -149,13 +159,25 @@ function biggestRisk(factorEval, side, game, pickOdds) {
   return opp ? `${opp} can steal outs if offense stalls` : 'Market can correct before first pitch'
 }
 
-function resolveRecommendation(edge, confidence, factorEval, side, pickOdds, dataQuality) {
+function resolveRecommendation(edge, confidence, factorEval, side, pickOdds, dataQuality, modelProb) {
   if (factorEval.missingCritical() || factorEval.conflictingSignals()) {
     return 'AVOID'
   }
 
   if (pickOdds != null && pickOdds <= HEAVY_CHALK && edge < HEAVY_CHALK_EDGE_MIN) {
     return 'PASS'
+  }
+  if (pickOdds != null && pickOdds <= MODERATE_CHALK && edge < MODERATE_CHALK_EDGE_MIN) {
+    return 'PASS'
+  }
+
+  const breakeven = pickOdds != null ? breakevenWinProbability(pickOdds) : 0.5
+  if (pickOdds != null && modelProb < breakeven + MODEL_PROB_BUFFER) {
+    return 'PASS'
+  }
+  if (pickOdds != null) {
+    const ev = expectedUnits(pickOdds, modelProb)
+    if (ev != null && ev < MIN_EXPECTED_UNITS) return 'PASS'
   }
 
   const factorsAgree = factorEval.countAgreeing(side)
@@ -166,8 +188,8 @@ function resolveRecommendation(edge, confidence, factorEval, side, pickOdds, dat
 
   if (qualifiesBet) return 'BET'
 
-  if (edge >= LEAN_EDGE_MIN && edge < BET_EDGE_MIN) return 'LEAN'
-  if (edge >= BET_EDGE_MIN && !qualifiesBet) return 'LEAN'
+  if (PUBLISH_LEAN_SLOT && edge >= LEAN_EDGE_MIN && edge < BET_EDGE_MIN) return 'LEAN'
+  if (PUBLISH_LEAN_SLOT && edge >= BET_EDGE_MIN && !qualifiesBet) return 'LEAN'
   if (edge < LEAN_EDGE_MIN) return 'PASS'
   return 'PASS'
 }
@@ -208,7 +230,7 @@ export function analyzeMlbGame(game) {
   const pickOdds = side === 'home' ? market.homeOdds : market.awayOdds
   const confidenceScore = computeConfidence(enriched, factorEval, edge * 100, side, pickOdds)
   const dq = dataQualityScore(enriched, factorEval)
-  const recommendation = resolveRecommendation(edge * 100, confidenceScore, factorEval, side, pickOdds, dq)
+  const recommendation = resolveRecommendation(edge * 100, confidenceScore, factorEval, side, pickOdds, dq, modelProb)
   const teamName = side === 'home' ? game.home : game.away
 
   return {
@@ -275,7 +297,7 @@ export function selectMlbEnginePicks(analyses, { max = PREMIUM_DAILY_PICK_COUNT,
       }
       return analysis.recommendation === 'BET' || analysis.recommendation === 'LEAN'
     })
-    .sort((a, b) => (b.analysis.calculatedEdge || 0) - (a.analysis.calculatedEdge || 0))
+    .sort((a, b) => unitEconomicsSortScore(b.analysis) - unitEconomicsSortScore(a.analysis))
     .slice(0, max)
     .map(({ analysis }) => analysis)
 }
@@ -284,15 +306,17 @@ export function selectMlbEnginePicks(analyses, { max = PREMIUM_DAILY_PICK_COUNT,
 export function selectMlbEngineSlateCandidates(analyses) {
   const bets = selectMlbEnginePicks(analyses, { max: PREMIUM_DAILY_PICK_COUNT, betOnly: true })
   const usedGames = new Set(bets.map(b => b.game))
-  const leans = analyses
-    .filter(({ analysis }) =>
-      analysis.recommendation === 'LEAN'
-      && (analysis.dataQualityScore ?? 0) >= LEAN_SLOT_MIN_DATA_QUALITY
-      && !usedGames.has(analysis.game)
-    )
-    .sort((a, b) => (b.analysis.calculatedEdge || 0) - (a.analysis.calculatedEdge || 0))
-    .slice(0, 1)
-    .map(({ analysis }) => analysis)
+  const leans = PUBLISH_LEAN_SLOT
+    ? analyses
+      .filter(({ analysis }) =>
+        analysis.recommendation === 'LEAN'
+        && (analysis.dataQualityScore ?? 0) >= LEAN_SLOT_MIN_DATA_QUALITY
+        && !usedGames.has(analysis.game)
+      )
+      .sort((a, b) => unitEconomicsSortScore(b.analysis) - unitEconomicsSortScore(a.analysis))
+      .slice(0, 1)
+      .map(({ analysis }) => analysis)
+    : []
 
   return { bets, leans, analyses: [...bets, ...leans] }
 }
