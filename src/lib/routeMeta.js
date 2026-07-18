@@ -26,6 +26,10 @@ export const ROUTE_META = {
     description:
       'Public track record, daily newsletter, and live odds from six sportsbooks. Compare free vs Premium plans.',
   },
+  '/free-picks': {
+    title: 'Free Picks — TrueOddsIQ',
+    description: 'Today\'s free AI pick when it clears our edge standards. Full analysis on site — pick alerts by email, never in email.',
+  },
   '/premium': {
     title: 'Premium Analysis — $19.95/mo',
     description:

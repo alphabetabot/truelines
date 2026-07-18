@@ -1,6 +1,6 @@
 /**
- * Three-step newsletter pipeline: generate → send → social.
- * Each step is a separate cron invocation so timeouts cannot kill the whole run.
+ * Pick pipeline: analyze → approve → publish → notify.
+ * Morning pick-in-email delivery has been retired.
  */
 import { postTweet } from './_post-to-x.js'
 import { extractPicksFromResponse, extractTopPickSection, storePicks } from './_store-picks.js'
@@ -177,103 +177,13 @@ export async function runSendStep({
   forceSend = false,
   catchup = false,
 }) {
-  const row = await fetchNewsletterRow(supabase, todayKey)
-  let storedTopPick = await fetchTopDailyPickSafe(supabase, todayKey)
-  const phase = getPipelinePhase(row)
-
-  if (isNewsletterSendComplete(row) && !forceSend) {
-    return {
-      ok: true,
-      skipped: true,
-      reason: 'already_sent_today',
-      step: 'send',
-      sentAt: row.sent_at,
-      subscriber_count: row.subscriber_count,
-    }
-  }
-
-  if (!storedTopPick && !(row?.picks_text || '').trim()) {
-    if (catchup || forceSend) {
-      console.warn(`[pipeline:send] ${catchup ? 'catchup' : 'force'}: no picks — running generate step first`)
-      const generated = await runGenerateStep({ supabase, todayKey, forceRegenerate: false })
-      if (!generated.ok && !generated.skipped) {
-        return { ok: false, step: 'send', reason: 'generate_failed_before_send', generate: generated }
-      }
-      const retryPick = await fetchTopDailyPickSafe(supabase, todayKey)
-      const retryRow = await fetchNewsletterRow(supabase, todayKey)
-      if (!retryPick && !(retryRow?.picks_text || '').trim()) {
-        return {
-          ok: true,
-          skipped: true,
-          reason: 'awaiting_picks',
-          step: 'send',
-          message: 'Generate step did not produce picks',
-          generate: generated,
-        }
-      }
-      storedTopPick = retryPick
-    } else {
-      return {
-        ok: true,
-        skipped: true,
-        reason: 'awaiting_picks',
-        step: 'send',
-        phase,
-        message: 'Generate step has not stored picks yet',
-      }
-    }
-  }
-
-  if (phase === 'sending' && row && !isStaleNewsletterClaim(row) && !forceSend) {
-    return {
-      ok: true,
-      skipped: true,
-      reason: 'send_in_progress',
-      step: 'send',
-      started_at: row.started_at,
-    }
-  }
-
-  await markPipelinePhase(supabase, todayKey, PIPELINE.SENDING, {
-    picksText: row?.picks_text || undefined,
-  })
-
-  const result = await runEmailOnlyDelivery({
-    supabase,
-    resend,
-    todayKey,
-    dateLabel: dateLabel(),
-    picksText: (await fetchNewsletterRow(supabase, todayKey))?.picks_text || row?.picks_text || '',
-    dailyPickRow: storedTopPick || (await fetchTopDailyPickSafe(supabase, todayKey)),
-    mode: catchup ? 'catchup' : 'pipeline_send',
-    allowResend: forceSend,
-  })
-
-  if (result.skipped) {
-    return { ok: true, step: 'send', ...result }
-  }
-
-  if (result.sent > 0) {
-    return {
-      ok: true,
-      step: 'send',
-      phase: 'sent',
-      ...result,
-      date: todayKey,
-    }
-  }
-
-  await recordNewsletterFailure(supabase, todayKey, 'Newsletter emails failed to send', {
-    picksText: row?.picks_text,
-    pipelineStatus: PIPELINE.SEND_FAILED,
-  })
-
+  // Morning pick emails retired — notifications fire on publish via cron-pick-pipeline.
   return {
-    ok: false,
+    ok: true,
+    skipped: true,
+    reason: 'pick_email_retired',
     step: 'send',
-    phase: 'send_failed',
-    ...result,
-    date: todayKey,
+    message: 'Pick emails are sent on publish via /api/cron-pick-pipeline, not on a morning schedule.',
   }
 }
 
