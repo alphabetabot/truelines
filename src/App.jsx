@@ -7,6 +7,7 @@ import LiveOdds from './pages/LiveOdds'
 import LineCompare from './pages/LineCompare'
 import AIAnalysis from './pages/AIAnalysis'
 import AIPicks from './pages/AIPicks'
+import FreePicks from './pages/FreePicks'
 import Disclaimer from './pages/Disclaimer'
 import About from './pages/About'
 import Blog from './pages/Blog'
@@ -73,6 +74,7 @@ export default function App() {
                 )}
               />
               <Route path="/picks" element={<AIPicks />} />
+              <Route path="/free-picks" element={<FreePicks />} />
               <Route path="/disclaimer" element={<Disclaimer />} />
               <Route path="/about" element={<About />} />
               <Route path="/blog" element={<Blog />} />

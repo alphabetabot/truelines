@@ -175,13 +175,13 @@ const slateTwo = [
 ]
 
 const twoPickSlate = resolvePicksForPublish([betPick], slateTwo, { enginePicks: [leanPick] })
-assert(twoPickSlate.picks.length === 2, 'fills premium slot #2 with LEAN when no second BET')
-assert(twoPickSlate.tier === 'full', 'full tier with two premium picks')
-assert(twoPickSlate.picks[1].recommendation === 'LEAN' || twoPickSlate.picks[1].pickMeta?.recommendation === 'LEAN', 'second slot may be LEAN')
+assert(twoPickSlate.picks.length === 1, 'only free pick when LEAN slot disabled')
+assert(twoPickSlate.freePick?.tier === 'free', 'first pick is free tier')
+assert(twoPickSlate.premiumPicks.length === 0, 'no premium without second BET')
 
 assert(mlbRecommendationAllowed('BET'), 'BET allowed')
-assert(!mlbRecommendationAllowed('LEAN', 0), 'LEAN blocked for newsletter slot')
-assert(mlbRecommendationAllowed('LEAN', 1), 'LEAN allowed for premium slot #2')
+assert(!mlbRecommendationAllowed('LEAN', 0), 'LEAN blocked for free slot')
+assert(!mlbRecommendationAllowed('LEAN', 1), 'LEAN blocked when PUBLISH_LEAN_SLOT false')
 assert(!mlbRecommendationAllowed('PASS'), 'PASS blocked')
 
 console.log('pick-metrics.test.js: all assertions passed')

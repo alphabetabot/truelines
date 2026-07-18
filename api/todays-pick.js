@@ -8,12 +8,19 @@ import { publicPickPreview } from './_pick-text.js'
 const SUPABASE_URL = process.env.VITE_SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
-const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,sort_order,recommendation,pick_meta'
+const PICKS_SELECT = 'id,date,pick,bet,bet_type,odds,confidence,edge,game,sport,result,units,sort_order,recommendation,pick_meta,status,tier,pick_number,edge_score,published_at'
 const PICKS_SELECT_FALLBACK = 'id,date,pick,bet,confidence,edge,game,sport,result'
 const PICK_CACHE = 'public, s-maxage=300, stale-while-revalidate=3600'
 
 function isPlaceholderBet(bet) {
   return !bet || bet.includes('-10000') || bet.includes('-99999')
+}
+
+function isPublishedPick(p) {
+  if (p?.status === 'published') return true
+  if (p?.published_at) return true
+  if (!p?.status) return true
+  return false
 }
 
 async function fetchPicksForDate(date) {
@@ -69,14 +76,22 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: 'Failed to fetch picks' })
     }
 
-    const actionable = picks.filter(p => !isFadePick(p))
+    const actionable = picks.filter(p => !isFadePick(p) && isPublishedPick(p))
 
     if (listAll) {
+      const free = actionable.filter(p => p.tier === 'free' || p.sort_order === 0)
+      const premium = actionable.filter(p => p.tier === 'premium' || (p.sort_order > 0 && p.tier !== 'free'))
       res.setHeader('Cache-Control', 'private, no-store')
-      return res.json({ date, picks: actionable, count: actionable.length })
+      return res.json({
+        date,
+        picks: actionable,
+        freePicks: free.slice(0, 1),
+        premiumPicks: premium,
+        count: actionable.length,
+      })
     }
 
-    const top = actionable[0]
+    const top = actionable.find(p => p.tier === 'free') || actionable[0]
     if (top?.bet && !isPlaceholderBet(top.bet)) {
       res.setHeader('Cache-Control', PICK_CACHE)
       return res.json(publicPickPreview(top))
@@ -89,6 +104,6 @@ export default async function handler(req, res) {
 
   res.setHeader('Cache-Control', 'no-store')
   return res.status(503).json({
-    error: 'No picks yet — new picks publish every morning (Pacific time)',
+    error: 'No picks published yet today — new picks release when they clear our edge standards',
   })
 }

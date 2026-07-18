@@ -13,9 +13,11 @@ export const HEAVY_CHALK_EDGE_MIN = 6
 /** @deprecated LEAN is no longer used for pick #1 — kept for premium slot #2 */
 export const LEAN_EDGE_MIN = 3.5
 
-export const MAX_DAILY_PICKS = 2
-export const PREMIUM_DAILY_PICK_COUNT = 2
+export const MAX_DAILY_PICKS = 4
+export const FREE_DAILY_PICK_COUNT = 1
+export const PREMIUM_DAILY_PICK_COUNT = 3
 export const PUBLISH_BET_ONLY = true
+export const PUBLISH_LEAN_SLOT = false
 
 /** Second premium slot may use LEAN when no second BET clears the bar. */
 export const LEAN_SLOT_MIN_DATA_QUALITY = 65

@@ -15,6 +15,7 @@ import {
   runSendStep,
   runSocialStep,
 } from './_newsletter-pipeline.js'
+import { runPickPipeline } from './_pick-publish-pipeline.js'
 
 let resendClient = null
 
@@ -62,13 +63,13 @@ async function runNewsletterHandler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' })
   }
 
-  if (!forceSend && !isVercelCron) {
+  if (!forceSend && !isVercelCron && step !== 'pipeline') {
     return res.json({
       sent: 0,
       skipped: true,
       reason: 'external_trigger_disabled',
       message:
-        'Newsletter runs via Vercel cron (generate 0 14 UTC, send 30 14 UTC) or ?force=true with CRON_SECRET.',
+        'Cron runs via Vercel schedule or ?force=true with CRON_SECRET. Pick pipeline: ?step=pipeline',
     })
   }
 
@@ -95,7 +96,13 @@ async function runNewsletterHandler(req, res) {
   }
 
   let result
-  if (step === 'generate') {
+  if (step === 'pipeline') {
+    result = await runPickPipeline({
+      ...ctx,
+      forceRegenerate: forceRegenerate || req.query?.regenerate === 'true',
+    })
+    return res.status(200).json({ date: todayKey, step, ...result })
+  } else if (step === 'generate') {
     result = await runGenerateStep(ctx)
   } else if (step === 'send') {
     result = await runSendStep(ctx)

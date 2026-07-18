@@ -10,6 +10,7 @@ import {
   LEAN_SLOT_MIN_EDGE,
   PREMIUM_DAILY_PICK_COUNT,
   PUBLISH_BET_ONLY,
+  PUBLISH_LEAN_SLOT,
 } from './_pick-thresholds.js'
 
 const MIN_SLATE_QUALITY = 6
@@ -29,10 +30,10 @@ export function isPremiumLeanSlotRecommendation(rec) {
   return rec === 'LEAN'
 }
 
-/** Pick #1 (newsletter) must be BET; pick #2 may be BET or LEAN for Premium. */
+/** Pick #1 (free) must be BET; premium slots may be BET or LEAN when enabled. */
 export function mlbRecommendationAllowed(rec, slotIndex = 0) {
   if (isBetRecommendation(rec)) return true
-  if (slotIndex > 0 && isPremiumLeanSlotRecommendation(rec)) return true
+  if (slotIndex > 0 && PUBLISH_LEAN_SLOT && isPremiumLeanSlotRecommendation(rec)) return true
   if (!PUBLISH_BET_ONLY) return rec === 'BET' || rec === 'LEAN'
   return false
 }
@@ -257,15 +258,16 @@ export function selectPublishablePicks(picks, slateEntries, {
 }
 
 /**
- * Premium slate: up to 2 picks — BET for pick #1 (newsletter), BET or LEAN for pick #2.
+ * Daily slate: 1 free pick + up to 3 premium picks (BET only).
  */
-export function buildPremiumDailySlate(extracted, slate, { enginePicks = [] } = {}) {
+export function buildDailyPickSlate(extracted, slate, { enginePicks = [] } = {}) {
   const warnings = []
-  const picks = []
+  const qualifying = []
   const seenGames = new Set()
+  const maxPicks = 1 + PREMIUM_DAILY_PICK_COUNT
 
-  const tryAdd = (pick, { leanSlot = false } = {}) => {
-    if (picks.length >= PREMIUM_DAILY_PICK_COUNT) return false
+  const tryQualify = (pick, { leanSlot = false } = {}) => {
+    if (qualifying.length >= maxPicks) return false
     const gameKey = String(pick.game || '').toLowerCase()
     if (seenGames.has(gameKey)) return false
 
@@ -276,7 +278,7 @@ export function buildPremiumDailySlate(extracted, slate, { enginePicks = [] } = 
     }
 
     const rec = pick.recommendation || pick.pickMeta?.recommendation || pick.pick_meta?.recommendation
-    const slotIndex = picks.length
+    const slotIndex = qualifying.length
     if (!mlbRecommendationAllowed(rec, slotIndex) && !(leanSlot && rec === 'LEAN')) {
       return false
     }
@@ -286,51 +288,54 @@ export function buildPremiumDailySlate(extracted, slate, { enginePicks = [] } = 
       : validateBetPickForPublish(pick, entry, slotIndex, warnings)
 
     if (!ok) return false
-    picks.push(pick)
+    qualifying.push(pick)
     seenGames.add(gameKey)
     return true
   }
 
   const { picks: strictBets, warnings: strictWarnings } = selectPublishablePicks(extracted, slate)
   warnings.push(...strictWarnings)
-  for (const pick of strictBets) tryAdd(pick)
+  for (const pick of strictBets) tryQualify(pick)
 
   for (const pick of enginePicks || []) {
     const rec = pick.recommendation || pick.pickMeta?.recommendation
-    if (rec === 'BET') tryAdd(pick)
+    if (rec === 'BET') tryQualify(pick)
   }
 
-  if (picks.length < PREMIUM_DAILY_PICK_COUNT) {
+  if (qualifying.length < maxPicks && PUBLISH_LEAN_SLOT) {
     const leanCandidates = [...(extracted || []), ...(enginePicks || [])]
       .filter(p => (p.recommendation || p.pickMeta?.recommendation) === 'LEAN')
 
     for (const pick of leanCandidates) {
-      if (picks.length >= PREMIUM_DAILY_PICK_COUNT) break
-      tryAdd(pick, { leanSlot: true })
+      if (qualifying.length >= maxPicks) break
+      tryQualify(pick, { leanSlot: true })
     }
   }
 
-  picks.sort((a, b) => {
-    const ra = a.recommendation || a.pickMeta?.recommendation
-    const rb = b.recommendation || b.pickMeta?.recommendation
-    if (ra === 'BET' && rb !== 'BET') return -1
-    if (rb === 'BET' && ra !== 'BET') return 1
-    return 0
-  })
+  const freePick = qualifying[0]
+    ? { ...qualifying[0], tier: 'free', pick_number: 1 }
+    : null
+
+  const premiumPicks = qualifying
+    .slice(1, maxPicks)
+    .map((pick, i) => ({ ...pick, tier: 'premium', pick_number: i + 1 }))
+
+  const allPicks = [freePick, ...premiumPicks].filter(Boolean)
 
   let tier = 'none'
-  if (picks.length >= PREMIUM_DAILY_PICK_COUNT) tier = 'full'
-  else if (picks.length === 1) tier = 'partial'
+  if (allPicks.length >= maxPicks) tier = 'full'
+  else if (allPicks.length > 0) tier = 'partial'
 
-  return {
-    picks: picks.slice(0, PREMIUM_DAILY_PICK_COUNT),
-    warnings,
-    tier,
-  }
+  return { freePick, premiumPicks, picks: allPicks, warnings, tier }
+}
+
+/** @deprecated Use buildDailyPickSlate */
+export function buildPremiumDailySlate(extracted, slate, options = {}) {
+  return buildDailyPickSlate(extracted, slate, options)
 }
 
 export function resolvePicksForPublish(extracted, slate, { enginePicks = [] } = {}) {
-  return buildPremiumDailySlate(extracted, slate, { enginePicks })
+  return buildDailyPickSlate(extracted, slate, { enginePicks })
 }
 
 function validateBetPickForPublish(pick, entry, index, warnings) {

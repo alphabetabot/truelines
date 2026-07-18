@@ -20,7 +20,7 @@ import PremiumFeatureSlot from '../components/PremiumFeatureSlot'
 import { useSubscription } from '../hooks/useSubscription'
 
 const sportColor = { MLB: 'var(--green)', NBA: 'var(--accent)', NHL: '#6366f1', Mixed: 'var(--text-muted)' }
-const PICK_LABELS = ['Top Pick', 'Pick #2']
+const PICK_LABELS = ['Top Pick', 'Premium #1', 'Premium #2', 'Premium #3']
 
 const REC_STYLES = {
   BET: { bg: '#14532d', color: '#86efac', label: 'BET' },
