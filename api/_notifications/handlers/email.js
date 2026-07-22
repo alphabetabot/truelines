@@ -1,11 +1,11 @@
-import { sendNewsletterEmail, unsubscribeUrl } from '../_newsletter-utils.js'
-import { uniqueSubscriberEmails } from '../_newsletter-send-guard.js'
-import { NOTIFICATION_CHANNELS, NOTIFICATION_EVENTS } from './events.js'
+import { sendNewsletterEmail, unsubscribeUrl } from '../../_newsletter-utils.js'
+import { uniqueSubscriberEmails } from '../../_newsletter-send-guard.js'
+import { NOTIFICATION_CHANNELS, NOTIFICATION_EVENTS } from '../events.js'
 import {
   buildFreePickNotificationEmail,
   buildPremiumPickNotificationEmail,
   buildNoFreePickEmail,
-} from './templates.js'
+} from '../templates.js'
 
 const BATCH_SIZE = 4
 const RESEND_MIN_INTERVAL_MS = 250
